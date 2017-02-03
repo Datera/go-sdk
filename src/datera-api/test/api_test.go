@@ -2,7 +2,7 @@ package dapi_test
 
 import (
 	// "encoding/json"
-	// "fmt"
+	"fmt"
 	// "strings"
 	"datera-api/dapi"
 	"testing"
@@ -36,6 +36,7 @@ func TestConnection(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println(conn.ApiToken)
 
 	// ts := httptest.NewServer(http.HandlerFunc(
 	// 	func(w http.ResponseWriter, r *http.Request) {

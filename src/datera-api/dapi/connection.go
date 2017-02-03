@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	// "errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -127,14 +128,33 @@ func (r *ApiConnection) prepConn() (string, error) {
 	return conn, err
 }
 
-func (r *ApiConnection) Get(endpoint string) ([]byte, error) {
-	r.Method = http.MethodGet
+func (r *ApiConnection) doRequest(method, endpoint string, body []byte) ([]byte, error) {
+	var m string
+	switch strings.ToLower(method) {
+	default:
+		panic(fmt.Sprintf("Did not understand method request %s"))
+	case "get":
+		m = http.MethodGet
+	case "put":
+		m = http.MethodPut
+	case "post":
+		m = http.MethodPost
+	case "delete":
+		m = http.MethodDelete
+	}
+	r.Method = m
 	r.Endpoint = endpoint
 	conn, err := r.prepConn()
 	if err != nil {
 		return []byte(""), err
 	}
-	req, err := http.NewRequest(r.Method, conn, nil)
+	var b io.Reader
+	if body == nil {
+		b = nil
+	} else {
+		b = bytes.NewReader(body)
+	}
+	req, err := http.NewRequest(r.Method, conn, b)
 	for h, v := range r.Headers {
 		req.Header.Set(h, v)
 	}
@@ -153,30 +173,20 @@ func (r *ApiConnection) Get(endpoint string) ([]byte, error) {
 	return rbody, err
 }
 
+func (r *ApiConnection) Get(endpoint string) ([]byte, error) {
+	return r.doRequest("get", endpoint, nil)
+}
+
 func (r *ApiConnection) Put(endpoint string, body []byte) ([]byte, error) {
-	r.Method = http.MethodPut
-	r.Endpoint = endpoint
-	conn, err := r.prepConn()
-	if err != nil {
-		return []byte(""), err
-	}
-	req, err := http.NewRequest(r.Method, conn, bytes.NewReader(body))
-	for h, v := range r.Headers {
-		req.Header.Set(h, v)
-	}
-	if err != nil {
-		return []byte(""), err
-	}
-	resp, err := r.Client.Do(req)
-	if err != nil {
-		return []byte(""), err
-	}
-	defer resp.Body.Close()
-	rbody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return []byte(""), err
-	}
-	return rbody, err
+	return r.doRequest("put", endpoint, body)
+}
+
+func (r *ApiConnection) Post(endpoint string, body []byte) ([]byte, error) {
+	return r.doRequest("post", endpoint, body)
+}
+
+func (r *ApiConnection) Delete(endpoint string) ([]byte, error) {
+	return r.doRequest("delete", endpoint, nil)
 }
 
 func (r *ApiConnection) Login() error {
