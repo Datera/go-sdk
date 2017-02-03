@@ -2,8 +2,8 @@ package dapi
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
-	// "encoding/json"
 	// "errors"
 	"io/ioutil"
 	"net/http"
@@ -33,13 +33,18 @@ type ApiConnection struct {
 	Tenant     string
 }
 
+type ReturnLogin struct {
+	Key     string `json:"key"`
+	Version string `json:"version"`
+}
+
 // Changing tenant should require changing the API connection object maybe?
 func NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*ApiConnection, error) {
 	t, err := time.ParseDuration(timeout)
 	if err != nil {
 		return nil, err
 	}
-	return &ApiConnection{
+	c := &ApiConnection{
 		Hostname:   hostname,
 		Port:       port,
 		Username:   username,
@@ -49,7 +54,9 @@ func NewApiConnection(hostname, port, username, password, apiVersion, tenant, ti
 		ApiVersion: apiVersion,
 		Secure:     secure,
 		Client:     &http.Client{Timeout: t},
-	}, nil
+	}
+	c.UpdateHeaders(fmt.Sprintf("tenant=%s", tenant))
+	return c, nil
 }
 
 // Args have the form "name=value"
@@ -84,7 +91,7 @@ func parseTemplate(fstring string, args ...interface{}) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(buf.String())
+	// fmt.Println(buf.String())
 	return buf.String(), nil
 }
 
@@ -114,57 +121,78 @@ func (r *ApiConnection) prepConn() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if r.ApiToken != "" {
+		r.UpdateHeaders(fmt.Sprintf("Auth-Token=%s", r.ApiToken))
+	}
 	return conn, err
 }
 
-func (r *ApiConnection) Get(endpoint string) (string, error) {
+func (r *ApiConnection) Get(endpoint string) ([]byte, error) {
 	r.Method = http.MethodGet
 	r.Endpoint = endpoint
 	conn, err := r.prepConn()
 	if err != nil {
-		return "", err
+		return []byte(""), err
 	}
 	req, err := http.NewRequest(r.Method, conn, nil)
 	for h, v := range r.Headers {
 		req.Header.Set(h, v)
 	}
 	if err != nil {
-		return "", err
+		return []byte(""), err
 	}
 	resp, err := r.Client.Do(req)
 	if err != nil {
-		return "", err
+		return []byte(""), err
 	}
 	defer resp.Body.Close()
 	rbody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return []byte(""), err
 	}
-	return string(rbody), err
+	return rbody, err
 }
 
-func (r *ApiConnection) Put(endpoint string, body []byte) (string, error) {
+func (r *ApiConnection) Put(endpoint string, body []byte) ([]byte, error) {
 	r.Method = http.MethodPut
 	r.Endpoint = endpoint
 	conn, err := r.prepConn()
 	if err != nil {
-		return "", err
+		return []byte(""), err
 	}
 	req, err := http.NewRequest(r.Method, conn, bytes.NewReader(body))
 	for h, v := range r.Headers {
 		req.Header.Set(h, v)
 	}
 	if err != nil {
-		return "", err
+		return []byte(""), err
 	}
 	resp, err := r.Client.Do(req)
 	if err != nil {
-		return "", err
+		return []byte(""), err
 	}
 	defer resp.Body.Close()
 	rbody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return []byte(""), err
 	}
-	return string(rbody), err
+	return rbody, err
+}
+
+func (r *ApiConnection) Login() error {
+	j, err := json.Marshal(map[string]string{"name": "admin", "password": "password"})
+	if err != nil {
+		return err
+	}
+	var l ReturnLogin
+	resp, err := r.Put("login", j)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(resp, &l)
+	if err != nil {
+		return err
+	}
+	r.ApiToken = l.Key
+	return nil
 }
