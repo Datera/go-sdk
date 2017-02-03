@@ -1,12 +1,12 @@
 package dapi_test
 
 import (
-	// "fmt"
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"datera-api/dapi"
-
-	"github.com/stretchr/testify/assert"
+	// "github.com/stretchr/testify/assert"
 	// "github.com/stretchr/testify/mock"
 )
 
@@ -18,21 +18,14 @@ const (
 )
 
 func TestApiBasic(t *testing.T) {
-	assert := assert.New(t)
 
-	d := dapi.NewApi(ADDR, APIVER, USERNAME, PASSWORD)
-
-	assert.True(d.Addr == ADDR)
-	assert.True(d.ApiVersion == APIVER)
-	assert.True(d.Username == USERNAME)
-	assert.True(d.Password == PASSWORD)
 }
 
-func TestConnString(t *testing.T) {
-	assert := assert.New(t)
-	d := dapi.NewApi(ADDR, APIVER, USERNAME, PASSWORD)
-
-	endpoint := "test_endpoint/"
-
-	assert.True("https://192.168.1.1:7718/v2.1/test_endpoint/" == d.ConnString(endpoint))
+func TestConnection(t *testing.T) {
+	headers := make(map[string]string)
+	conn, _ := dapi.NewApiConnection("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	test := map[string]string{"name": "admin", "password": "password"}
+	j, _ := json.Marshal(test)
+	conn.UpdateHeaders("Content-Type=application/json")
+	fmt.Println(conn.Put("login", j))
 }
