@@ -32,6 +32,10 @@ func TestConnection(t *testing.T) {
 		panic(err)
 	}
 	conn.UpdateHeaders("Content-Type=application/json")
+	_, err = conn.Get("api", "myparam=test")
+	if err != nil {
+		panic(err)
+	}
 	err = conn.Login()
 	if err != nil {
 		panic(err)

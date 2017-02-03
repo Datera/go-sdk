@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	// "errors"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"text/template"
 	"time"
@@ -22,6 +24,7 @@ type ApiConnection struct {
 	Method     string
 	Endpoint   string
 	Headers    map[string]string
+	QParams    []string
 	Hostname   string
 	ApiVersion string
 	Port       string
@@ -29,7 +32,6 @@ type ApiConnection struct {
 	Password   string
 	Secure     bool
 	Client     *http.Client
-	LastResult string
 	ApiToken   string
 	Tenant     string
 }
@@ -41,6 +43,7 @@ type ReturnLogin struct {
 
 // Changing tenant should require changing the API connection object maybe?
 func NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*ApiConnection, error) {
+	InitLog(true, "")
 	t, err := time.ParseDuration(timeout)
 	if err != nil {
 		return nil, err
@@ -57,6 +60,7 @@ func NewApiConnection(hostname, port, username, password, apiVersion, tenant, ti
 		Client:     &http.Client{Timeout: t},
 	}
 	c.UpdateHeaders(fmt.Sprintf("tenant=%s", tenant))
+	log.Debugf("New API connection: %#v", c)
 	return c, nil
 }
 
@@ -125,10 +129,18 @@ func (r *ApiConnection) prepConn() (string, error) {
 	if r.ApiToken != "" {
 		r.UpdateHeaders(fmt.Sprintf("Auth-Token=%s", r.ApiToken))
 	}
+	for i, p := range r.QParams {
+		r.QParams[i] = url.QueryEscape(p)
+	}
+	qparams := strings.Join(r.QParams, "&")
+	if len(qparams) > 0 {
+		conn = strings.Join([]string{conn, qparams}, "?")
+	}
 	return conn, err
 }
 
-func (r *ApiConnection) doRequest(method, endpoint string, body []byte) ([]byte, error) {
+func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams []string, sensitive bool) ([]byte, error) {
+	// Handle method
 	var m string
 	switch strings.ToLower(method) {
 	default:
@@ -143,7 +155,11 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte) ([]byte,
 		m = http.MethodDelete
 	}
 	r.Method = m
+	// Handle Endpoint
 	r.Endpoint = endpoint
+	// Set query parameters
+	r.QParams = qparams
+	// prepConn handles header addition, url construction and query params
 	conn, err := r.prepConn()
 	if err != nil {
 		return []byte(""), err
@@ -161,6 +177,31 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte) ([]byte,
 	if err != nil {
 		return []byte(""), err
 	}
+	reqUuid, err := newUUID()
+	if err != nil {
+		return []byte(""), err
+	}
+	// Obscure sensitive information
+	var logb io.Reader
+	if sensitive {
+		logb = bytes.NewReader([]byte("************"))
+	} else {
+		logb = b
+	}
+	log.Debugf(strings.Join([]string{
+		"\nDatera Trace ID: %s",
+		"Datera Request ID: %s",
+		"Datera Request URL: /v%s/%s",
+		"Datera Request Method: %s",
+		"Datera Request Payload: %s",
+		"Datera Request Headers: %s"}, "\n"),
+		nil,
+		reqUuid,
+		r.ApiVersion,
+		conn,
+		r.Method,
+		logb,
+		r.Headers)
 	resp, err := r.Client.Do(req)
 	if err != nil {
 		return []byte(""), err
@@ -173,29 +214,34 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte) ([]byte,
 	return rbody, err
 }
 
-func (r *ApiConnection) Get(endpoint string) ([]byte, error) {
-	return r.doRequest("get", endpoint, nil)
+// qparams have form "param=value"
+func (r *ApiConnection) Get(endpoint string, qparams ...string) ([]byte, error) {
+	return r.doRequest("get", endpoint, nil, qparams, false)
 }
 
-func (r *ApiConnection) Put(endpoint string, body []byte) ([]byte, error) {
-	return r.doRequest("put", endpoint, body)
+func (r *ApiConnection) Put(endpoint string, body []byte, sensitive bool) ([]byte, error) {
+	return r.doRequest("put", endpoint, body, nil, sensitive)
 }
 
 func (r *ApiConnection) Post(endpoint string, body []byte) ([]byte, error) {
-	return r.doRequest("post", endpoint, body)
+	return r.doRequest("post", endpoint, body, nil, false)
 }
 
-func (r *ApiConnection) Delete(endpoint string) ([]byte, error) {
-	return r.doRequest("delete", endpoint, nil)
+// qparams have form "param=value"
+func (r *ApiConnection) Delete(endpoint string, qparams ...string) ([]byte, error) {
+	return r.doRequest("delete", endpoint, nil, qparams, false)
 }
 
 func (r *ApiConnection) Login() error {
-	j, err := json.Marshal(map[string]string{"name": "admin", "password": "password"})
+	j, err := json.Marshal(map[string]string{
+		"name":     r.Username,
+		"password": r.Password,
+	})
 	if err != nil {
 		return err
 	}
 	var l ReturnLogin
-	resp, err := r.Put("login", j)
+	resp, err := r.Put("login", j, true)
 	if err != nil {
 		return err
 	}
