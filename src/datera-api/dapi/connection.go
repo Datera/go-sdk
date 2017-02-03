@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	ConnTemplate    = "http://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}/"
-	SecConnTemplate = "https://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}/"
+	ConnTemplate    = "http://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
+	SecConnTemplate = "https://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
 )
 
 type ApiConnection struct {
@@ -41,6 +41,17 @@ type ReturnLogin struct {
 	Version string `json:"version"`
 }
 
+type Response21 struct {
+	Tenant  string          `json:"tenant"`
+	Path    string          `json:"path"`
+	Version string          `json:"version"`
+	DataRaw json.RawMessage `json:"data"`
+}
+
+type Ep interface {
+	SetEp(string, *ApiConnection)
+}
+
 // Changing tenant should require changing the API connection object maybe?
 func NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*ApiConnection, error) {
 	InitLog(true, "")
@@ -48,13 +59,17 @@ func NewApiConnection(hostname, port, username, password, apiVersion, tenant, ti
 	if err != nil {
 		return nil, err
 	}
+	h := map[string]string{"Content-Type": "application/json"}
+	for p, v := range headers {
+		h[p] = v
+	}
 	c := &ApiConnection{
 		Hostname:   hostname,
 		Port:       port,
 		Username:   username,
 		Password:   password,
 		Tenant:     tenant,
-		Headers:    headers,
+		Headers:    h,
 		ApiVersion: apiVersion,
 		Secure:     secure,
 		Client:     &http.Client{Timeout: t},
@@ -211,6 +226,17 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams 
 	if err != nil {
 		return []byte(""), err
 	}
+	log.Debugf(strings.Join([]string{
+		"\nDatera Trace ID: %s",
+		"Datera Response ID: %s",
+		"Datera Response Status: %s",
+		"Datera Response Payload: %s",
+		"Datera Response Headers: %s"}, "\n"),
+		nil,
+		reqUuid,
+		resp.Status,
+		rbody,
+		resp.Header)
 	return rbody, err
 }
 
@@ -251,4 +277,13 @@ func (r *ApiConnection) Login() error {
 	}
 	r.ApiToken = l.Key
 	return nil
+}
+
+func getData(resp []byte) (json.RawMessage, error) {
+	var r Response21
+	err := json.Unmarshal(resp, &r)
+	if err != nil {
+		return []byte{}, err
+	}
+	return r.DataRaw, nil
 }

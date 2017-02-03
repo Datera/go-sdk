@@ -51,5 +51,13 @@ func TestConnection(t *testing.T) {
 	// port := s[2]
 	// hostname = strings.Strip(s[1], "/")
 	// conn, _ := dapi.NewApiConnection(hostname, port, "admin", "password", "2.1", "/root", "30s", headers, false)
+}
 
+func TestEndpoint(t *testing.T) {
+	headers := make(map[string]string)
+	client, err := dapi.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	if err != nil {
+		panic(err)
+	}
+	client.AppInstances.List()[0]
 }
