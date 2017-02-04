@@ -1,4 +1,4 @@
-package dapi
+package dsdk
 
 import (
 	"bytes"

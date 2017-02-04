@@ -1,4 +1,4 @@
-package dapi
+package dsdk
 
 import (
 	log "github.com/Sirupsen/logrus"
@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	LogFile = "datera-go-api.log"
+	LogFile = "dsdk.log"
 )
 
 func InitLog(debug bool, output string) error {

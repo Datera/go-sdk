@@ -1,10 +1,10 @@
-package dapi_test
+package dsdk_test
 
 import (
 	// "encoding/json"
 	"fmt"
 	// "strings"
-	"datera-api/dapi"
+	"dsdk"
 	"testing"
 	// "net/http"
 	// "net/http/httptest"
@@ -27,7 +27,7 @@ func TestConnection(t *testing.T) {
 	headers := make(map[string]string)
 	// test := map[string]string{"name": "admin", "password": "password"}
 	// j, _ := json.Marshal(test)
-	conn, err := dapi.NewApiConnection("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	conn, err := dsdk.NewApiConnection("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
 		panic(err)
 	}
@@ -50,14 +50,14 @@ func TestConnection(t *testing.T) {
 	// s := strings.Split(ts.URL, ":")
 	// port := s[2]
 	// hostname = strings.Strip(s[1], "/")
-	// conn, _ := dapi.NewApiConnection(hostname, port, "admin", "password", "2.1", "/root", "30s", headers, false)
+	// conn, _ := dsdk.NewApiConnection(hostname, port, "admin", "password", "2.1", "/root", "30s", headers, false)
 }
 
 func TestEndpoint(t *testing.T) {
 	headers := make(map[string]string)
-	client, err := dapi.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
 		panic(err)
 	}
-	client.AppInstances.List()[0]
+	client.AppInstances.List()
 }

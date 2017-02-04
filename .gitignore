@@ -6,4 +6,6 @@ src/gopkg.in/*
 github.com/*
 golang.com/*
 gopkg.in/*
+*.log
+*.txt
 
