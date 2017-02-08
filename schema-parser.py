@@ -30,6 +30,11 @@ go_types = {"string": "string",
             "object": "map[string]interface{}",
             "array": "[]interface{}"}
 
+ROOT_EP = "root"
+REG_EP = "endpoint"
+REG_EN = "entity"
+EN_EP = "entity_endpoint"
+
 GO_ENTITY_RE = r"\s+(\w+)\s+\bentity\b.*json"
 
 # Needs "." to include newlines
@@ -104,8 +109,18 @@ def parse_schema(schema):
             version = ebody
         results.append(epdict)
 
+    # Trying to figure out subendpoints and returned entities
     for result in results:
         result["version"] = version
+        result["subendpoint"] = []
+        result["entity"] = []
+        rsplitlen = len(result["name"].split("/"))
+        for other in results:
+            osplitlen = len(other["name"].split("/"))
+            if (result["name"] != other["name"] and
+                    result["name"] in other["name"] and
+                    osplitlen - rsplitlen == 1):
+                result["subendpoint"].append(other["name"])
 
     return results
 
@@ -300,6 +315,13 @@ def make_golang(pschema, package):
 
 def make_golang_v2(pschema, package):
     pass
+
+
+def which_kind(endpoint):
+    parts = filter(lambda x: x, endpoint["name"].split("/"))
+    if len(parts) == 1:
+        pass
+    return None
 
 
 def _go_ep():

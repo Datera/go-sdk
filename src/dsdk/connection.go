@@ -3,6 +3,7 @@ package dsdk
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	// "errors"
@@ -237,6 +238,7 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams 
 		resp.Status,
 		rbody,
 		resp.Header)
+	err = handleBadResponse(resp)
 	return rbody, err
 }
 
@@ -286,4 +288,12 @@ func getData(resp []byte) (json.RawMessage, error) {
 		return []byte{}, err
 	}
 	return r.DataRaw, nil
+}
+
+func handleBadResponse(resp *http.Response) error {
+	if resp.StatusCode == 422 {
+		return errors.New(
+			fmt.Sprintf("ValidationFailedError: %s", resp.Status))
+	}
+	return nil
 }

@@ -29,18 +29,21 @@ func TestConnection(t *testing.T) {
 	// j, _ := json.Marshal(test)
 	conn, err := dsdk.NewApiConnection("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		t.Fail()
 	}
 	conn.UpdateHeaders("Content-Type=application/json")
-	_, err = conn.Get("api", "myparam=test")
-	if err != nil {
-		panic(err)
-	}
 	err = conn.Login()
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		t.Fail()
 	}
 	fmt.Println(conn.ApiToken)
+	_, err = conn.Get("users")
+	if err != nil {
+		fmt.Println(err)
+		t.Fail()
+	}
 
 	// ts := httptest.NewServer(http.HandlerFunc(
 	// 	func(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +60,29 @@ func TestEndpoint(t *testing.T) {
 	headers := make(map[string]string)
 	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		t.Fail()
 	}
-	client.AppInstances.List()
+	_, err = client.AppInstances.List()
+	if err != nil {
+		fmt.Println(err)
+		t.Fail()
+	}
+}
+
+func TestSubendpoint(t *testing.T) {
+	headers := make(map[string]string)
+	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	if err != nil {
+		fmt.Println(err)
+		t.Fail()
+	}
+	ais, err := client.AppInstances.List()
+	if err != nil {
+		fmt.Println(err)
+		t.Fail()
+	}
+	ai := ais[0]
+	si := ai.StorageInstances[0]
+	fmt.Printf("%s", si.Path)
 }

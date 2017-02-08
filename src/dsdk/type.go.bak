@@ -86,9 +86,17 @@ func (ep AppInstancesEp) List(queryp ...string) ([]AppInstanceEntity, error) {
 	return ais, nil
 }
 
-// func (ep AppInstancesEp) Get(queryp ...string) (AppInstanceEntity, error) {
-
-// }
+func (en AppInstanceEntity) Get(queryp ...string) (AppInstanceEntity, error) {
+	r, _ := en.conn.Get(en.Path)
+	d, err := getData(r)
+	if err != nil {
+		panic(err)
+	}
+	var n AppInstanceEntity
+	err = json.Unmarshal(d, &n)
+	n.conn = en.conn
+	return n, nil
+}
 
 // // Body Args have this form: "param=value", must have at least one
 // func (ep AppInstancesEp) Create(bodyp ...string) (AppInstanceEntity, error) {
