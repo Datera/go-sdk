@@ -6,12 +6,13 @@ import (
 	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	// "errors"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 )
@@ -21,7 +22,14 @@ const (
 	SecConnTemplate = "https://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
 )
 
+var Errors = map[int]bool{
+	400: true,
+	401: true,
+	422: true,
+	500: true}
+
 type ApiConnection struct {
+	Mutex      *sync.Mutex
 	Method     string
 	Endpoint   string
 	Headers    map[string]string
@@ -49,6 +57,20 @@ type Response21 struct {
 	DataRaw json.RawMessage `json:"data"`
 }
 
+type ErrResponse21 struct {
+	Name                string   `json:"name"`
+	Code                int      `json:"code"`
+	Http                int      `json:"http`
+	Message             string   `json:"message"`
+	Debug               string   `json:"debug"`
+	Ts                  string   `json:"ts"`
+	ApiReqId            int      `json:"api_req_id"`
+	StorageNodeUuid     string   `json:"storage_node_uuid"`
+	StorageNodeHostname string   `json:"storage_node_hostname"`
+	Schema              string   `json:"schema,omitempty"`
+	Errors              []string `json:"errors,omitempty"`
+}
+
 type Ep interface {
 	SetEp(string, *ApiConnection)
 }
@@ -65,6 +87,7 @@ func NewApiConnection(hostname, port, username, password, apiVersion, tenant, ti
 		h[p] = v
 	}
 	c := &ApiConnection{
+		Mutex:      &sync.Mutex{},
 		Hostname:   hostname,
 		Port:       port,
 		Username:   username,
@@ -156,6 +179,7 @@ func (r *ApiConnection) prepConn() (string, error) {
 }
 
 func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams []string, sensitive bool) ([]byte, error) {
+	r.Mutex.Lock()
 	// Handle method
 	var m string
 	switch strings.ToLower(method) {
@@ -172,7 +196,7 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams 
 	}
 	r.Method = m
 	// Handle Endpoint
-	r.Endpoint = endpoint
+	r.Endpoint = strings.Trim(endpoint, "/")
 	// Set query parameters
 	r.QParams = qparams
 	// prepConn handles header addition, url construction and query params
@@ -193,7 +217,7 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams 
 	if err != nil {
 		return []byte(""), err
 	}
-	reqUuid, err := newUUID()
+	reqUuid, err := NewUUID()
 	if err != nil {
 		return []byte(""), err
 	}
@@ -239,6 +263,7 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams 
 		rbody,
 		resp.Header)
 	err = handleBadResponse(resp)
+	r.Mutex.Unlock()
 	return rbody, err
 }
 
@@ -247,53 +272,101 @@ func (r *ApiConnection) Get(endpoint string, qparams ...string) ([]byte, error) 
 	return r.doRequest("get", endpoint, nil, qparams, false)
 }
 
-func (r *ApiConnection) Put(endpoint string, body []byte, sensitive bool) ([]byte, error) {
+func (r *ApiConnection) Put(endpoint string, sensitive bool, bodyp ...string) ([]byte, error) {
+	params := make(map[string]interface{})
+	for _, b := range bodyp {
+		p := strings.Split(b, "=")
+		var v interface{}
+		v = p[1]
+		if p[1] == "true" || p[1] == "false" {
+			v, _ = strconv.ParseBool(p[1])
+		}
+		params[p[0]] = v
+	}
+	body, err := json.Marshal(params)
+	if err != nil {
+		return []byte(""), err
+	}
 	return r.doRequest("put", endpoint, body, nil, sensitive)
 }
 
-func (r *ApiConnection) Post(endpoint string, body []byte) ([]byte, error) {
+func (r *ApiConnection) Post(endpoint string, bodyp ...string) ([]byte, error) {
+	params := make(map[string]interface{})
+	for _, b := range bodyp {
+		p := strings.Split(b, "=")
+		var v interface{}
+		v = p[1]
+		if p[1] == "true" || p[1] == "false" {
+			v, _ = strconv.ParseBool(p[1])
+		}
+		params[p[0]] = v
+	}
+	body, err := json.Marshal(params)
+	if err != nil {
+		return []byte(""), err
+	}
 	return r.doRequest("post", endpoint, body, nil, false)
 }
 
 // qparams have form "param=value"
-func (r *ApiConnection) Delete(endpoint string, qparams ...string) ([]byte, error) {
-	return r.doRequest("delete", endpoint, nil, qparams, false)
+func (r *ApiConnection) Delete(endpoint string, bodyp ...string) ([]byte, error) {
+	params := make(map[string]interface{})
+	for _, b := range bodyp {
+		p := strings.Split(b, "=")
+		var v interface{}
+		v = p[1]
+		if p[1] == "true" || p[1] == "false" {
+			v, _ = strconv.ParseBool(p[1])
+		}
+		params[p[0]] = v
+	}
+	body, err := json.Marshal(params)
+	if err != nil {
+		return []byte(""), err
+	}
+	return r.doRequest("delete", endpoint, body, nil, false)
 }
 
 func (r *ApiConnection) Login() error {
-	j, err := json.Marshal(map[string]string{
-		"name":     r.Username,
-		"password": r.Password,
-	})
-	if err != nil {
-		return err
-	}
+	p1 := fmt.Sprintf("name=%s", r.Username)
+	p2 := fmt.Sprintf("password=%s", r.Password)
 	var l ReturnLogin
-	resp, err := r.Put("login", j, true)
+	var e ErrResponse21
+	resp, err := r.Put("login", true, p1, p2)
 	if err != nil {
-		return err
+		serr := json.Unmarshal(resp, &e)
+		if serr != nil {
+			return err
+		}
+		return errors.New(e.Message)
 	}
 	err = json.Unmarshal(resp, &l)
 	if err != nil {
 		return err
 	}
+	if l.Key == "" {
+		return errors.New(
+			fmt.Sprintf("No Api Token In Response: %s", resp))
+	}
 	r.ApiToken = l.Key
 	return nil
 }
 
-func getData(resp []byte) (json.RawMessage, error) {
+func getData(resp []byte) (json.RawMessage, *ErrResponse21, error) {
 	var r Response21
+	var e ErrResponse21
 	err := json.Unmarshal(resp, &r)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, nil, err
 	}
-	return r.DataRaw, nil
+	err = json.Unmarshal(resp, &e)
+	return r.DataRaw, &e, nil
 }
 
 func handleBadResponse(resp *http.Response) error {
-	if resp.StatusCode == 422 {
-		return errors.New(
-			fmt.Sprintf("ValidationFailedError: %s", resp.Status))
+	_, ok := Errors[resp.StatusCode]
+	if ok {
+		return errors.New(fmt.Sprintf("%s", resp.Status))
 	}
 	return nil
 }

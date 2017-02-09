@@ -29,20 +29,16 @@ func TestConnection(t *testing.T) {
 	// j, _ := json.Marshal(test)
 	conn, err := dsdk.NewApiConnection("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
-		fmt.Println(err)
-		t.Fail()
+		t.Fatalf("%s", err)
 	}
 	conn.UpdateHeaders("Content-Type=application/json")
 	err = conn.Login()
 	if err != nil {
-		fmt.Println(err)
-		t.Fail()
+		t.Fatalf("%s", err)
 	}
-	fmt.Println(conn.ApiToken)
 	_, err = conn.Get("users")
 	if err != nil {
-		fmt.Println(err)
-		t.Fail()
+		t.Fatalf("%s", err)
 	}
 
 	// ts := httptest.NewServer(http.HandlerFunc(
@@ -60,13 +56,11 @@ func TestEndpoint(t *testing.T) {
 	headers := make(map[string]string)
 	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
-		fmt.Println(err)
-		t.Fail()
+		t.Fatalf("%s", err)
 	}
 	_, err = client.AppInstances.List()
 	if err != nil {
-		fmt.Println(err)
-		t.Fail()
+		t.Fatalf("%s", err)
 	}
 }
 
@@ -74,15 +68,62 @@ func TestSubendpoint(t *testing.T) {
 	headers := make(map[string]string)
 	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
-		fmt.Println(err)
-		t.Fail()
+		t.Fatalf("%s", err)
 	}
 	ais, err := client.AppInstances.List()
 	if err != nil {
-		fmt.Println(err)
-		t.Fail()
+		t.Fatalf("%s", err)
 	}
 	ai := ais[0]
 	si := ai.StorageInstances[0]
-	fmt.Printf("%s", si.Path)
+	si, err = si.Reload()
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+}
+
+func TestCreate(t *testing.T) {
+	headers := make(map[string]string)
+	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	name, _ := dsdk.NewUUID()
+	ai, err := client.AppInstances.Create(
+		fmt.Sprintf("name=%s", name))
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	ai, err = ai.Reload()
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	ai, err = ai.Set("admin_state=offline")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	err = ai.Delete("force=true")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+}
+
+func TestClean(t *testing.T) {
+	headers := make(map[string]string)
+	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	ais, err := client.AppInstances.List()
+	for _, ai := range ais {
+		_, err = ai.Set("admin_state=offline", "force=true")
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = ai.Delete("force=true")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 }

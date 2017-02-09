@@ -80,43 +80,84 @@ class ApiWriter(object):
 
 class GoApiWriter(ApiWriter):
 
-    en_reload_template = """
+    en_func_template = """
 func (en {en_name}Entity) Reload() ({en_name}Entity, error) {{
-\tr, _ := en.conn.Get(en.Path)
-\td, err := getData(r)
+\tvar n {en_name}Entity
+\tr, _ := conn.Get(en.Path)
+\td, e, err := getData(r)
+\tif e.Message != "" {{
+\t\treturn n, errors.New(strings.Join(append([]string{{e.Message}}, e.Errors...), ":"))
+\t}}
 \tif err != nil {{
 \t\tpanic(err)
 \t}}
-\tvar n {en_name}Entity
 \terr = json.Unmarshal(d, &n)
-\tn.conn = en.conn
 \treturn n, nil
+}}
+func (en {en_name}Entity) Set(bodyp ...string) ({en_name}Entity, error) {{
+\tvar n {en_name}Entity
+\tr, _ := conn.Put(en.Path, false, bodyp...)
+\td, e, err := getData(r)
+\tif e.Message != "" {{
+\t\treturn n, errors.New(strings.Join(append([]string{{e.Message}}, e.Errors...), ":"))
+\t}}
+\tif err != nil {{
+\t\tpanic(err)
+\t}}
+\terr = json.Unmarshal(d, &n)
+\treturn n, nil
+}}
+func (en {en_name}Entity) Delete(bodyp ...string) error {{
+\tr, _ := conn.Delete(en.Path, bodyp...)
+\t_, e, err := getData(r)
+\tif e.Message != "" {{
+\t\treturn errors.New(strings.Join(append([]string{{e.Message}}, e.Errors...), ":"))
+\t}}
+\tif err != nil {{
+\t\tpanic(err)
+\t}}
+\treturn nil
 }}
 """
     ep_new_template = """
-func New{ep_name}Endpoint(parent string, conn *ApiConnection) {ep_name}Endpoint {{
+func New{ep_name}Endpoint(parent string) {ep_name}Endpoint {{
 \tpath := strings.Trim(strings.Join([]string{{parent, "{path}"}}, "/"), "/")
 \treturn {ep_name}Endpoint{{
-\t\tconn: conn,
 \t\tPath: path,
 \t\t{attrs}
 \t}}
 }}
 """
-    ep_list_template = """
-func (ep {ep_name}Endpoint) List(queryp ...string) ([]{en_name}Entity, error) {{
-\tr, _ := ep.conn.Get(ep.Path)
-\td, err := getData(r)
+    ep_func_template = """
+func (ep {ep_name}Endpoint) Create(bodyp ...string) ({en_name}Entity, error) {{
+\tvar en {en_name}Entity
+\tr, _ := conn.Post(ep.Path, bodyp...)
+\td, e, err := getData(r)
+\tif e.Message != "" {{
+\t\treturn en, errors.New(strings.Join(append([]string{{e.Message}}, e.Errors...), ":"))
+\t}}
 \tif err != nil {{
 \t\tpanic(err)
 \t}}
+\terr = json.Unmarshal(d, &en)
+\tif err != nil {{
+\t\tpanic(err)
+\t}}
+\treturn en, nil
+}}
+func (ep {ep_name}Endpoint) List(queryp ...string) ([]{en_name}Entity, error) {{
 \tvar ens []{en_name}Entity
+\tr, _ := conn.Get(ep.Path, queryp...)
+\td, e, err := getData(r)
+\tif e.Message != "" {{
+\t\treturn ens, errors.New(strings.Join(append([]string{{e.Message}}, e.Errors...), ":"))
+\t}}
+\tif err != nil {{
+\t\tpanic(err)
+\t}}
 \terr = json.Unmarshal(d, &ens)
 \tif err != nil {{
 \t\tpanic(err)
-\t}}
-\tfor _, en := range ens {{
-\t\ten.conn = ep.conn
 \t}}
 \treturn ens, nil
 }}
@@ -133,10 +174,16 @@ import (
     "encoding/json"
     //"fmt"
     "strings"
+    "errors"
 )
+
+// Using a global here because screw having to pass this around to everything
+// even via an autogeneration script.  We may hit some limitations later with
+// concurrency, but I need this working now.
+var conn *ApiConnection
+
 type RootEp struct {
 \tPath string
-\tconn *ApiConnection
 \tAppInstances AppInstancesEndpoint
 \tApi ApiEndpoint
 \tAppTemplates AppTemplatesEndpoint
@@ -156,7 +203,9 @@ type RootEp struct {
 }
 
 func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*RootEp, error) {
-\tconn, err := NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
+\tvar err error
+\t//Initialize global connection object
+\tconn, err = NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
 \tif err != nil {
 \t\treturn nil, err
 \t}
@@ -166,23 +215,22 @@ func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout s
 \t}
 \treturn &RootEp{
 \t\tPath:         "",
-\t\tconn:         conn,
-\tAppInstances: NewAppInstancesEndpoint("", conn),
-\tApi: NewApiEndpoint("", conn),
-\tAppTemplates: NewAppTemplatesEndpoint("", conn),
-\tInitiators: NewInitiatorsEndpoint("", conn),
-\tInitiatorGroups: NewInitiatorGroupsEndpoint("", conn),
-\tAccessNetworkIpPools: NewAccessNetworkIpPoolsEndpoint("", conn),
-\tStorageNodes: NewStorageNodesEndpoint("", conn),
-\tSystem: NewSystemEndpoint("", conn),
-\tEventLogs: NewEventLogsEndpoint("", conn),
-\tAuditLogs: NewAuditLogsEndpoint("", conn),
-\tFaultLogs: NewFaultLogsEndpoint("", conn),
-\tRoles: NewRolesEndpoint("", conn),
-\tUsers: NewUsersEndpoint("", conn),
-\tUpgrade: NewUpgradeEndpoint("", conn),
-\tTime: NewTimeEndpoint("", conn),
-\tTenants: NewTenantsEndpoint("", conn),
+\tAppInstances: NewAppInstancesEndpoint(""),
+\tApi: NewApiEndpoint(""),
+\tAppTemplates: NewAppTemplatesEndpoint(""),
+\tInitiators: NewInitiatorsEndpoint(""),
+\tInitiatorGroups: NewInitiatorGroupsEndpoint(""),
+\tAccessNetworkIpPools: NewAccessNetworkIpPoolsEndpoint(""),
+\tStorageNodes: NewStorageNodesEndpoint(""),
+\tSystem: NewSystemEndpoint(""),
+\tEventLogs: NewEventLogsEndpoint(""),
+\tAuditLogs: NewAuditLogsEndpoint(""),
+\tFaultLogs: NewFaultLogsEndpoint(""),
+\tRoles: NewRolesEndpoint(""),
+\tUsers: NewUsersEndpoint(""),
+\tUpgrade: NewUpgradeEndpoint(""),
+\tTime: NewTimeEndpoint(""),
+\tTenants: NewTenantsEndpoint(""),
 \t}, nil
 }
 """)
@@ -220,12 +268,11 @@ func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout s
                 name=attr_name, type=attr_type, json=attr_json)
             attr_list.append(attrib)
         result = ("type {name}Entity struct {{\n"
-                  "\tconn *ApiConnection\n"
                   "{attrs}\n}}\n").format(
                  name=snake_to_cap_camel(name),
                  attrs="\n".join(sorted(attr_list)))
         result = "\n".join((result,
-                            self.en_reload_template.format(
+                            self.en_func_template.format(
                                 en_name=snake_to_cap_camel(
                                     singularize(name)))))
         return result
@@ -234,7 +281,7 @@ func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout s
         attr_list = []
         attr_template = "\t{name} {type}Endpoint"
         new_attr_list = []
-        new_attr_template = "\t{name}: New{type}Endpoint(path, conn),"
+        new_attr_template = "\t{name}: New{type}Endpoint(path),"
         for subendpoint in attrs['subep']:
             subendpoint_name = subendpoint.replace(name, "")
             attr_list.append(attr_template.format(
@@ -244,7 +291,6 @@ func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout s
                 name=snake_to_cap_camel(subendpoint_name),
                 type=snake_to_cap_camel(subendpoint)))
         result = ("type {name}Endpoint struct {{\n"
-                  "\tconn *ApiConnection\n"
                   "\tPath string\n"
                   "{attrs}\n}}\n").format(
                   name=snake_to_cap_camel(name),
@@ -254,7 +300,7 @@ func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout s
         if singularize(en_name) in entities:
             result = "\n".join((
                 result,
-                self.ep_list_template.format(
+                self.ep_func_template.format(
                     en_name=snake_to_cap_camel(
                         singularize(en_name)),
                     ep_name=snake_to_cap_camel(name))))

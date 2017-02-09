@@ -3,12 +3,17 @@ package dsdk
 import (
 	"encoding/json"
 	//"fmt"
+	"errors"
 	"strings"
 )
 
+// Using a global here because screw having to pass this around to everything
+// even via an autogeneration script.  We may hit some limitations later with
+// concurrency, but I need this working now.
+var conn *ApiConnection
+
 type RootEp struct {
 	Path                 string
-	conn                 *ApiConnection
 	AppInstances         AppInstancesEndpoint
 	Api                  ApiEndpoint
 	AppTemplates         AppTemplatesEndpoint
@@ -28,7 +33,9 @@ type RootEp struct {
 }
 
 func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*RootEp, error) {
-	conn, err := NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
+	var err error
+	//Initialize global connection object
+	conn, err = NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
 	if err != nil {
 		return nil, err
 	}
@@ -38,28 +45,26 @@ func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout s
 	}
 	return &RootEp{
 		Path:                 "",
-		conn:                 conn,
-		AppInstances:         NewAppInstancesEndpoint("", conn),
-		Api:                  NewApiEndpoint("", conn),
-		AppTemplates:         NewAppTemplatesEndpoint("", conn),
-		Initiators:           NewInitiatorsEndpoint("", conn),
-		InitiatorGroups:      NewInitiatorGroupsEndpoint("", conn),
-		AccessNetworkIpPools: NewAccessNetworkIpPoolsEndpoint("", conn),
-		StorageNodes:         NewStorageNodesEndpoint("", conn),
-		System:               NewSystemEndpoint("", conn),
-		EventLogs:            NewEventLogsEndpoint("", conn),
-		AuditLogs:            NewAuditLogsEndpoint("", conn),
-		FaultLogs:            NewFaultLogsEndpoint("", conn),
-		Roles:                NewRolesEndpoint("", conn),
-		Users:                NewUsersEndpoint("", conn),
-		Upgrade:              NewUpgradeEndpoint("", conn),
-		Time:                 NewTimeEndpoint("", conn),
-		Tenants:              NewTenantsEndpoint("", conn),
+		AppInstances:         NewAppInstancesEndpoint(""),
+		Api:                  NewApiEndpoint(""),
+		AppTemplates:         NewAppTemplatesEndpoint(""),
+		Initiators:           NewInitiatorsEndpoint(""),
+		InitiatorGroups:      NewInitiatorGroupsEndpoint(""),
+		AccessNetworkIpPools: NewAccessNetworkIpPoolsEndpoint(""),
+		StorageNodes:         NewStorageNodesEndpoint(""),
+		System:               NewSystemEndpoint(""),
+		EventLogs:            NewEventLogsEndpoint(""),
+		AuditLogs:            NewAuditLogsEndpoint(""),
+		FaultLogs:            NewFaultLogsEndpoint(""),
+		Roles:                NewRolesEndpoint(""),
+		Users:                NewUsersEndpoint(""),
+		Upgrade:              NewUpgradeEndpoint(""),
+		Time:                 NewTimeEndpoint(""),
+		Tenants:              NewTenantsEndpoint(""),
 	}, nil
 }
 
 type AccessNetworkIpPoolEntity struct {
-	conn         *ApiConnection
 	Descr        string      `json:"descr,omitempty"`
 	Name         string      `json:"name,omitempty"`
 	NetworkPaths interface{} `json:"network_paths,omitempty"`
@@ -67,38 +72,88 @@ type AccessNetworkIpPoolEntity struct {
 }
 
 func (en AccessNetworkIpPoolEntity) Reload() (AccessNetworkIpPoolEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n AccessNetworkIpPoolEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n AccessNetworkIpPoolEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en AccessNetworkIpPoolEntity) Set(bodyp ...string) (AccessNetworkIpPoolEntity, error) {
+	var n AccessNetworkIpPoolEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en AccessNetworkIpPoolEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type AclPolicyEntity struct {
-	conn            *ApiConnection
 	InitiatorGroups []InitiatorGroupEntity `json:"initiator_groups,omitempty"`
 	Initiators      []InitiatorEntity      `json:"initiators,omitempty"`
 	Path            string                 `json:"path,omitempty"`
 }
 
 func (en AclPolicyEntity) Reload() (AclPolicyEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n AclPolicyEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n AclPolicyEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en AclPolicyEntity) Set(bodyp ...string) (AclPolicyEntity, error) {
+	var n AclPolicyEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en AclPolicyEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type AppInstanceEntity struct {
-	conn              *ApiConnection
 	AccessControlMode string                  `json:"access_control_mode,omitempty"`
 	AdminState        string                  `json:"admin_state,omitempty"`
 	AppTemplate       AppTemplateEntity       `json:"app_template,omitempty"`
@@ -119,19 +174,44 @@ type AppInstanceEntity struct {
 }
 
 func (en AppInstanceEntity) Reload() (AppInstanceEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n AppInstanceEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n AppInstanceEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en AppInstanceEntity) Set(bodyp ...string) (AppInstanceEntity, error) {
+	var n AppInstanceEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en AppInstanceEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type AppTemplateEntity struct {
-	conn             *ApiConnection
 	AppInstances     []AppInstanceEntity     `json:"app_instances,omitempty"`
 	Descr            string                  `json:"descr,omitempty"`
 	Name             string                  `json:"name,omitempty"`
@@ -141,19 +221,44 @@ type AppTemplateEntity struct {
 }
 
 func (en AppTemplateEntity) Reload() (AppTemplateEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n AppTemplateEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n AppTemplateEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en AppTemplateEntity) Set(bodyp ...string) (AppTemplateEntity, error) {
+	var n AppTemplateEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en AppTemplateEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type AuditLogEntity struct {
-	conn        *ApiConnection
 	Description string     `json:"description,omitempty"`
 	Id          string     `json:"id,omitempty"`
 	ObjectName  string     `json:"object_name,omitempty"`
@@ -169,19 +274,44 @@ type AuditLogEntity struct {
 }
 
 func (en AuditLogEntity) Reload() (AuditLogEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n AuditLogEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n AuditLogEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en AuditLogEntity) Set(bodyp ...string) (AuditLogEntity, error) {
+	var n AuditLogEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en AuditLogEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type AuthEntity struct {
-	conn              *ApiConnection
 	InitiatorPswd     string `json:"initiator_pswd,omitempty"`
 	InitiatorUserName string `json:"initiator_user_name,omitempty"`
 	Path              string `json:"path,omitempty"`
@@ -191,19 +321,44 @@ type AuthEntity struct {
 }
 
 func (en AuthEntity) Reload() (AuthEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n AuthEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n AuthEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en AuthEntity) Set(bodyp ...string) (AuthEntity, error) {
+	var n AuthEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en AuthEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type BootDriveEntity struct {
-	conn      *ApiConnection
 	Causes    []interface{} `json:"causes,omitempty"`
 	Health    string        `json:"health,omitempty"`
 	Id        string        `json:"id,omitempty"`
@@ -214,75 +369,175 @@ type BootDriveEntity struct {
 }
 
 func (en BootDriveEntity) Reload() (BootDriveEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n BootDriveEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n BootDriveEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en BootDriveEntity) Set(bodyp ...string) (BootDriveEntity, error) {
+	var n BootDriveEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en BootDriveEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type DnsEntity struct {
-	conn   *ApiConnection
 	Domain string `json:"domain,omitempty"`
 	Path   string `json:"path,omitempty"`
 }
 
 func (en DnsEntity) Reload() (DnsEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n DnsEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n DnsEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en DnsEntity) Set(bodyp ...string) (DnsEntity, error) {
+	var n DnsEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en DnsEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type DnsSearchDomainEntity struct {
-	conn   *ApiConnection
 	Domain string `json:"domain,omitempty"`
 	Order  int    `json:"order,omitempty"`
 	Path   string `json:"path,omitempty"`
 }
 
 func (en DnsSearchDomainEntity) Reload() (DnsSearchDomainEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n DnsSearchDomainEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n DnsSearchDomainEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en DnsSearchDomainEntity) Set(bodyp ...string) (DnsSearchDomainEntity, error) {
+	var n DnsSearchDomainEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en DnsSearchDomainEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type DnsServerEntity struct {
-	conn  *ApiConnection
 	Ip    string `json:"ip,omitempty"`
 	Order int    `json:"order,omitempty"`
 	Path  string `json:"path,omitempty"`
 }
 
 func (en DnsServerEntity) Reload() (DnsServerEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n DnsServerEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n DnsServerEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en DnsServerEntity) Set(bodyp ...string) (DnsServerEntity, error) {
+	var n DnsServerEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en DnsServerEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type EventLogEntity struct {
-	conn         *ApiConnection
 	Cause        string `json:"cause,omitempty"`
 	Code         string `json:"code,omitempty"`
 	Id           string `json:"id,omitempty"`
@@ -299,19 +554,44 @@ type EventLogEntity struct {
 }
 
 func (en EventLogEntity) Reload() (EventLogEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n EventLogEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n EventLogEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en EventLogEntity) Set(bodyp ...string) (EventLogEntity, error) {
+	var n EventLogEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en EventLogEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type FaultLogEntity struct {
-	conn            *ApiConnection
 	Acknowledged    bool   `json:"acknowledged,omitempty"`
 	CallhomeEnabled bool   `json:"callhome_enabled,omitempty"`
 	Cause           string `json:"cause,omitempty"`
@@ -333,19 +613,44 @@ type FaultLogEntity struct {
 }
 
 func (en FaultLogEntity) Reload() (FaultLogEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n FaultLogEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n FaultLogEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en FaultLogEntity) Set(bodyp ...string) (FaultLogEntity, error) {
+	var n FaultLogEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en FaultLogEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type HddEntity struct {
-	conn      *ApiConnection
 	Causes    []interface{} `json:"causes,omitempty"`
 	Health    string        `json:"health,omitempty"`
 	Id        string        `json:"id,omitempty"`
@@ -356,19 +661,44 @@ type HddEntity struct {
 }
 
 func (en HddEntity) Reload() (HddEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n HddEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n HddEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en HddEntity) Set(bodyp ...string) (HddEntity, error) {
+	var n HddEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en HddEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type HttpProxyEntity struct {
-	conn     *ApiConnection
 	Enabled  bool       `json:"enabled,omitempty"`
 	Host     string     `json:"host,omitempty"`
 	Password string     `json:"password,omitempty"`
@@ -378,57 +708,132 @@ type HttpProxyEntity struct {
 }
 
 func (en HttpProxyEntity) Reload() (HttpProxyEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n HttpProxyEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n HttpProxyEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en HttpProxyEntity) Set(bodyp ...string) (HttpProxyEntity, error) {
+	var n HttpProxyEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en HttpProxyEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type InitiatorEntity struct {
-	conn *ApiConnection
 	Id   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
 	Path string `json:"path,omitempty"`
 }
 
 func (en InitiatorEntity) Reload() (InitiatorEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n InitiatorEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n InitiatorEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en InitiatorEntity) Set(bodyp ...string) (InitiatorEntity, error) {
+	var n InitiatorEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en InitiatorEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type InitiatorGroupEntity struct {
-	conn    *ApiConnection
 	Members []interface{} `json:"members,omitempty"`
 	Name    string        `json:"name,omitempty"`
 	Path    string        `json:"path,omitempty"`
 }
 
 func (en InitiatorGroupEntity) Reload() (InitiatorGroupEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n InitiatorGroupEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n InitiatorGroupEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en InitiatorGroupEntity) Set(bodyp ...string) (InitiatorGroupEntity, error) {
+	var n InitiatorGroupEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en InitiatorGroupEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type InternalIpBlockEntity struct {
-	conn    *ApiConnection
 	Gateway string `json:"gateway,omitempty"`
 	Mtu     int    `json:"mtu,omitempty"`
 	Name    string `json:"name,omitempty"`
@@ -440,19 +845,44 @@ type InternalIpBlockEntity struct {
 }
 
 func (en InternalIpBlockEntity) Reload() (InternalIpBlockEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n InternalIpBlockEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n InternalIpBlockEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en InternalIpBlockEntity) Set(bodyp ...string) (InternalIpBlockEntity, error) {
+	var n InternalIpBlockEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en InternalIpBlockEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type IpAddressEntity struct {
-	conn    *ApiConnection
 	Gateway string `json:"gateway,omitempty"`
 	Ip      string `json:"ip,omitempty"`
 	Mtu     int    `json:"mtu,omitempty"`
@@ -463,19 +893,44 @@ type IpAddressEntity struct {
 }
 
 func (en IpAddressEntity) Reload() (IpAddressEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n IpAddressEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n IpAddressEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en IpAddressEntity) Set(bodyp ...string) (IpAddressEntity, error) {
+	var n IpAddressEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en IpAddressEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type IpBlockEntity struct {
-	conn    *ApiConnection
 	Gateway string `json:"gateway,omitempty"`
 	Mtu     int    `json:"mtu,omitempty"`
 	Name    string `json:"name,omitempty"`
@@ -487,19 +942,44 @@ type IpBlockEntity struct {
 }
 
 func (en IpBlockEntity) Reload() (IpBlockEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n IpBlockEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n IpBlockEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en IpBlockEntity) Set(bodyp ...string) (IpBlockEntity, error) {
+	var n IpBlockEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en IpBlockEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type IpPoolEntity struct {
-	conn         *ApiConnection
 	Descr        string      `json:"descr,omitempty"`
 	Name         string      `json:"name,omitempty"`
 	NetworkPaths interface{} `json:"network_paths,omitempty"`
@@ -507,19 +987,44 @@ type IpPoolEntity struct {
 }
 
 func (en IpPoolEntity) Reload() (IpPoolEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n IpPoolEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n IpPoolEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en IpPoolEntity) Set(bodyp ...string) (IpPoolEntity, error) {
+	var n IpPoolEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en IpPoolEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type MonitoringDestinationEntity struct {
-	conn      *ApiConnection
 	Facility  string `json:"facility,omitempty"`
 	Host      string `json:"host,omitempty"`
 	LastMsgTs string `json:"last_msg_ts,omitempty"`
@@ -531,19 +1036,44 @@ type MonitoringDestinationEntity struct {
 }
 
 func (en MonitoringDestinationEntity) Reload() (MonitoringDestinationEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n MonitoringDestinationEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n MonitoringDestinationEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en MonitoringDestinationEntity) Set(bodyp ...string) (MonitoringDestinationEntity, error) {
+	var n MonitoringDestinationEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en MonitoringDestinationEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type MonitoringPolicyEntity struct {
-	conn         *ApiConnection
 	Destinations []interface{} `json:"destinations,omitempty"`
 	Enabled      bool          `json:"enabled,omitempty"`
 	Name         string        `json:"name,omitempty"`
@@ -551,19 +1081,44 @@ type MonitoringPolicyEntity struct {
 }
 
 func (en MonitoringPolicyEntity) Reload() (MonitoringPolicyEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n MonitoringPolicyEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n MonitoringPolicyEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en MonitoringPolicyEntity) Set(bodyp ...string) (MonitoringPolicyEntity, error) {
+	var n MonitoringPolicyEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en MonitoringPolicyEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type NetworkEntity struct {
-	conn            *ApiConnection
 	AccessNetworks  []interface{} `json:"access_networks,omitempty"`
 	AccessVip       interface{}   `json:"access_vip,omitempty"`
 	InternalNetwork interface{}   `json:"internal_network,omitempty"`
@@ -573,19 +1128,44 @@ type NetworkEntity struct {
 }
 
 func (en NetworkEntity) Reload() (NetworkEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n NetworkEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n NetworkEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en NetworkEntity) Set(bodyp ...string) (NetworkEntity, error) {
+	var n NetworkEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en NetworkEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type NetworkMappingEntity struct {
-	conn      *ApiConnection
 	Access1   string `json:"access_1,omitempty"`
 	Access2   string `json:"access_2,omitempty"`
 	Internal1 string `json:"internal_1,omitempty"`
@@ -596,19 +1176,44 @@ type NetworkMappingEntity struct {
 }
 
 func (en NetworkMappingEntity) Reload() (NetworkMappingEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n NetworkMappingEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n NetworkMappingEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en NetworkMappingEntity) Set(bodyp ...string) (NetworkMappingEntity, error) {
+	var n NetworkMappingEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en NetworkMappingEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type NicEntity struct {
-	conn      *ApiConnection
 	Causes    []interface{} `json:"causes,omitempty"`
 	Health    string        `json:"health,omitempty"`
 	Id        string        `json:"id,omitempty"`
@@ -618,38 +1223,88 @@ type NicEntity struct {
 }
 
 func (en NicEntity) Reload() (NicEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n NicEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n NicEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en NicEntity) Set(bodyp ...string) (NicEntity, error) {
+	var n NicEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en NicEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type NtpServerEntity struct {
-	conn  *ApiConnection
 	Ip    string `json:"ip,omitempty"`
 	Order int    `json:"order,omitempty"`
 	Path  string `json:"path,omitempty"`
 }
 
 func (en NtpServerEntity) Reload() (NtpServerEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n NtpServerEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n NtpServerEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en NtpServerEntity) Set(bodyp ...string) (NtpServerEntity, error) {
+	var n NtpServerEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en NtpServerEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type NvmFlashDeviceEntity struct {
-	conn      *ApiConnection
 	Causes    []interface{} `json:"causes,omitempty"`
 	Health    string        `json:"health,omitempty"`
 	Id        string        `json:"id,omitempty"`
@@ -660,19 +1315,44 @@ type NvmFlashDeviceEntity struct {
 }
 
 func (en NvmFlashDeviceEntity) Reload() (NvmFlashDeviceEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n NvmFlashDeviceEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n NvmFlashDeviceEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en NvmFlashDeviceEntity) Set(bodyp ...string) (NvmFlashDeviceEntity, error) {
+	var n NvmFlashDeviceEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en NvmFlashDeviceEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type PerformancePolicyEntity struct {
-	conn              *ApiConnection
 	Path              string `json:"path,omitempty"`
 	ReadBandwidthMax  int    `json:"read_bandwidth_max,omitempty"`
 	ReadIopsMax       int    `json:"read_iops_max,omitempty"`
@@ -683,38 +1363,88 @@ type PerformancePolicyEntity struct {
 }
 
 func (en PerformancePolicyEntity) Reload() (PerformancePolicyEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n PerformancePolicyEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n PerformancePolicyEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en PerformancePolicyEntity) Set(bodyp ...string) (PerformancePolicyEntity, error) {
+	var n PerformancePolicyEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en PerformancePolicyEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type RoleEntity struct {
-	conn       *ApiConnection
 	Path       string        `json:"path,omitempty"`
 	Privileges []interface{} `json:"privileges,omitempty"`
 	RoleId     string        `json:"role_id,omitempty"`
 }
 
 func (en RoleEntity) Reload() (RoleEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n RoleEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n RoleEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en RoleEntity) Set(bodyp ...string) (RoleEntity, error) {
+	var n RoleEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en RoleEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type SnapshotEntity struct {
-	conn      *ApiConnection
 	OpState   string `json:"op_state,omitempty"`
 	Path      string `json:"path,omitempty"`
 	Timestamp string `json:"timestamp,omitempty"`
@@ -723,19 +1453,44 @@ type SnapshotEntity struct {
 }
 
 func (en SnapshotEntity) Reload() (SnapshotEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n SnapshotEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n SnapshotEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en SnapshotEntity) Set(bodyp ...string) (SnapshotEntity, error) {
+	var n SnapshotEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en SnapshotEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type SnapshotPolicyEntity struct {
-	conn           *ApiConnection
 	Interval       string `json:"interval,omitempty"`
 	Name           string `json:"name,omitempty"`
 	Path           string `json:"path,omitempty"`
@@ -744,19 +1499,44 @@ type SnapshotPolicyEntity struct {
 }
 
 func (en SnapshotPolicyEntity) Reload() (SnapshotPolicyEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n SnapshotPolicyEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n SnapshotPolicyEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en SnapshotPolicyEntity) Set(bodyp ...string) (SnapshotPolicyEntity, error) {
+	var n SnapshotPolicyEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en SnapshotPolicyEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type SnmpPolicyEntity struct {
-	conn     *ApiConnection
 	Contact  string       `json:"contact,omitempty"`
 	Enabled  bool         `json:"enabled,omitempty"`
 	Location string       `json:"location,omitempty"`
@@ -765,19 +1545,44 @@ type SnmpPolicyEntity struct {
 }
 
 func (en SnmpPolicyEntity) Reload() (SnmpPolicyEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n SnmpPolicyEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n SnmpPolicyEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en SnmpPolicyEntity) Set(bodyp ...string) (SnmpPolicyEntity, error) {
+	var n SnmpPolicyEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en SnmpPolicyEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type SnmpUserEntity struct {
-	conn          *ApiConnection
 	AuthPass      string `json:"auth_pass,omitempty"`
 	AuthProtocol  string `json:"auth_protocol,omitempty"`
 	EncrPass      string `json:"encr_pass,omitempty"`
@@ -790,19 +1595,44 @@ type SnmpUserEntity struct {
 }
 
 func (en SnmpUserEntity) Reload() (SnmpUserEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n SnmpUserEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n SnmpUserEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en SnmpUserEntity) Set(bodyp ...string) (SnmpUserEntity, error) {
+	var n SnmpUserEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en SnmpUserEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type StorageInstanceEntity struct {
-	conn               *ApiConnection
 	Access             interface{}     `json:"access,omitempty"`
 	AccessControlMode  string          `json:"access_control_mode,omitempty"`
 	AclPolicy          AclPolicyEntity `json:"acl_policy,omitempty"`
@@ -821,19 +1651,44 @@ type StorageInstanceEntity struct {
 }
 
 func (en StorageInstanceEntity) Reload() (StorageInstanceEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n StorageInstanceEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n StorageInstanceEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en StorageInstanceEntity) Set(bodyp ...string) (StorageInstanceEntity, error) {
+	var n StorageInstanceEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en StorageInstanceEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type StorageNodeEntity struct {
-	conn                *ApiConnection
 	AdminState          string                  `json:"admin_state,omitempty"`
 	AvailableCapacity   int                     `json:"available_capacity,omitempty"`
 	BiosVersion         string                  `json:"bios_version,omitempty"`
@@ -878,19 +1733,44 @@ type StorageNodeEntity struct {
 }
 
 func (en StorageNodeEntity) Reload() (StorageNodeEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n StorageNodeEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n StorageNodeEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en StorageNodeEntity) Set(bodyp ...string) (StorageNodeEntity, error) {
+	var n StorageNodeEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en StorageNodeEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type StorageTemplateEntity struct {
-	conn            *ApiConnection
 	Auth            AuthEntity             `json:"auth,omitempty"`
 	IpPool          IpPoolEntity           `json:"ip_pool,omitempty"`
 	Name            string                 `json:"name,omitempty"`
@@ -899,19 +1779,44 @@ type StorageTemplateEntity struct {
 }
 
 func (en StorageTemplateEntity) Reload() (StorageTemplateEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n StorageTemplateEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n StorageTemplateEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en StorageTemplateEntity) Set(bodyp ...string) (StorageTemplateEntity, error) {
+	var n StorageTemplateEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en StorageTemplateEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type SubsystemEntity struct {
-	conn        *ApiConnection
 	Causes      []interface{} `json:"causes,omitempty"`
 	Fan         string        `json:"fan,omitempty"`
 	Health      string        `json:"health,omitempty"`
@@ -923,19 +1828,44 @@ type SubsystemEntity struct {
 }
 
 func (en SubsystemEntity) Reload() (SubsystemEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n SubsystemEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n SubsystemEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en SubsystemEntity) Set(bodyp ...string) (SubsystemEntity, error) {
+	var n SubsystemEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en SubsystemEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type SystemEntity struct {
-	conn                        *ApiConnection
 	AllFlashAvailableCapacity   int               `json:"all_flash_available_capacity,omitempty"`
 	AllFlashProvisionedCapacity int               `json:"all_flash_provisioned_capacity,omitempty"`
 	AllFlashTotalCapacity       int               `json:"all_flash_total_capacity,omitempty"`
@@ -964,19 +1894,44 @@ type SystemEntity struct {
 }
 
 func (en SystemEntity) Reload() (SystemEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n SystemEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n SystemEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en SystemEntity) Set(bodyp ...string) (SystemEntity, error) {
+	var n SystemEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en SystemEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type TenantEntity struct {
-	conn       *ApiConnection
 	Descr      string      `json:"descr,omitempty"`
 	Name       string      `json:"name,omitempty"`
 	ParentPath string      `json:"parent_path,omitempty"`
@@ -985,19 +1940,44 @@ type TenantEntity struct {
 }
 
 func (en TenantEntity) Reload() (TenantEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n TenantEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n TenantEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en TenantEntity) Set(bodyp ...string) (TenantEntity, error) {
+	var n TenantEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en TenantEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type UserEntity struct {
-	conn     *ApiConnection
 	Email    string         `json:"email,omitempty"`
 	Enabled  bool           `json:"enabled,omitempty"`
 	FullName string         `json:"full_name,omitempty"`
@@ -1010,38 +1990,88 @@ type UserEntity struct {
 }
 
 func (en UserEntity) Reload() (UserEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n UserEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n UserEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en UserEntity) Set(bodyp ...string) (UserEntity, error) {
+	var n UserEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en UserEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type VipEntity struct {
-	conn         *ApiConnection
 	Name         string      `json:"name,omitempty"`
 	NetworkPaths interface{} `json:"network_paths,omitempty"`
 	Path         string      `json:"path,omitempty"`
 }
 
 func (en VipEntity) Reload() (VipEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n VipEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n VipEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en VipEntity) Set(bodyp ...string) (VipEntity, error) {
+	var n VipEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en VipEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type VolumeEntity struct {
-	conn               *ApiConnection
 	ActiveStorageNodes []interface{}    `json:"active_storage_nodes,omitempty"`
 	CapacityInUse      int              `json:"capacity_in_use,omitempty"`
 	Causes             []interface{}    `json:"causes,omitempty"`
@@ -1059,19 +2089,44 @@ type VolumeEntity struct {
 }
 
 func (en VolumeEntity) Reload() (VolumeEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n VolumeEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n VolumeEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en VolumeEntity) Set(bodyp ...string) (VolumeEntity, error) {
+	var n VolumeEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en VolumeEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type VolumeTemplateEntity struct {
-	conn          *ApiConnection
 	Name          string `json:"name,omitempty"`
 	Path          string `json:"path,omitempty"`
 	PlacementMode string `json:"placement_mode,omitempty"`
@@ -1080,266 +2135,311 @@ type VolumeTemplateEntity struct {
 }
 
 func (en VolumeTemplateEntity) Reload() (VolumeTemplateEntity, error) {
-	r, _ := en.conn.Get(en.Path)
-	d, err := getData(r)
+	var n VolumeTemplateEntity
+	r, _ := conn.Get(en.Path)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
-	var n VolumeTemplateEntity
 	err = json.Unmarshal(d, &n)
-	n.conn = en.conn
 	return n, nil
+}
+func (en VolumeTemplateEntity) Set(bodyp ...string) (VolumeTemplateEntity, error) {
+	var n VolumeTemplateEntity
+	r, _ := conn.Put(en.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(d, &n)
+	return n, nil
+}
+func (en VolumeTemplateEntity) Delete(bodyp ...string) error {
+	r, _ := conn.Delete(en.Path, bodyp...)
+	_, e, err := getData(r)
+	if e.Message != "" {
+		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }
 
 type MetadataEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewMetadataEndpoint(parent string, conn *ApiConnection) MetadataEndpoint {
+func NewMetadataEndpoint(parent string) MetadataEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "metadata"}, "/"), "/")
 	return MetadataEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type LoginEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewLoginEndpoint(parent string, conn *ApiConnection) LoginEndpoint {
+func NewLoginEndpoint(parent string) LoginEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "login"}, "/"), "/")
 	return LoginEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint struct {
-	conn       *ApiConnection
 	Path       string
 	VolumeName AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameEndpoint
 }
 
-func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint) List(queryp ...string) ([]VolumeEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint) Create(bodyp ...string) (VolumeEntity, error) {
+	var en VolumeEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint) List(queryp ...string) ([]VolumeEntity, error) {
 	var ens []VolumeEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name/volumes"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint{
-		conn:       conn,
 		Path:       path,
-		VolumeName: NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameEndpoint(path, conn),
+		VolumeName: NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameEndpoint(path),
 	}
 }
 
 type MetricsHwMetricEndpoint struct {
-	conn   *ApiConnection
 	Path   string
 	Latest MetricsHwMetricLatestEndpoint
 }
 
-func NewMetricsHwMetricEndpoint(parent string, conn *ApiConnection) MetricsHwMetricEndpoint {
+func NewMetricsHwMetricEndpoint(parent string) MetricsHwMetricEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "metrics/hw/:metric"}, "/"), "/")
 	return MetricsHwMetricEndpoint{
-		conn:   conn,
 		Path:   path,
-		Latest: NewMetricsHwMetricLatestEndpoint(path, conn),
+		Latest: NewMetricsHwMetricLatestEndpoint(path),
 	}
 }
 
 type EventLogsEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Id   EventLogsIdEndpoint
 }
 
-func (ep EventLogsEndpoint) List(queryp ...string) ([]EventLogEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep EventLogsEndpoint) Create(bodyp ...string) (EventLogEntity, error) {
+	var en EventLogEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep EventLogsEndpoint) List(queryp ...string) ([]EventLogEntity, error) {
 	var ens []EventLogEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewEventLogsEndpoint(parent string, conn *ApiConnection) EventLogsEndpoint {
+func NewEventLogsEndpoint(parent string) EventLogsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "event_logs"}, "/"), "/")
 	return EventLogsEndpoint{
-		conn: conn,
 		Path: path,
-		Id:   NewEventLogsIdEndpoint(path, conn),
+		Id:   NewEventLogsIdEndpoint(path),
 	}
 }
 
 type StorageNodesUuidFlashDevicesEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Id   StorageNodesUuidFlashDevicesIdEndpoint
 }
 
-func NewStorageNodesUuidFlashDevicesEndpoint(parent string, conn *ApiConnection) StorageNodesUuidFlashDevicesEndpoint {
+func NewStorageNodesUuidFlashDevicesEndpoint(parent string) StorageNodesUuidFlashDevicesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "storage_nodes/:uuid/flash_devices"}, "/"), "/")
 	return StorageNodesUuidFlashDevicesEndpoint{
-		conn: conn,
 		Path: path,
-		Id:   NewStorageNodesUuidFlashDevicesIdEndpoint(path, conn),
+		Id:   NewStorageNodesUuidFlashDevicesIdEndpoint(path),
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsTimestampEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsTimestampEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsTimestampEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsTimestampEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsTimestampEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name/volumes/:volume_name/snapshots/:timestamp"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsTimestampEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type LogoutEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewLogoutEndpoint(parent string, conn *ApiConnection) LogoutEndpoint {
+func NewLogoutEndpoint(parent string) LogoutEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "logout"}, "/"), "/")
 	return LogoutEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemSnmpPolicyUsersEndpoint struct {
-	conn   *ApiConnection
 	Path   string
 	UserId SystemSnmpPolicyUsersUserIdEndpoint
 }
 
-func (ep SystemSnmpPolicyUsersEndpoint) List(queryp ...string) ([]UserEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep SystemSnmpPolicyUsersEndpoint) Create(bodyp ...string) (UserEntity, error) {
+	var en UserEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep SystemSnmpPolicyUsersEndpoint) List(queryp ...string) ([]UserEntity, error) {
 	var ens []UserEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewSystemSnmpPolicyUsersEndpoint(parent string, conn *ApiConnection) SystemSnmpPolicyUsersEndpoint {
+func NewSystemSnmpPolicyUsersEndpoint(parent string) SystemSnmpPolicyUsersEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/snmp_policy/users"}, "/"), "/")
 	return SystemSnmpPolicyUsersEndpoint{
-		conn:   conn,
 		Path:   path,
-		UserId: NewSystemSnmpPolicyUsersUserIdEndpoint(path, conn),
+		UserId: NewSystemSnmpPolicyUsersUserIdEndpoint(path),
 	}
 }
 
 type SystemSnmpPolicyUsersUserIdEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewSystemSnmpPolicyUsersUserIdEndpoint(parent string, conn *ApiConnection) SystemSnmpPolicyUsersUserIdEndpoint {
+func NewSystemSnmpPolicyUsersUserIdEndpoint(parent string) SystemSnmpPolicyUsersUserIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/snmp_policy/users/:user_id"}, "/"), "/")
 	return SystemSnmpPolicyUsersUserIdEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type UsersUserIdEndpoint struct {
-	conn  *ApiConnection
 	Path  string
 	Roles UsersUserIdRolesEndpoint
 }
 
-func NewUsersUserIdEndpoint(parent string, conn *ApiConnection) UsersUserIdEndpoint {
+func NewUsersUserIdEndpoint(parent string) UsersUserIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "users/:user_id"}, "/"), "/")
 	return UsersUserIdEndpoint{
-		conn:  conn,
 		Path:  path,
-		Roles: NewUsersUserIdRolesEndpoint(path, conn),
+		Roles: NewUsersUserIdRolesEndpoint(path),
 	}
 }
 
 type AccessNetworkIpPoolsPoolNameEndpoint struct {
-	conn         *ApiConnection
 	Path         string
 	NetworkPaths AccessNetworkIpPoolsPoolNameNetworkPathsEndpoint
 }
 
-func NewAccessNetworkIpPoolsPoolNameEndpoint(parent string, conn *ApiConnection) AccessNetworkIpPoolsPoolNameEndpoint {
+func NewAccessNetworkIpPoolsPoolNameEndpoint(parent string) AccessNetworkIpPoolsPoolNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "access_network_ip_pools/:pool_name"}, "/"), "/")
 	return AccessNetworkIpPoolsPoolNameEndpoint{
-		conn:         conn,
 		Path:         path,
-		NetworkPaths: NewAccessNetworkIpPoolsPoolNameNetworkPathsEndpoint(path, conn),
+		NetworkPaths: NewAccessNetworkIpPoolsPoolNameNetworkPathsEndpoint(path),
 	}
 }
 
 type ApiEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewApiEndpoint(parent string, conn *ApiConnection) ApiEndpoint {
+func NewApiEndpoint(parent string) ApiEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "api"}, "/"), "/")
 	return ApiEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemDnsSearchDomainsEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewSystemDnsSearchDomainsEndpoint(parent string, conn *ApiConnection) SystemDnsSearchDomainsEndpoint {
+func NewSystemDnsSearchDomainsEndpoint(parent string) SystemDnsSearchDomainsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/dns/search_domains"}, "/"), "/")
 	return SystemDnsSearchDomainsEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdEndpoint struct {
-	conn             *ApiConnection
 	Path             string
 	Metadata         AppInstancesIdMetadataEndpoint
 	SnapshotPolicies AppInstancesIdSnapshotPoliciesEndpoint
@@ -1347,972 +2447,1184 @@ type AppInstancesIdEndpoint struct {
 	StorageInstances AppInstancesIdStorageInstancesEndpoint
 }
 
-func NewAppInstancesIdEndpoint(parent string, conn *ApiConnection) AppInstancesIdEndpoint {
+func NewAppInstancesIdEndpoint(parent string) AppInstancesIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id"}, "/"), "/")
 	return AppInstancesIdEndpoint{
-		conn:             conn,
 		Path:             path,
-		Metadata:         NewAppInstancesIdMetadataEndpoint(path, conn),
-		SnapshotPolicies: NewAppInstancesIdSnapshotPoliciesEndpoint(path, conn),
-		Snapshots:        NewAppInstancesIdSnapshotsEndpoint(path, conn),
-		StorageInstances: NewAppInstancesIdStorageInstancesEndpoint(path, conn),
+		Metadata:         NewAppInstancesIdMetadataEndpoint(path),
+		SnapshotPolicies: NewAppInstancesIdSnapshotPoliciesEndpoint(path),
+		Snapshots:        NewAppInstancesIdSnapshotsEndpoint(path),
+		StorageInstances: NewAppInstancesIdStorageInstancesEndpoint(path),
 	}
 }
 
 type MetricsIoMetricLatestEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewMetricsIoMetricLatestEndpoint(parent string, conn *ApiConnection) MetricsIoMetricLatestEndpoint {
+func NewMetricsIoMetricLatestEndpoint(parent string) MetricsIoMetricLatestEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "metrics/io/:metric/latest"}, "/"), "/")
 	return MetricsIoMetricLatestEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AccessNetworkIpPoolsEndpoint struct {
-	conn     *ApiConnection
 	Path     string
 	PoolName AccessNetworkIpPoolsPoolNameEndpoint
 }
 
-func (ep AccessNetworkIpPoolsEndpoint) List(queryp ...string) ([]AccessNetworkIpPoolEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AccessNetworkIpPoolsEndpoint) Create(bodyp ...string) (AccessNetworkIpPoolEntity, error) {
+	var en AccessNetworkIpPoolEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AccessNetworkIpPoolsEndpoint) List(queryp ...string) ([]AccessNetworkIpPoolEntity, error) {
 	var ens []AccessNetworkIpPoolEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAccessNetworkIpPoolsEndpoint(parent string, conn *ApiConnection) AccessNetworkIpPoolsEndpoint {
+func NewAccessNetworkIpPoolsEndpoint(parent string) AccessNetworkIpPoolsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "access_network_ip_pools"}, "/"), "/")
 	return AccessNetworkIpPoolsEndpoint{
-		conn:     conn,
 		Path:     path,
-		PoolName: NewAccessNetworkIpPoolsPoolNameEndpoint(path, conn),
+		PoolName: NewAccessNetworkIpPoolsPoolNameEndpoint(path),
 	}
 }
 
 type AccessNetworkIpPoolsPoolNameNetworkPathsEndpoint struct {
-	conn     *ApiConnection
 	Path     string
 	PathName AccessNetworkIpPoolsPoolNameNetworkPathsPathNameEndpoint
 }
 
-func NewAccessNetworkIpPoolsPoolNameNetworkPathsEndpoint(parent string, conn *ApiConnection) AccessNetworkIpPoolsPoolNameNetworkPathsEndpoint {
+func NewAccessNetworkIpPoolsPoolNameNetworkPathsEndpoint(parent string) AccessNetworkIpPoolsPoolNameNetworkPathsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "access_network_ip_pools/:pool_name/network_paths"}, "/"), "/")
 	return AccessNetworkIpPoolsPoolNameNetworkPathsEndpoint{
-		conn:     conn,
 		Path:     path,
-		PathName: NewAccessNetworkIpPoolsPoolNameNetworkPathsPathNameEndpoint(path, conn),
+		PathName: NewAccessNetworkIpPoolsPoolNameNetworkPathsPathNameEndpoint(path),
 	}
 }
 
 type InitConfigEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewInitConfigEndpoint(parent string, conn *ApiConnection) InitConfigEndpoint {
+func NewInitConfigEndpoint(parent string) InitConfigEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "init/config"}, "/"), "/")
 	return InitConfigEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppTemplatesNameSnapshotPoliciesEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep AppTemplatesNameSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppTemplatesNameSnapshotPoliciesEndpoint) Create(bodyp ...string) (SnapshotPolicyEntity, error) {
+	var en SnapshotPolicyEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppTemplatesNameSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
 	var ens []SnapshotPolicyEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppTemplatesNameSnapshotPoliciesEndpoint(parent string, conn *ApiConnection) AppTemplatesNameSnapshotPoliciesEndpoint {
+func NewAppTemplatesNameSnapshotPoliciesEndpoint(parent string) AppTemplatesNameSnapshotPoliciesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates/:name/snapshot_policies"}, "/"), "/")
 	return AppTemplatesNameSnapshotPoliciesEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type PrivilegesEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewPrivilegesEndpoint(parent string, conn *ApiConnection) PrivilegesEndpoint {
+func NewPrivilegesEndpoint(parent string) PrivilegesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "privileges"}, "/"), "/")
 	return PrivilegesEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemNetworkMgmtVipNetworkPathsEndpoint struct {
-	conn        *ApiConnection
 	Path        string
 	NetworkPath SystemNetworkMgmtVipNetworkPathsNetworkPathEndpoint
 }
 
-func NewSystemNetworkMgmtVipNetworkPathsEndpoint(parent string, conn *ApiConnection) SystemNetworkMgmtVipNetworkPathsEndpoint {
+func NewSystemNetworkMgmtVipNetworkPathsEndpoint(parent string) SystemNetworkMgmtVipNetworkPathsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/network/mgmt_vip/network_paths"}, "/"), "/")
 	return SystemNetworkMgmtVipNetworkPathsEndpoint{
-		conn:        conn,
 		Path:        path,
-		NetworkPath: NewSystemNetworkMgmtVipNetworkPathsNetworkPathEndpoint(path, conn),
+		NetworkPath: NewSystemNetworkMgmtVipNetworkPathsNetworkPathEndpoint(path),
 	}
 }
 
 type SystemNetworkMgmtVipNetworkPathsNetworkPathEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewSystemNetworkMgmtVipNetworkPathsNetworkPathEndpoint(parent string, conn *ApiConnection) SystemNetworkMgmtVipNetworkPathsNetworkPathEndpoint {
+func NewSystemNetworkMgmtVipNetworkPathsNetworkPathEndpoint(parent string) SystemNetworkMgmtVipNetworkPathsNetworkPathEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/network/mgmt_vip/network_paths/:network_path"}, "/"), "/")
 	return SystemNetworkMgmtVipNetworkPathsNetworkPathEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameEndpoint struct {
-	conn              *ApiConnection
 	Path              string
 	PerformancePolicy AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint
 	SnapshotPolicies  AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint
 	Snapshots         AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name/volumes/:volume_name"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameEndpoint{
-		conn:              conn,
 		Path:              path,
-		PerformancePolicy: NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint(path, conn),
-		SnapshotPolicies:  NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint(path, conn),
-		Snapshots:         NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint(path, conn),
+		PerformancePolicy: NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint(path),
+		SnapshotPolicies:  NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint(path),
+		Snapshots:         NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint(path),
 	}
 }
 
 type AuditLogsIdEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewAuditLogsIdEndpoint(parent string, conn *ApiConnection) AuditLogsIdEndpoint {
+func NewAuditLogsIdEndpoint(parent string) AuditLogsIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "audit_logs/:id"}, "/"), "/")
 	return AuditLogsIdEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type MonitoringDestinationsDefaultEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewMonitoringDestinationsDefaultEndpoint(parent string, conn *ApiConnection) MonitoringDestinationsDefaultEndpoint {
+func NewMonitoringDestinationsDefaultEndpoint(parent string) MonitoringDestinationsDefaultEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "monitoring/destinations/default"}, "/"), "/")
 	return MonitoringDestinationsDefaultEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type EventsSystemEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep EventsSystemEndpoint) List(queryp ...string) ([]SystemEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep EventsSystemEndpoint) Create(bodyp ...string) (SystemEntity, error) {
+	var en SystemEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep EventsSystemEndpoint) List(queryp ...string) ([]SystemEntity, error) {
 	var ens []SystemEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewEventsSystemEndpoint(parent string, conn *ApiConnection) EventsSystemEndpoint {
+func NewEventsSystemEndpoint(parent string) EventsSystemEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "events/system"}, "/"), "/")
 	return EventsSystemEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemDnsServersEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewSystemDnsServersEndpoint(parent string, conn *ApiConnection) SystemDnsServersEndpoint {
+func NewSystemDnsServersEndpoint(parent string) SystemDnsServersEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/dns/servers"}, "/"), "/")
 	return SystemDnsServersEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemDnsEndpoint struct {
-	conn          *ApiConnection
 	Path          string
 	SearchDomains SystemDnsSearchDomainsEndpoint
 	Servers       SystemDnsServersEndpoint
 }
 
-func (ep SystemDnsEndpoint) List(queryp ...string) ([]DnsEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep SystemDnsEndpoint) Create(bodyp ...string) (DnsEntity, error) {
+	var en DnsEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep SystemDnsEndpoint) List(queryp ...string) ([]DnsEntity, error) {
 	var ens []DnsEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewSystemDnsEndpoint(parent string, conn *ApiConnection) SystemDnsEndpoint {
+func NewSystemDnsEndpoint(parent string) SystemDnsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/dns"}, "/"), "/")
 	return SystemDnsEndpoint{
-		conn:          conn,
 		Path:          path,
-		SearchDomains: NewSystemDnsSearchDomainsEndpoint(path, conn),
-		Servers:       NewSystemDnsServersEndpoint(path, conn),
+		SearchDomains: NewSystemDnsSearchDomainsEndpoint(path),
+		Servers:       NewSystemDnsServersEndpoint(path),
 	}
 }
 
 type SystemNetworkInternalNetworkNetworkPathsNetworkPathEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewSystemNetworkInternalNetworkNetworkPathsNetworkPathEndpoint(parent string, conn *ApiConnection) SystemNetworkInternalNetworkNetworkPathsNetworkPathEndpoint {
+func NewSystemNetworkInternalNetworkNetworkPathsNetworkPathEndpoint(parent string) SystemNetworkInternalNetworkNetworkPathsNetworkPathEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/network/internal_network/network_paths/:network_path"}, "/"), "/")
 	return SystemNetworkInternalNetworkNetworkPathsNetworkPathEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemNetworkMgmtVipEndpoint struct {
-	conn         *ApiConnection
 	Path         string
 	NetworkPaths SystemNetworkMgmtVipNetworkPathsEndpoint
 }
 
-func NewSystemNetworkMgmtVipEndpoint(parent string, conn *ApiConnection) SystemNetworkMgmtVipEndpoint {
+func NewSystemNetworkMgmtVipEndpoint(parent string) SystemNetworkMgmtVipEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/network/mgmt_vip"}, "/"), "/")
 	return SystemNetworkMgmtVipEndpoint{
-		conn:         conn,
 		Path:         path,
-		NetworkPaths: NewSystemNetworkMgmtVipNetworkPathsEndpoint(path, conn),
+		NetworkPaths: NewSystemNetworkMgmtVipNetworkPathsEndpoint(path),
 	}
 }
 
 type AppTemplatesNameStorageTemplatesEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep AppTemplatesNameStorageTemplatesEndpoint) List(queryp ...string) ([]StorageTemplateEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppTemplatesNameStorageTemplatesEndpoint) Create(bodyp ...string) (StorageTemplateEntity, error) {
+	var en StorageTemplateEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppTemplatesNameStorageTemplatesEndpoint) List(queryp ...string) ([]StorageTemplateEntity, error) {
 	var ens []StorageTemplateEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppTemplatesNameStorageTemplatesEndpoint(parent string, conn *ApiConnection) AppTemplatesNameStorageTemplatesEndpoint {
+func NewAppTemplatesNameStorageTemplatesEndpoint(parent string) AppTemplatesNameStorageTemplatesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates/:name/storage_templates"}, "/"), "/")
 	return AppTemplatesNameStorageTemplatesEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type TenantsTenantPathEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewTenantsTenantPathEndpoint(parent string, conn *ApiConnection) TenantsTenantPathEndpoint {
+func NewTenantsTenantPathEndpoint(parent string) TenantsTenantPathEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "tenants/:tenant_path"}, "/"), "/")
 	return TenantsTenantPathEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint struct {
-	conn            *ApiConnection
 	Path            string
 	InitiatorGroups AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint
 	Initiators      AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint
 }
 
-func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint) List(queryp ...string) ([]AclPolicyEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint) Create(bodyp ...string) (AclPolicyEntity, error) {
+	var en AclPolicyEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint) List(queryp ...string) ([]AclPolicyEntity, error) {
 	var ens []AclPolicyEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name/acl_policy"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint{
-		conn:            conn,
 		Path:            path,
-		InitiatorGroups: NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint(path, conn),
-		Initiators:      NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint(path, conn),
+		InitiatorGroups: NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint(path),
+		Initiators:      NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint(path),
 	}
 }
 
 type UpgradeAvailableEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewUpgradeAvailableEndpoint(parent string, conn *ApiConnection) UpgradeAvailableEndpoint {
+func NewUpgradeAvailableEndpoint(parent string) UpgradeAvailableEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "upgrade/available"}, "/"), "/")
 	return UpgradeAvailableEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type StorageNodesUuidNicsIdEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewStorageNodesUuidNicsIdEndpoint(parent string, conn *ApiConnection) StorageNodesUuidNicsIdEndpoint {
+func NewStorageNodesUuidNicsIdEndpoint(parent string) StorageNodesUuidNicsIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "storage_nodes/:uuid/nics/:id"}, "/"), "/")
 	return StorageNodesUuidNicsIdEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdSnapshotsTimestampEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewAppInstancesIdSnapshotsTimestampEndpoint(parent string, conn *ApiConnection) AppInstancesIdSnapshotsTimestampEndpoint {
+func NewAppInstancesIdSnapshotsTimestampEndpoint(parent string) AppInstancesIdSnapshotsTimestampEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/snapshots/:timestamp"}, "/"), "/")
 	return AppInstancesIdSnapshotsTimestampEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemVersionConfigEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewSystemVersionConfigEndpoint(parent string, conn *ApiConnection) SystemVersionConfigEndpoint {
+func NewSystemVersionConfigEndpoint(parent string) SystemVersionConfigEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/version_config"}, "/"), "/")
 	return SystemVersionConfigEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdSnapshotPoliciesSnapshotPolicyNameEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewAppInstancesIdSnapshotPoliciesSnapshotPolicyNameEndpoint(parent string, conn *ApiConnection) AppInstancesIdSnapshotPoliciesSnapshotPolicyNameEndpoint {
+func NewAppInstancesIdSnapshotPoliciesSnapshotPolicyNameEndpoint(parent string) AppInstancesIdSnapshotPoliciesSnapshotPolicyNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/snapshot_policies/:snapshot_policy_name"}, "/"), "/")
 	return AppInstancesIdSnapshotPoliciesSnapshotPolicyNameEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint) List(queryp ...string) ([]InitiatorEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint) Create(bodyp ...string) (InitiatorEntity, error) {
+	var en InitiatorEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint) List(queryp ...string) ([]InitiatorEntity, error) {
 	var ens []InitiatorEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name/acl_policy/initiators"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type EventsDebugEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewEventsDebugEndpoint(parent string, conn *ApiConnection) EventsDebugEndpoint {
+func NewEventsDebugEndpoint(parent string) EventsDebugEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "events/debug"}, "/"), "/")
 	return EventsDebugEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint) List(queryp ...string) ([]PerformancePolicyEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint) Create(bodyp ...string) (PerformancePolicyEntity, error) {
+	var en PerformancePolicyEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint) List(queryp ...string) ([]PerformancePolicyEntity, error) {
 	var ens []PerformancePolicyEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name/volumes/:volume_name/performance_policy"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint) List(queryp ...string) ([]AuthEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint) Create(bodyp ...string) (AuthEntity, error) {
+	var en AuthEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint) List(queryp ...string) ([]AuthEntity, error) {
 	var ens []AuthEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name/auth"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type UsersUserIdRolesEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep UsersUserIdRolesEndpoint) List(queryp ...string) ([]RoleEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep UsersUserIdRolesEndpoint) Create(bodyp ...string) (RoleEntity, error) {
+	var en RoleEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep UsersUserIdRolesEndpoint) List(queryp ...string) ([]RoleEntity, error) {
 	var ens []RoleEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewUsersUserIdRolesEndpoint(parent string, conn *ApiConnection) UsersUserIdRolesEndpoint {
+func NewUsersUserIdRolesEndpoint(parent string) UsersUserIdRolesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "users/:user_id/roles"}, "/"), "/")
 	return UsersUserIdRolesEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type TenantsEndpoint struct {
-	conn       *ApiConnection
 	Path       string
 	TenantPath TenantsTenantPathEndpoint
 }
 
-func (ep TenantsEndpoint) List(queryp ...string) ([]TenantEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep TenantsEndpoint) Create(bodyp ...string) (TenantEntity, error) {
+	var en TenantEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep TenantsEndpoint) List(queryp ...string) ([]TenantEntity, error) {
 	var ens []TenantEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewTenantsEndpoint(parent string, conn *ApiConnection) TenantsEndpoint {
+func NewTenantsEndpoint(parent string) TenantsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "tenants"}, "/"), "/")
 	return TenantsEndpoint{
-		conn:       conn,
 		Path:       path,
-		TenantPath: NewTenantsTenantPathEndpoint(path, conn),
+		TenantPath: NewTenantsTenantPathEndpoint(path),
 	}
 }
 
 type InitiatorsEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Id   InitiatorsIdEndpoint
 }
 
-func (ep InitiatorsEndpoint) List(queryp ...string) ([]InitiatorEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep InitiatorsEndpoint) Create(bodyp ...string) (InitiatorEntity, error) {
+	var en InitiatorEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep InitiatorsEndpoint) List(queryp ...string) ([]InitiatorEntity, error) {
 	var ens []InitiatorEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewInitiatorsEndpoint(parent string, conn *ApiConnection) InitiatorsEndpoint {
+func NewInitiatorsEndpoint(parent string) InitiatorsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "initiators"}, "/"), "/")
 	return InitiatorsEndpoint{
-		conn: conn,
 		Path: path,
-		Id:   NewInitiatorsIdEndpoint(path, conn),
+		Id:   NewInitiatorsIdEndpoint(path),
 	}
 }
 
 type StorageNodesUuidSubsystemStatesEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewStorageNodesUuidSubsystemStatesEndpoint(parent string, conn *ApiConnection) StorageNodesUuidSubsystemStatesEndpoint {
+func NewStorageNodesUuidSubsystemStatesEndpoint(parent string) StorageNodesUuidSubsystemStatesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "storage_nodes/:uuid/subsystem_states"}, "/"), "/")
 	return StorageNodesUuidSubsystemStatesEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint struct {
-	conn               *ApiConnection
 	Path               string
 	SnapshotPolicyName AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesSnapshotPolicyNameEndpoint
 }
 
-func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint) Create(bodyp ...string) (SnapshotPolicyEntity, error) {
+	var en SnapshotPolicyEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
 	var ens []SnapshotPolicyEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name/volumes/:volume_name/snapshot_policies"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint{
-		conn:               conn,
 		Path:               path,
-		SnapshotPolicyName: NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesSnapshotPolicyNameEndpoint(path, conn),
+		SnapshotPolicyName: NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesSnapshotPolicyNameEndpoint(path),
 	}
 }
 
 type MetricsIoMetricEndpoint struct {
-	conn   *ApiConnection
 	Path   string
 	Latest MetricsIoMetricLatestEndpoint
 }
 
-func NewMetricsIoMetricEndpoint(parent string, conn *ApiConnection) MetricsIoMetricEndpoint {
+func NewMetricsIoMetricEndpoint(parent string) MetricsIoMetricEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "metrics/io/:metric"}, "/"), "/")
 	return MetricsIoMetricEndpoint{
-		conn:   conn,
 		Path:   path,
-		Latest: NewMetricsIoMetricLatestEndpoint(path, conn),
+		Latest: NewMetricsIoMetricLatestEndpoint(path),
 	}
 }
 
 type TimeEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewTimeEndpoint(parent string, conn *ApiConnection) TimeEndpoint {
+func NewTimeEndpoint(parent string) TimeEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "time"}, "/"), "/")
 	return TimeEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppTemplatesNameEndpoint struct {
-	conn             *ApiConnection
 	Path             string
 	SnapshotPolicies AppTemplatesNameSnapshotPoliciesEndpoint
 	StorageTemplates AppTemplatesNameStorageTemplatesEndpoint
 }
 
-func NewAppTemplatesNameEndpoint(parent string, conn *ApiConnection) AppTemplatesNameEndpoint {
+func NewAppTemplatesNameEndpoint(parent string) AppTemplatesNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates/:name"}, "/"), "/")
 	return AppTemplatesNameEndpoint{
-		conn:             conn,
 		Path:             path,
-		SnapshotPolicies: NewAppTemplatesNameSnapshotPoliciesEndpoint(path, conn),
-		StorageTemplates: NewAppTemplatesNameStorageTemplatesEndpoint(path, conn),
+		SnapshotPolicies: NewAppTemplatesNameSnapshotPoliciesEndpoint(path),
+		StorageTemplates: NewAppTemplatesNameStorageTemplatesEndpoint(path),
 	}
 }
 
 type AuditLogsEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Id   AuditLogsIdEndpoint
 }
 
-func (ep AuditLogsEndpoint) List(queryp ...string) ([]AuditLogEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AuditLogsEndpoint) Create(bodyp ...string) (AuditLogEntity, error) {
+	var en AuditLogEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AuditLogsEndpoint) List(queryp ...string) ([]AuditLogEntity, error) {
 	var ens []AuditLogEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAuditLogsEndpoint(parent string, conn *ApiConnection) AuditLogsEndpoint {
+func NewAuditLogsEndpoint(parent string) AuditLogsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "audit_logs"}, "/"), "/")
 	return AuditLogsEndpoint{
-		conn: conn,
 		Path: path,
-		Id:   NewAuditLogsIdEndpoint(path, conn),
+		Id:   NewAuditLogsIdEndpoint(path),
 	}
 }
 
 type RolesEndpoint struct {
-	conn   *ApiConnection
 	Path   string
 	RoleId RolesRoleIdEndpoint
 }
 
-func (ep RolesEndpoint) List(queryp ...string) ([]RoleEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep RolesEndpoint) Create(bodyp ...string) (RoleEntity, error) {
+	var en RoleEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep RolesEndpoint) List(queryp ...string) ([]RoleEntity, error) {
 	var ens []RoleEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewRolesEndpoint(parent string, conn *ApiConnection) RolesEndpoint {
+func NewRolesEndpoint(parent string) RolesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "roles"}, "/"), "/")
 	return RolesEndpoint{
-		conn:   conn,
 		Path:   path,
-		RoleId: NewRolesRoleIdEndpoint(path, conn),
+		RoleId: NewRolesRoleIdEndpoint(path),
 	}
 }
 
 type AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint) Create(bodyp ...string) (SnapshotPolicyEntity, error) {
+	var en SnapshotPolicyEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
 	var ens []SnapshotPolicyEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint(parent string, conn *ApiConnection) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint {
+func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint(parent string) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates/:app_template_name/storage_templates/:storage_template_name/volume_templates/:volume_template_name/snapshot_policies"}, "/"), "/")
 	return AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemNetworkInternalNetworkEndpoint struct {
-	conn         *ApiConnection
 	Path         string
 	NetworkPaths SystemNetworkInternalNetworkNetworkPathsEndpoint
 }
 
-func NewSystemNetworkInternalNetworkEndpoint(parent string, conn *ApiConnection) SystemNetworkInternalNetworkEndpoint {
+func NewSystemNetworkInternalNetworkEndpoint(parent string) SystemNetworkInternalNetworkEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/network/internal_network"}, "/"), "/")
 	return SystemNetworkInternalNetworkEndpoint{
-		conn:         conn,
 		Path:         path,
-		NetworkPaths: NewSystemNetworkInternalNetworkNetworkPathsEndpoint(path, conn),
+		NetworkPaths: NewSystemNetworkInternalNetworkNetworkPathsEndpoint(path),
 	}
 }
 
 type EventsUserEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep EventsUserEndpoint) List(queryp ...string) ([]UserEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep EventsUserEndpoint) Create(bodyp ...string) (UserEntity, error) {
+	var en UserEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep EventsUserEndpoint) List(queryp ...string) ([]UserEntity, error) {
 	var ens []UserEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewEventsUserEndpoint(parent string, conn *ApiConnection) EventsUserEndpoint {
+func NewEventsUserEndpoint(parent string) EventsUserEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "events/user"}, "/"), "/")
 	return EventsUserEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type InitiatorGroupsNameEndpoint struct {
-	conn    *ApiConnection
 	Path    string
 	Members InitiatorGroupsNameMembersEndpoint
 }
 
-func NewInitiatorGroupsNameEndpoint(parent string, conn *ApiConnection) InitiatorGroupsNameEndpoint {
+func NewInitiatorGroupsNameEndpoint(parent string) InitiatorGroupsNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "initiator_groups/:name"}, "/"), "/")
 	return InitiatorGroupsNameEndpoint{
-		conn:    conn,
 		Path:    path,
-		Members: NewInitiatorGroupsNameMembersEndpoint(path, conn),
+		Members: NewInitiatorGroupsNameMembersEndpoint(path),
 	}
 }
 
 type FaultLogsEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Id   FaultLogsIdEndpoint
 }
 
-func (ep FaultLogsEndpoint) List(queryp ...string) ([]FaultLogEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep FaultLogsEndpoint) Create(bodyp ...string) (FaultLogEntity, error) {
+	var en FaultLogEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep FaultLogsEndpoint) List(queryp ...string) ([]FaultLogEntity, error) {
 	var ens []FaultLogEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewFaultLogsEndpoint(parent string, conn *ApiConnection) FaultLogsEndpoint {
+func NewFaultLogsEndpoint(parent string) FaultLogsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "fault_logs"}, "/"), "/")
 	return FaultLogsEndpoint{
-		conn: conn,
 		Path: path,
-		Id:   NewFaultLogsIdEndpoint(path, conn),
+		Id:   NewFaultLogsIdEndpoint(path),
 	}
 }
 
 type StorageNodesUuidHddsIdEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewStorageNodesUuidHddsIdEndpoint(parent string, conn *ApiConnection) StorageNodesUuidHddsIdEndpoint {
+func NewStorageNodesUuidHddsIdEndpoint(parent string) StorageNodesUuidHddsIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "storage_nodes/:uuid/hdds/:id"}, "/"), "/")
 	return StorageNodesUuidHddsIdEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemHttpProxyEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep SystemHttpProxyEndpoint) List(queryp ...string) ([]HttpProxyEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep SystemHttpProxyEndpoint) Create(bodyp ...string) (HttpProxyEntity, error) {
+	var en HttpProxyEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep SystemHttpProxyEndpoint) List(queryp ...string) ([]HttpProxyEntity, error) {
 	var ens []HttpProxyEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewSystemHttpProxyEndpoint(parent string, conn *ApiConnection) SystemHttpProxyEndpoint {
+func NewSystemHttpProxyEndpoint(parent string) SystemHttpProxyEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/http_proxy"}, "/"), "/")
 	return SystemHttpProxyEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type StorageNodesUuidEndpoint struct {
-	conn            *ApiConnection
 	Path            string
 	BootDrives      StorageNodesUuidBootDrivesEndpoint
 	FlashDevices    StorageNodesUuidFlashDevicesEndpoint
@@ -2321,34 +3633,30 @@ type StorageNodesUuidEndpoint struct {
 	SubsystemStates StorageNodesUuidSubsystemStatesEndpoint
 }
 
-func NewStorageNodesUuidEndpoint(parent string, conn *ApiConnection) StorageNodesUuidEndpoint {
+func NewStorageNodesUuidEndpoint(parent string) StorageNodesUuidEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "storage_nodes/:uuid"}, "/"), "/")
 	return StorageNodesUuidEndpoint{
-		conn:            conn,
 		Path:            path,
-		BootDrives:      NewStorageNodesUuidBootDrivesEndpoint(path, conn),
-		FlashDevices:    NewStorageNodesUuidFlashDevicesEndpoint(path, conn),
-		Hdds:            NewStorageNodesUuidHddsEndpoint(path, conn),
-		Nics:            NewStorageNodesUuidNicsEndpoint(path, conn),
-		SubsystemStates: NewStorageNodesUuidSubsystemStatesEndpoint(path, conn),
+		BootDrives:      NewStorageNodesUuidBootDrivesEndpoint(path),
+		FlashDevices:    NewStorageNodesUuidFlashDevicesEndpoint(path),
+		Hdds:            NewStorageNodesUuidHddsEndpoint(path),
+		Nics:            NewStorageNodesUuidNicsEndpoint(path),
+		SubsystemStates: NewStorageNodesUuidSubsystemStatesEndpoint(path),
 	}
 }
 
 type EventsUuidEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewEventsUuidEndpoint(parent string, conn *ApiConnection) EventsUuidEndpoint {
+func NewEventsUuidEndpoint(parent string) EventsUuidEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "events/:uuid"}, "/"), "/")
 	return EventsUuidEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemEndpoint struct {
-	conn          *ApiConnection
 	Path          string
 	Dns           SystemDnsEndpoint
 	HttpProxy     SystemHttpProxyEndpoint
@@ -2358,695 +3666,837 @@ type SystemEndpoint struct {
 	VersionConfig SystemVersionConfigEndpoint
 }
 
-func (ep SystemEndpoint) List(queryp ...string) ([]SystemEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep SystemEndpoint) Create(bodyp ...string) (SystemEntity, error) {
+	var en SystemEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep SystemEndpoint) List(queryp ...string) ([]SystemEntity, error) {
 	var ens []SystemEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewSystemEndpoint(parent string, conn *ApiConnection) SystemEndpoint {
+func NewSystemEndpoint(parent string) SystemEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system"}, "/"), "/")
 	return SystemEndpoint{
-		conn:          conn,
 		Path:          path,
-		Dns:           NewSystemDnsEndpoint(path, conn),
-		HttpProxy:     NewSystemHttpProxyEndpoint(path, conn),
-		Network:       NewSystemNetworkEndpoint(path, conn),
-		NtpServers:    NewSystemNtpServersEndpoint(path, conn),
-		SnmpPolicy:    NewSystemSnmpPolicyEndpoint(path, conn),
-		VersionConfig: NewSystemVersionConfigEndpoint(path, conn),
+		Dns:           NewSystemDnsEndpoint(path),
+		HttpProxy:     NewSystemHttpProxyEndpoint(path),
+		Network:       NewSystemNetworkEndpoint(path),
+		NtpServers:    NewSystemNtpServersEndpoint(path),
+		SnmpPolicy:    NewSystemSnmpPolicyEndpoint(path),
+		VersionConfig: NewSystemVersionConfigEndpoint(path),
 	}
 }
 
 type StorageNodesEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Uuid StorageNodesUuidEndpoint
 }
 
-func (ep StorageNodesEndpoint) List(queryp ...string) ([]StorageNodeEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep StorageNodesEndpoint) Create(bodyp ...string) (StorageNodeEntity, error) {
+	var en StorageNodeEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep StorageNodesEndpoint) List(queryp ...string) ([]StorageNodeEntity, error) {
 	var ens []StorageNodeEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewStorageNodesEndpoint(parent string, conn *ApiConnection) StorageNodesEndpoint {
+func NewStorageNodesEndpoint(parent string) StorageNodesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "storage_nodes"}, "/"), "/")
 	return StorageNodesEndpoint{
-		conn: conn,
 		Path: path,
-		Uuid: NewStorageNodesUuidEndpoint(path, conn),
+		Uuid: NewStorageNodesUuidEndpoint(path),
 	}
 }
 
 type AppTemplatesEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Name AppTemplatesNameEndpoint
 }
 
-func (ep AppTemplatesEndpoint) List(queryp ...string) ([]AppTemplateEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppTemplatesEndpoint) Create(bodyp ...string) (AppTemplateEntity, error) {
+	var en AppTemplateEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppTemplatesEndpoint) List(queryp ...string) ([]AppTemplateEntity, error) {
 	var ens []AppTemplateEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppTemplatesEndpoint(parent string, conn *ApiConnection) AppTemplatesEndpoint {
+func NewAppTemplatesEndpoint(parent string) AppTemplatesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates"}, "/"), "/")
 	return AppTemplatesEndpoint{
-		conn: conn,
 		Path: path,
-		Name: NewAppTemplatesNameEndpoint(path, conn),
+		Name: NewAppTemplatesNameEndpoint(path),
 	}
 }
 
 type UpgradeEndpoint struct {
-	conn      *ApiConnection
 	Path      string
 	Available UpgradeAvailableEndpoint
 }
 
-func NewUpgradeEndpoint(parent string, conn *ApiConnection) UpgradeEndpoint {
+func NewUpgradeEndpoint(parent string) UpgradeEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "upgrade"}, "/"), "/")
 	return UpgradeEndpoint{
-		conn:      conn,
 		Path:      path,
-		Available: NewUpgradeAvailableEndpoint(path, conn),
+		Available: NewUpgradeAvailableEndpoint(path),
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint struct {
-	conn      *ApiConnection
 	Path      string
 	Timestamp AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsTimestampEndpoint
 }
 
-func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint) List(queryp ...string) ([]SnapshotEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint) Create(bodyp ...string) (SnapshotEntity, error) {
+	var en SnapshotEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint) List(queryp ...string) ([]SnapshotEntity, error) {
 	var ens []SnapshotEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name/volumes/:volume_name/snapshots"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint{
-		conn:      conn,
 		Path:      path,
-		Timestamp: NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsTimestampEndpoint(path, conn),
+		Timestamp: NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsTimestampEndpoint(path),
 	}
 }
 
 type InitiatorsIdEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewInitiatorsIdEndpoint(parent string, conn *ApiConnection) InitiatorsIdEndpoint {
+func NewInitiatorsIdEndpoint(parent string) InitiatorsIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "initiators/:id"}, "/"), "/")
 	return InitiatorsIdEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemNetworkAccessVipNetworkPathsEndpoint struct {
-	conn        *ApiConnection
 	Path        string
 	NetworkPath SystemNetworkAccessVipNetworkPathsNetworkPathEndpoint
 }
 
-func NewSystemNetworkAccessVipNetworkPathsEndpoint(parent string, conn *ApiConnection) SystemNetworkAccessVipNetworkPathsEndpoint {
+func NewSystemNetworkAccessVipNetworkPathsEndpoint(parent string) SystemNetworkAccessVipNetworkPathsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/network/access_vip/network_paths"}, "/"), "/")
 	return SystemNetworkAccessVipNetworkPathsEndpoint{
-		conn:        conn,
 		Path:        path,
-		NetworkPath: NewSystemNetworkAccessVipNetworkPathsNetworkPathEndpoint(path, conn),
+		NetworkPath: NewSystemNetworkAccessVipNetworkPathsNetworkPathEndpoint(path),
 	}
 }
 
 type PolicyadmEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewPolicyadmEndpoint(parent string, conn *ApiConnection) PolicyadmEndpoint {
+func NewPolicyadmEndpoint(parent string) PolicyadmEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "policyadm"}, "/"), "/")
 	return PolicyadmEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type EventLogsIdEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewEventLogsIdEndpoint(parent string, conn *ApiConnection) EventLogsIdEndpoint {
+func NewEventLogsIdEndpoint(parent string) EventLogsIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "event_logs/:id"}, "/"), "/")
 	return EventLogsIdEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint) List(queryp ...string) ([]InitiatorGroupEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint) Create(bodyp ...string) (InitiatorGroupEntity, error) {
+	var en InitiatorGroupEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint) List(queryp ...string) ([]InitiatorGroupEntity, error) {
 	var ens []InitiatorGroupEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name/acl_policy/initiator_groups"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type MonitoringAlertsEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewMonitoringAlertsEndpoint(parent string, conn *ApiConnection) MonitoringAlertsEndpoint {
+func NewMonitoringAlertsEndpoint(parent string) MonitoringAlertsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "monitoring/alerts"}, "/"), "/")
 	return MonitoringAlertsEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type StorageNodesUuidFlashDevicesIdEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewStorageNodesUuidFlashDevicesIdEndpoint(parent string, conn *ApiConnection) StorageNodesUuidFlashDevicesIdEndpoint {
+func NewStorageNodesUuidFlashDevicesIdEndpoint(parent string) StorageNodesUuidFlashDevicesIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "storage_nodes/:uuid/flash_devices/:id"}, "/"), "/")
 	return StorageNodesUuidFlashDevicesIdEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type MetricsHwMetricLatestEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewMetricsHwMetricLatestEndpoint(parent string, conn *ApiConnection) MetricsHwMetricLatestEndpoint {
+func NewMetricsHwMetricLatestEndpoint(parent string) MetricsHwMetricLatestEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "metrics/hw/:metric/latest"}, "/"), "/")
 	return MetricsHwMetricLatestEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type FaultLogsIdEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewFaultLogsIdEndpoint(parent string, conn *ApiConnection) FaultLogsIdEndpoint {
+func NewFaultLogsIdEndpoint(parent string) FaultLogsIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "fault_logs/:id"}, "/"), "/")
 	return FaultLogsIdEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type InitiatorGroupsEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Name InitiatorGroupsNameEndpoint
 }
 
-func (ep InitiatorGroupsEndpoint) List(queryp ...string) ([]InitiatorGroupEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep InitiatorGroupsEndpoint) Create(bodyp ...string) (InitiatorGroupEntity, error) {
+	var en InitiatorGroupEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep InitiatorGroupsEndpoint) List(queryp ...string) ([]InitiatorGroupEntity, error) {
 	var ens []InitiatorGroupEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewInitiatorGroupsEndpoint(parent string, conn *ApiConnection) InitiatorGroupsEndpoint {
+func NewInitiatorGroupsEndpoint(parent string) InitiatorGroupsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "initiator_groups"}, "/"), "/")
 	return InitiatorGroupsEndpoint{
-		conn: conn,
 		Path: path,
-		Name: NewInitiatorGroupsNameEndpoint(path, conn),
+		Name: NewInitiatorGroupsNameEndpoint(path),
 	}
 }
 
 type SystemNetworkMappingEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewSystemNetworkMappingEndpoint(parent string, conn *ApiConnection) SystemNetworkMappingEndpoint {
+func NewSystemNetworkMappingEndpoint(parent string) SystemNetworkMappingEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/network/mapping"}, "/"), "/")
 	return SystemNetworkMappingEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppTemplatesAtNameStorageTemplatesStNameVolumeTemplatesVtNameSnapshotPoliciesSnapshotPolicyNameEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewAppTemplatesAtNameStorageTemplatesStNameVolumeTemplatesVtNameSnapshotPoliciesSnapshotPolicyNameEndpoint(parent string, conn *ApiConnection) AppTemplatesAtNameStorageTemplatesStNameVolumeTemplatesVtNameSnapshotPoliciesSnapshotPolicyNameEndpoint {
+func NewAppTemplatesAtNameStorageTemplatesStNameVolumeTemplatesVtNameSnapshotPoliciesSnapshotPolicyNameEndpoint(parent string) AppTemplatesAtNameStorageTemplatesStNameVolumeTemplatesVtNameSnapshotPoliciesSnapshotPolicyNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates/:at_name/storage_templates/:st_name/volume_templates/:vt_name/snapshot_policies/:snapshot_policy_name"}, "/"), "/")
 	return AppTemplatesAtNameStorageTemplatesStNameVolumeTemplatesVtNameSnapshotPoliciesSnapshotPolicyNameEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdSnapshotsEndpoint struct {
-	conn      *ApiConnection
 	Path      string
 	Timestamp AppInstancesIdSnapshotsTimestampEndpoint
 }
 
-func (ep AppInstancesIdSnapshotsEndpoint) List(queryp ...string) ([]SnapshotEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesIdSnapshotsEndpoint) Create(bodyp ...string) (SnapshotEntity, error) {
+	var en SnapshotEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesIdSnapshotsEndpoint) List(queryp ...string) ([]SnapshotEntity, error) {
 	var ens []SnapshotEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesIdSnapshotsEndpoint(parent string, conn *ApiConnection) AppInstancesIdSnapshotsEndpoint {
+func NewAppInstancesIdSnapshotsEndpoint(parent string) AppInstancesIdSnapshotsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/snapshots"}, "/"), "/")
 	return AppInstancesIdSnapshotsEndpoint{
-		conn:      conn,
 		Path:      path,
-		Timestamp: NewAppInstancesIdSnapshotsTimestampEndpoint(path, conn),
+		Timestamp: NewAppInstancesIdSnapshotsTimestampEndpoint(path),
 	}
 }
 
 type SystemSnmpPolicyEndpoint struct {
-	conn  *ApiConnection
 	Path  string
 	Users SystemSnmpPolicyUsersEndpoint
 }
 
-func (ep SystemSnmpPolicyEndpoint) List(queryp ...string) ([]SnmpPolicyEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep SystemSnmpPolicyEndpoint) Create(bodyp ...string) (SnmpPolicyEntity, error) {
+	var en SnmpPolicyEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep SystemSnmpPolicyEndpoint) List(queryp ...string) ([]SnmpPolicyEntity, error) {
 	var ens []SnmpPolicyEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewSystemSnmpPolicyEndpoint(parent string, conn *ApiConnection) SystemSnmpPolicyEndpoint {
+func NewSystemSnmpPolicyEndpoint(parent string) SystemSnmpPolicyEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/snmp_policy"}, "/"), "/")
 	return SystemSnmpPolicyEndpoint{
-		conn:  conn,
 		Path:  path,
-		Users: NewSystemSnmpPolicyUsersEndpoint(path, conn),
+		Users: NewSystemSnmpPolicyUsersEndpoint(path),
 	}
 }
 
 type UserinfoEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewUserinfoEndpoint(parent string, conn *ApiConnection) UserinfoEndpoint {
+func NewUserinfoEndpoint(parent string) UserinfoEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "userinfo"}, "/"), "/")
 	return UserinfoEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint struct {
-	conn               *ApiConnection
 	Path               string
 	VolumeTemplateName AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameEndpoint
 }
 
-func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint) List(queryp ...string) ([]VolumeTemplateEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint) Create(bodyp ...string) (VolumeTemplateEntity, error) {
+	var en VolumeTemplateEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint) List(queryp ...string) ([]VolumeTemplateEntity, error) {
 	var ens []VolumeTemplateEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint(parent string, conn *ApiConnection) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint {
+func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint(parent string) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates/:app_template_name/storage_templates/:storage_template_name/volume_templates"}, "/"), "/")
 	return AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint{
-		conn:               conn,
 		Path:               path,
-		VolumeTemplateName: NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameEndpoint(path, conn),
+		VolumeTemplateName: NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameEndpoint(path),
 	}
 }
 
 type HealthAttrsEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewHealthAttrsEndpoint(parent string, conn *ApiConnection) HealthAttrsEndpoint {
+func NewHealthAttrsEndpoint(parent string) HealthAttrsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "health_attrs"}, "/"), "/")
 	return HealthAttrsEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameEndpoint struct {
-	conn      *ApiConnection
 	Path      string
 	AclPolicy AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint
 	Auth      AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint
 	Volumes   AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameEndpoint{
-		conn:      conn,
 		Path:      path,
-		AclPolicy: NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint(path, conn),
-		Auth:      NewAppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint(path, conn),
-		Volumes:   NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint(path, conn),
+		AclPolicy: NewAppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint(path),
+		Auth:      NewAppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint(path),
+		Volumes:   NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint(path),
 	}
 }
 
 type AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint) List(queryp ...string) ([]AuthEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint) Create(bodyp ...string) (AuthEntity, error) {
+	var en AuthEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint) List(queryp ...string) ([]AuthEntity, error) {
 	var ens []AuthEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint(parent string, conn *ApiConnection) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint {
+func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint(parent string) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates/:app_template_name/storage_templates/:storage_template_name/auth"}, "/"), "/")
 	return AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type StorageNodesUuidHddsEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Id   StorageNodesUuidHddsIdEndpoint
 }
 
-func (ep StorageNodesUuidHddsEndpoint) List(queryp ...string) ([]HddEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep StorageNodesUuidHddsEndpoint) Create(bodyp ...string) (HddEntity, error) {
+	var en HddEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep StorageNodesUuidHddsEndpoint) List(queryp ...string) ([]HddEntity, error) {
 	var ens []HddEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewStorageNodesUuidHddsEndpoint(parent string, conn *ApiConnection) StorageNodesUuidHddsEndpoint {
+func NewStorageNodesUuidHddsEndpoint(parent string) StorageNodesUuidHddsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "storage_nodes/:uuid/hdds"}, "/"), "/")
 	return StorageNodesUuidHddsEndpoint{
-		conn: conn,
 		Path: path,
-		Id:   NewStorageNodesUuidHddsIdEndpoint(path, conn),
+		Id:   NewStorageNodesUuidHddsIdEndpoint(path),
 	}
 }
 
 type AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameEndpoint struct {
-	conn            *ApiConnection
 	Path            string
 	Auth            AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint
 	VolumeTemplates AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint
 }
 
-func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameEndpoint(parent string, conn *ApiConnection) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameEndpoint {
+func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameEndpoint(parent string) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates/:app_template_name/storage_templates/:storage_template_name"}, "/"), "/")
 	return AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameEndpoint{
-		conn:            conn,
 		Path:            path,
-		Auth:            NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint(path, conn),
-		VolumeTemplates: NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint(path, conn),
+		Auth:            NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint(path),
+		VolumeTemplates: NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint(path),
 	}
 }
 
 type MonitoringPoliciesDefaultEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewMonitoringPoliciesDefaultEndpoint(parent string, conn *ApiConnection) MonitoringPoliciesDefaultEndpoint {
+func NewMonitoringPoliciesDefaultEndpoint(parent string) MonitoringPoliciesDefaultEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "monitoring/policies/default"}, "/"), "/")
 	return MonitoringPoliciesDefaultEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemNetworkAccessVipEndpoint struct {
-	conn         *ApiConnection
 	Path         string
 	NetworkPaths SystemNetworkAccessVipNetworkPathsEndpoint
 }
 
-func NewSystemNetworkAccessVipEndpoint(parent string, conn *ApiConnection) SystemNetworkAccessVipEndpoint {
+func NewSystemNetworkAccessVipEndpoint(parent string) SystemNetworkAccessVipEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/network/access_vip"}, "/"), "/")
 	return SystemNetworkAccessVipEndpoint{
-		conn:         conn,
 		Path:         path,
-		NetworkPaths: NewSystemNetworkAccessVipNetworkPathsEndpoint(path, conn),
+		NetworkPaths: NewSystemNetworkAccessVipNetworkPathsEndpoint(path),
 	}
 }
 
 type AppInstancesIdSnapshotPoliciesEndpoint struct {
-	conn               *ApiConnection
 	Path               string
 	SnapshotPolicyName AppInstancesIdSnapshotPoliciesSnapshotPolicyNameEndpoint
 }
 
-func (ep AppInstancesIdSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesIdSnapshotPoliciesEndpoint) Create(bodyp ...string) (SnapshotPolicyEntity, error) {
+	var en SnapshotPolicyEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesIdSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
 	var ens []SnapshotPolicyEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesIdSnapshotPoliciesEndpoint(parent string, conn *ApiConnection) AppInstancesIdSnapshotPoliciesEndpoint {
+func NewAppInstancesIdSnapshotPoliciesEndpoint(parent string) AppInstancesIdSnapshotPoliciesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/snapshot_policies"}, "/"), "/")
 	return AppInstancesIdSnapshotPoliciesEndpoint{
-		conn:               conn,
 		Path:               path,
-		SnapshotPolicyName: NewAppInstancesIdSnapshotPoliciesSnapshotPolicyNameEndpoint(path, conn),
+		SnapshotPolicyName: NewAppInstancesIdSnapshotPoliciesSnapshotPolicyNameEndpoint(path),
 	}
 }
 
 type AppInstancesAiIdStorageInstancesSiIdMetadataEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewAppInstancesAiIdStorageInstancesSiIdMetadataEndpoint(parent string, conn *ApiConnection) AppInstancesAiIdStorageInstancesSiIdMetadataEndpoint {
+func NewAppInstancesAiIdStorageInstancesSiIdMetadataEndpoint(parent string) AppInstancesAiIdStorageInstancesSiIdMetadataEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:ai_id/storage_instances/:si_id/metadata"}, "/"), "/")
 	return AppInstancesAiIdStorageInstancesSiIdMetadataEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdStorageInstancesEndpoint struct {
-	conn                *ApiConnection
 	Path                string
 	StorageInstanceName AppInstancesIdStorageInstancesStorageInstanceNameEndpoint
 }
 
-func (ep AppInstancesIdStorageInstancesEndpoint) List(queryp ...string) ([]StorageInstanceEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesIdStorageInstancesEndpoint) Create(bodyp ...string) (StorageInstanceEntity, error) {
+	var en StorageInstanceEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesIdStorageInstancesEndpoint) List(queryp ...string) ([]StorageInstanceEntity, error) {
 	var ens []StorageInstanceEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesIdStorageInstancesEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesEndpoint {
+func NewAppInstancesIdStorageInstancesEndpoint(parent string) AppInstancesIdStorageInstancesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances"}, "/"), "/")
 	return AppInstancesIdStorageInstancesEndpoint{
-		conn:                conn,
 		Path:                path,
-		StorageInstanceName: NewAppInstancesIdStorageInstancesStorageInstanceNameEndpoint(path, conn),
+		StorageInstanceName: NewAppInstancesIdStorageInstancesStorageInstanceNameEndpoint(path),
 	}
 }
 
 type StorageNodesUuidBootDrivesIdEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewStorageNodesUuidBootDrivesIdEndpoint(parent string, conn *ApiConnection) StorageNodesUuidBootDrivesIdEndpoint {
+func NewStorageNodesUuidBootDrivesIdEndpoint(parent string) StorageNodesUuidBootDrivesIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "storage_nodes/:uuid/boot_drives/:id"}, "/"), "/")
 	return StorageNodesUuidBootDrivesIdEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesSnapshotPolicyNameEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesSnapshotPolicyNameEndpoint(parent string, conn *ApiConnection) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesSnapshotPolicyNameEndpoint {
+func NewAppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesSnapshotPolicyNameEndpoint(parent string) AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesSnapshotPolicyNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/storage_instances/:storage_instance_name/volumes/:volume_name/snapshot_policies/:snapshot_policy_name"}, "/"), "/")
 	return AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesSnapshotPolicyNameEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemNetworkEndpoint struct {
-	conn            *ApiConnection
 	Path            string
 	AccessVip       SystemNetworkAccessVipEndpoint
 	InternalNetwork SystemNetworkInternalNetworkEndpoint
@@ -3054,312 +4504,379 @@ type SystemNetworkEndpoint struct {
 	MgmtVip         SystemNetworkMgmtVipEndpoint
 }
 
-func (ep SystemNetworkEndpoint) List(queryp ...string) ([]NetworkEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep SystemNetworkEndpoint) Create(bodyp ...string) (NetworkEntity, error) {
+	var en NetworkEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep SystemNetworkEndpoint) List(queryp ...string) ([]NetworkEntity, error) {
 	var ens []NetworkEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewSystemNetworkEndpoint(parent string, conn *ApiConnection) SystemNetworkEndpoint {
+func NewSystemNetworkEndpoint(parent string) SystemNetworkEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/network"}, "/"), "/")
 	return SystemNetworkEndpoint{
-		conn:            conn,
 		Path:            path,
-		AccessVip:       NewSystemNetworkAccessVipEndpoint(path, conn),
-		InternalNetwork: NewSystemNetworkInternalNetworkEndpoint(path, conn),
-		Mapping:         NewSystemNetworkMappingEndpoint(path, conn),
-		MgmtVip:         NewSystemNetworkMgmtVipEndpoint(path, conn),
+		AccessVip:       NewSystemNetworkAccessVipEndpoint(path),
+		InternalNetwork: NewSystemNetworkInternalNetworkEndpoint(path),
+		Mapping:         NewSystemNetworkMappingEndpoint(path),
+		MgmtVip:         NewSystemNetworkMgmtVipEndpoint(path),
 	}
 }
 
 type UsersEndpoint struct {
-	conn   *ApiConnection
 	Path   string
 	UserId UsersUserIdEndpoint
 }
 
-func (ep UsersEndpoint) List(queryp ...string) ([]UserEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep UsersEndpoint) Create(bodyp ...string) (UserEntity, error) {
+	var en UserEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep UsersEndpoint) List(queryp ...string) ([]UserEntity, error) {
 	var ens []UserEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewUsersEndpoint(parent string, conn *ApiConnection) UsersEndpoint {
+func NewUsersEndpoint(parent string) UsersEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "users"}, "/"), "/")
 	return UsersEndpoint{
-		conn:   conn,
 		Path:   path,
-		UserId: NewUsersUserIdEndpoint(path, conn),
+		UserId: NewUsersUserIdEndpoint(path),
 	}
 }
 
 type InitiatorGroupsNameMembersEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewInitiatorGroupsNameMembersEndpoint(parent string, conn *ApiConnection) InitiatorGroupsNameMembersEndpoint {
+func NewInitiatorGroupsNameMembersEndpoint(parent string) InitiatorGroupsNameMembersEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "initiator_groups/:name/members"}, "/"), "/")
 	return InitiatorGroupsNameMembersEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type StorageNodesUuidBootDrivesEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Id   StorageNodesUuidBootDrivesIdEndpoint
 }
 
-func NewStorageNodesUuidBootDrivesEndpoint(parent string, conn *ApiConnection) StorageNodesUuidBootDrivesEndpoint {
+func NewStorageNodesUuidBootDrivesEndpoint(parent string) StorageNodesUuidBootDrivesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "storage_nodes/:uuid/boot_drives"}, "/"), "/")
 	return StorageNodesUuidBootDrivesEndpoint{
-		conn: conn,
 		Path: path,
-		Id:   NewStorageNodesUuidBootDrivesIdEndpoint(path, conn),
+		Id:   NewStorageNodesUuidBootDrivesIdEndpoint(path),
 	}
 }
 
 type SystemNtpServersEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep SystemNtpServersEndpoint) List(queryp ...string) ([]NtpServerEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep SystemNtpServersEndpoint) Create(bodyp ...string) (NtpServerEntity, error) {
+	var en NtpServerEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep SystemNtpServersEndpoint) List(queryp ...string) ([]NtpServerEntity, error) {
 	var ens []NtpServerEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewSystemNtpServersEndpoint(parent string, conn *ApiConnection) SystemNtpServersEndpoint {
+func NewSystemNtpServersEndpoint(parent string) SystemNtpServersEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/ntp_servers"}, "/"), "/")
 	return SystemNtpServersEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type SystemNetworkInternalNetworkNetworkPathsEndpoint struct {
-	conn        *ApiConnection
 	Path        string
 	NetworkPath SystemNetworkInternalNetworkNetworkPathsNetworkPathEndpoint
 }
 
-func NewSystemNetworkInternalNetworkNetworkPathsEndpoint(parent string, conn *ApiConnection) SystemNetworkInternalNetworkNetworkPathsEndpoint {
+func NewSystemNetworkInternalNetworkNetworkPathsEndpoint(parent string) SystemNetworkInternalNetworkNetworkPathsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/network/internal_network/network_paths"}, "/"), "/")
 	return SystemNetworkInternalNetworkNetworkPathsEndpoint{
-		conn:        conn,
 		Path:        path,
-		NetworkPath: NewSystemNetworkInternalNetworkNetworkPathsNetworkPathEndpoint(path, conn),
+		NetworkPath: NewSystemNetworkInternalNetworkNetworkPathsNetworkPathEndpoint(path),
 	}
 }
 
 type AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameEndpoint struct {
-	conn              *ApiConnection
 	Path              string
 	PerformancePolicy AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint
 	SnapshotPolicies  AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint
 }
 
-func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameEndpoint(parent string, conn *ApiConnection) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameEndpoint {
+func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameEndpoint(parent string) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates/:app_template_name/storage_templates/:storage_template_name/volume_templates/:volume_template_name"}, "/"), "/")
 	return AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameEndpoint{
-		conn:              conn,
 		Path:              path,
-		PerformancePolicy: NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint(path, conn),
-		SnapshotPolicies:  NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint(path, conn),
+		PerformancePolicy: NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint(path),
+		SnapshotPolicies:  NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint(path),
 	}
 }
 
 type AppInstancesEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Id   AppInstancesIdEndpoint
 }
 
-func (ep AppInstancesEndpoint) List(queryp ...string) ([]AppInstanceEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppInstancesEndpoint) Create(bodyp ...string) (AppInstanceEntity, error) {
+	var en AppInstanceEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppInstancesEndpoint) List(queryp ...string) ([]AppInstanceEntity, error) {
 	var ens []AppInstanceEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppInstancesEndpoint(parent string, conn *ApiConnection) AppInstancesEndpoint {
+func NewAppInstancesEndpoint(parent string) AppInstancesEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances"}, "/"), "/")
 	return AppInstancesEndpoint{
-		conn: conn,
 		Path: path,
-		Id:   NewAppInstancesIdEndpoint(path, conn),
+		Id:   NewAppInstancesIdEndpoint(path),
 	}
 }
 
 type AppInstancesIdMetadataEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewAppInstancesIdMetadataEndpoint(parent string, conn *ApiConnection) AppInstancesIdMetadataEndpoint {
+func NewAppInstancesIdMetadataEndpoint(parent string) AppInstancesIdMetadataEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_instances/:id/metadata"}, "/"), "/")
 	return AppInstancesIdMetadataEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type StorageNodesUuidNicsEndpoint struct {
-	conn *ApiConnection
 	Path string
 	Id   StorageNodesUuidNicsIdEndpoint
 }
 
-func (ep StorageNodesUuidNicsEndpoint) List(queryp ...string) ([]NicEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep StorageNodesUuidNicsEndpoint) Create(bodyp ...string) (NicEntity, error) {
+	var en NicEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep StorageNodesUuidNicsEndpoint) List(queryp ...string) ([]NicEntity, error) {
 	var ens []NicEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewStorageNodesUuidNicsEndpoint(parent string, conn *ApiConnection) StorageNodesUuidNicsEndpoint {
+func NewStorageNodesUuidNicsEndpoint(parent string) StorageNodesUuidNicsEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "storage_nodes/:uuid/nics"}, "/"), "/")
 	return StorageNodesUuidNicsEndpoint{
-		conn: conn,
 		Path: path,
-		Id:   NewStorageNodesUuidNicsIdEndpoint(path, conn),
+		Id:   NewStorageNodesUuidNicsIdEndpoint(path),
 	}
 }
 
 type SystemNetworkAccessVipNetworkPathsNetworkPathEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewSystemNetworkAccessVipNetworkPathsNetworkPathEndpoint(parent string, conn *ApiConnection) SystemNetworkAccessVipNetworkPathsNetworkPathEndpoint {
+func NewSystemNetworkAccessVipNetworkPathsNetworkPathEndpoint(parent string) SystemNetworkAccessVipNetworkPathsNetworkPathEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "system/network/access_vip/network_paths/:network_path"}, "/"), "/")
 	return SystemNetworkAccessVipNetworkPathsNetworkPathEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type RolesRoleIdEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewRolesRoleIdEndpoint(parent string, conn *ApiConnection) RolesRoleIdEndpoint {
+func NewRolesRoleIdEndpoint(parent string) RolesRoleIdEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "roles/:role_id"}, "/"), "/")
 	return RolesRoleIdEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint) List(queryp ...string) ([]PerformancePolicyEntity, error) {
-	r, _ := ep.conn.Get(ep.Path)
-	d, err := getData(r)
+func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint) Create(bodyp ...string) (PerformancePolicyEntity, error) {
+	var en PerformancePolicyEntity
+	r, _ := conn.Post(ep.Path, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal(d, &en)
+	if err != nil {
+		panic(err)
+	}
+	return en, nil
+}
+func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint) List(queryp ...string) ([]PerformancePolicyEntity, error) {
 	var ens []PerformancePolicyEntity
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
 	}
-	for _, en := range ens {
-		en.conn = ep.conn
-	}
 	return ens, nil
 }
 
-func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint(parent string, conn *ApiConnection) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint {
+func NewAppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint(parent string) AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates/:app_template_name/storage_templates/:storage_template_name/volume_templates/:volume_template_name/performance_policy"}, "/"), "/")
 	return AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AccessNetworkIpPoolsPoolNameNetworkPathsPathNameEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewAccessNetworkIpPoolsPoolNameNetworkPathsPathNameEndpoint(parent string, conn *ApiConnection) AccessNetworkIpPoolsPoolNameNetworkPathsPathNameEndpoint {
+func NewAccessNetworkIpPoolsPoolNameNetworkPathsPathNameEndpoint(parent string) AccessNetworkIpPoolsPoolNameNetworkPathsPathNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "access_network_ip_pools/:pool_name/network_paths/:path_name"}, "/"), "/")
 	return AccessNetworkIpPoolsPoolNameNetworkPathsPathNameEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
 
 type AppTemplatesAppTemplateNameSnapshotPoliciesSnapshotPolicyNameEndpoint struct {
-	conn *ApiConnection
 	Path string
 }
 
-func NewAppTemplatesAppTemplateNameSnapshotPoliciesSnapshotPolicyNameEndpoint(parent string, conn *ApiConnection) AppTemplatesAppTemplateNameSnapshotPoliciesSnapshotPolicyNameEndpoint {
+func NewAppTemplatesAppTemplateNameSnapshotPoliciesSnapshotPolicyNameEndpoint(parent string) AppTemplatesAppTemplateNameSnapshotPoliciesSnapshotPolicyNameEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, "app_templates/:app_template_name/snapshot_policies/:snapshot_policy_name"}, "/"), "/")
 	return AppTemplatesAppTemplateNameSnapshotPoliciesSnapshotPolicyNameEndpoint{
-		conn: conn,
 		Path: path,
 	}
 }
