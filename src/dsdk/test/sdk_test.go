@@ -19,9 +19,9 @@ const (
 	PASSWORD = "testpass"
 )
 
-func getClient(t *testing.T) *dsdk.RootEp {
+func getClient(t *testing.T) *dsdk.RootEndpoint {
 	headers := make(map[string]string)
-	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	client, err := dsdk.NewRootEndpoint("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -50,24 +50,15 @@ func TestConnection(t *testing.T) {
 		t.Fatalf("%s", err)
 	}
 
-	// ts := httptest.NewServer(http.HandlerFunc(
-	// 	func(w http.ResponseWriter, r *http.Request) {
-	// 		fmt.Fprintln(w, "Hello mudda, Hello fadda")
-	// 	}))
-	// defer ts.Close()
-	// s := strings.Split(ts.URL, ":")
-	// port := s[2]
-	// hostname = strings.Strip(s[1], "/")
-	// conn, _ := dsdk.NewApiConnection(hostname, port, "admin", "password", "2.1", "/root", "30s", headers, false)
 }
 
 func TestEndpoint(t *testing.T) {
 	headers := make(map[string]string)
-	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	client, err := dsdk.NewRootEndpoint("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	_, err = client.AppInstances.List()
+	_, err = client.GetEndpoint("app_instances").List()
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -75,20 +66,22 @@ func TestEndpoint(t *testing.T) {
 
 func TestSubendpoint(t *testing.T) {
 	headers := make(map[string]string)
-	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	client, err := dsdk.NewRootEndpoint("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 	name, _ := dsdk.NewUUID()
-	ai, err := client.AppInstances.Create(
+	ai, err := client.GetEndpoint("app_instances").Create(
 		fmt.Sprintf("name=%s", name))
-	ai.StorageInstances.Create()
-	ais, err := client.AppInstances.List()
+	ai.GetEndpoint("storage_instances").Create()
+	ais, err := client.GetEndpoint("app_instances").List()
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 	ai = ais[0]
-	si := ai.StorageInstances[0]
+	ai.GetEndpoint("storage_instances").Create("name=storage-1")
+	ai, _ = ai.Reload()
+	si := ai.GetEntities("storage_instances")[0]
 	si, err = si.Reload()
 	if err != nil {
 		t.Fatalf("%s", err)
@@ -97,12 +90,12 @@ func TestSubendpoint(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	headers := make(map[string]string)
-	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	client, err := dsdk.NewRootEndpoint("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 	name, _ := dsdk.NewUUID()
-	ai, err := client.AppInstances.Create(
+	ai, err := client.GetEndpoint("app_instances").Create(
 		fmt.Sprintf("name=%s", name))
 	if err != nil {
 		t.Fatalf("%s", err)
@@ -121,19 +114,19 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-func TestACL(t *testing.T) {
-	client := getClient(t)
-	fmt.Println(client)
-}
+// func TestACL(t *testing.T) {
+// client := getClient(t)
+// fmt.Println(client)
+// }
 
 func TestClean(t *testing.T) {
 	headers := make(map[string]string)
-	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	client, err := dsdk.NewRootEndpoint("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 
-	ais, err := client.AppInstances.List()
+	ais, err := client.GetEndpoint("app_instances").List()
 	for _, ai := range ais {
 		_, err = ai.Set("admin_state=offline", "force=true")
 		if err != nil {

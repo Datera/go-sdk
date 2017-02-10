@@ -80,10 +80,10 @@ class ApiWriter(object):
 
 class GoApiWriter(ApiWriter):
 
-    en_struct_template = ("type {name}Entity struct {{\n"
-                          "{attrs}\n}}\n")
+    en_template = """
+type {en_name}Entity struct {{
+{struct_attrs}\n}}
 
-    en_func_template = """
 func (en {en_name}Entity) Reload() ({en_name}Entity, error) {{
 \tvar n {en_name}Entity
 \tr, _ := conn.Get(en.Path)
@@ -97,6 +97,7 @@ func (en {en_name}Entity) Reload() ({en_name}Entity, error) {{
 \terr = json.Unmarshal(d, &n)
 \treturn n, nil
 }}
+
 func (en {en_name}Entity) Set(bodyp ...string) ({en_name}Entity, error) {{
 \tvar n {en_name}Entity
 \tr, _ := conn.Put(en.Path, false, bodyp...)
@@ -110,6 +111,7 @@ func (en {en_name}Entity) Set(bodyp ...string) ({en_name}Entity, error) {{
 \terr = json.Unmarshal(d, &n)
 \treturn n, nil
 }}
+
 func (en {en_name}Entity) Delete(bodyp ...string) error {{
 \tr, _ := conn.Delete(en.Path, bodyp...)
 \t_, e, err := getData(r)
@@ -123,19 +125,19 @@ func (en {en_name}Entity) Delete(bodyp ...string) error {{
 }}
 """
 
-    ep_struct_template = ("type {name}Endpoint struct {{\n"
-                          "\tPath string\n"
-                          "{attrs}\n}}\n")
-    ep_new_template = """
+    ep_template = """
+type {ep_name}Endpoint struct {{\n
+\tPath string
+{struct_attrs}\n}}
+
 func New{ep_name}Endpoint(parent string) {ep_name}Endpoint {{
 \tpath := strings.Trim(strings.Join([]string{{parent, "{path}"}}, "/"), "/")
 \treturn {ep_name}Endpoint{{
 \t\tPath: path,
-\t\t{attrs}
+\t\t{new_attrs}
 \t}}
 }}
-"""
-    ep_func_template = """
+
 func (ep {ep_name}Endpoint) Create(bodyp ...string) ({en_name}Entity, error) {{
 \tvar en {en_name}Entity
 \tr, _ := conn.Post(ep.Path, bodyp...)
@@ -152,6 +154,7 @@ func (ep {ep_name}Endpoint) Create(bodyp ...string) ({en_name}Entity, error) {{
 \t}}
 \treturn en, nil
 }}
+
 func (ep {ep_name}Endpoint) List(queryp ...string) ([]{en_name}Entity, error) {{
 \tvar ens []{en_name}Entity
 \tr, _ := conn.Get(ep.Path, queryp...)
