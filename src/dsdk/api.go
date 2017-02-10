@@ -3,7 +3,6 @@ package dsdk
 import (
 	"encoding/json"
 	//"fmt"
-	"errors"
 	"strings"
 )
 
@@ -72,41 +71,14 @@ type AccessNetworkIpPoolEntity struct {
 }
 
 func (en AccessNetworkIpPoolEntity) Reload() (AccessNetworkIpPoolEntity, error) {
-	var n AccessNetworkIpPoolEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en AccessNetworkIpPoolEntity) Set(bodyp ...string) (AccessNetworkIpPoolEntity, error) {
 	var n AccessNetworkIpPoolEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en AccessNetworkIpPoolEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type AclPolicyEntity struct {
@@ -116,41 +88,14 @@ type AclPolicyEntity struct {
 }
 
 func (en AclPolicyEntity) Reload() (AclPolicyEntity, error) {
-	var n AclPolicyEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en AclPolicyEntity) Set(bodyp ...string) (AclPolicyEntity, error) {
 	var n AclPolicyEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en AclPolicyEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type AppInstanceEntity struct {
@@ -174,41 +119,14 @@ type AppInstanceEntity struct {
 }
 
 func (en AppInstanceEntity) Reload() (AppInstanceEntity, error) {
-	var n AppInstanceEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en AppInstanceEntity) Set(bodyp ...string) (AppInstanceEntity, error) {
 	var n AppInstanceEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en AppInstanceEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type AppTemplateEntity struct {
@@ -221,41 +139,14 @@ type AppTemplateEntity struct {
 }
 
 func (en AppTemplateEntity) Reload() (AppTemplateEntity, error) {
-	var n AppTemplateEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en AppTemplateEntity) Set(bodyp ...string) (AppTemplateEntity, error) {
 	var n AppTemplateEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en AppTemplateEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type AuditLogEntity struct {
@@ -274,41 +165,14 @@ type AuditLogEntity struct {
 }
 
 func (en AuditLogEntity) Reload() (AuditLogEntity, error) {
-	var n AuditLogEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en AuditLogEntity) Set(bodyp ...string) (AuditLogEntity, error) {
 	var n AuditLogEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en AuditLogEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type AuthEntity struct {
@@ -321,41 +185,14 @@ type AuthEntity struct {
 }
 
 func (en AuthEntity) Reload() (AuthEntity, error) {
-	var n AuthEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en AuthEntity) Set(bodyp ...string) (AuthEntity, error) {
 	var n AuthEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en AuthEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type BootDriveEntity struct {
@@ -369,41 +206,14 @@ type BootDriveEntity struct {
 }
 
 func (en BootDriveEntity) Reload() (BootDriveEntity, error) {
-	var n BootDriveEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en BootDriveEntity) Set(bodyp ...string) (BootDriveEntity, error) {
 	var n BootDriveEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en BootDriveEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type DnsEntity struct {
@@ -412,41 +222,14 @@ type DnsEntity struct {
 }
 
 func (en DnsEntity) Reload() (DnsEntity, error) {
-	var n DnsEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en DnsEntity) Set(bodyp ...string) (DnsEntity, error) {
 	var n DnsEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en DnsEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type DnsSearchDomainEntity struct {
@@ -456,41 +239,14 @@ type DnsSearchDomainEntity struct {
 }
 
 func (en DnsSearchDomainEntity) Reload() (DnsSearchDomainEntity, error) {
-	var n DnsSearchDomainEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en DnsSearchDomainEntity) Set(bodyp ...string) (DnsSearchDomainEntity, error) {
 	var n DnsSearchDomainEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en DnsSearchDomainEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type DnsServerEntity struct {
@@ -500,41 +256,14 @@ type DnsServerEntity struct {
 }
 
 func (en DnsServerEntity) Reload() (DnsServerEntity, error) {
-	var n DnsServerEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en DnsServerEntity) Set(bodyp ...string) (DnsServerEntity, error) {
 	var n DnsServerEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en DnsServerEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type EventLogEntity struct {
@@ -554,41 +283,14 @@ type EventLogEntity struct {
 }
 
 func (en EventLogEntity) Reload() (EventLogEntity, error) {
-	var n EventLogEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en EventLogEntity) Set(bodyp ...string) (EventLogEntity, error) {
 	var n EventLogEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en EventLogEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type FaultLogEntity struct {
@@ -613,41 +315,14 @@ type FaultLogEntity struct {
 }
 
 func (en FaultLogEntity) Reload() (FaultLogEntity, error) {
-	var n FaultLogEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en FaultLogEntity) Set(bodyp ...string) (FaultLogEntity, error) {
 	var n FaultLogEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en FaultLogEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type HddEntity struct {
@@ -661,41 +336,14 @@ type HddEntity struct {
 }
 
 func (en HddEntity) Reload() (HddEntity, error) {
-	var n HddEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en HddEntity) Set(bodyp ...string) (HddEntity, error) {
 	var n HddEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en HddEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type HttpProxyEntity struct {
@@ -708,41 +356,14 @@ type HttpProxyEntity struct {
 }
 
 func (en HttpProxyEntity) Reload() (HttpProxyEntity, error) {
-	var n HttpProxyEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en HttpProxyEntity) Set(bodyp ...string) (HttpProxyEntity, error) {
 	var n HttpProxyEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en HttpProxyEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type InitiatorEntity struct {
@@ -752,41 +373,14 @@ type InitiatorEntity struct {
 }
 
 func (en InitiatorEntity) Reload() (InitiatorEntity, error) {
-	var n InitiatorEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en InitiatorEntity) Set(bodyp ...string) (InitiatorEntity, error) {
 	var n InitiatorEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en InitiatorEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type InitiatorGroupEntity struct {
@@ -796,41 +390,14 @@ type InitiatorGroupEntity struct {
 }
 
 func (en InitiatorGroupEntity) Reload() (InitiatorGroupEntity, error) {
-	var n InitiatorGroupEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en InitiatorGroupEntity) Set(bodyp ...string) (InitiatorGroupEntity, error) {
 	var n InitiatorGroupEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en InitiatorGroupEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type InternalIpBlockEntity struct {
@@ -845,41 +412,14 @@ type InternalIpBlockEntity struct {
 }
 
 func (en InternalIpBlockEntity) Reload() (InternalIpBlockEntity, error) {
-	var n InternalIpBlockEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en InternalIpBlockEntity) Set(bodyp ...string) (InternalIpBlockEntity, error) {
 	var n InternalIpBlockEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en InternalIpBlockEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type IpAddressEntity struct {
@@ -893,41 +433,14 @@ type IpAddressEntity struct {
 }
 
 func (en IpAddressEntity) Reload() (IpAddressEntity, error) {
-	var n IpAddressEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en IpAddressEntity) Set(bodyp ...string) (IpAddressEntity, error) {
 	var n IpAddressEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en IpAddressEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type IpBlockEntity struct {
@@ -942,41 +455,14 @@ type IpBlockEntity struct {
 }
 
 func (en IpBlockEntity) Reload() (IpBlockEntity, error) {
-	var n IpBlockEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en IpBlockEntity) Set(bodyp ...string) (IpBlockEntity, error) {
 	var n IpBlockEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en IpBlockEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type IpPoolEntity struct {
@@ -987,41 +473,14 @@ type IpPoolEntity struct {
 }
 
 func (en IpPoolEntity) Reload() (IpPoolEntity, error) {
-	var n IpPoolEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en IpPoolEntity) Set(bodyp ...string) (IpPoolEntity, error) {
 	var n IpPoolEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en IpPoolEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type MonitoringDestinationEntity struct {
@@ -1036,41 +495,14 @@ type MonitoringDestinationEntity struct {
 }
 
 func (en MonitoringDestinationEntity) Reload() (MonitoringDestinationEntity, error) {
-	var n MonitoringDestinationEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en MonitoringDestinationEntity) Set(bodyp ...string) (MonitoringDestinationEntity, error) {
 	var n MonitoringDestinationEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en MonitoringDestinationEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type MonitoringPolicyEntity struct {
@@ -1081,41 +513,14 @@ type MonitoringPolicyEntity struct {
 }
 
 func (en MonitoringPolicyEntity) Reload() (MonitoringPolicyEntity, error) {
-	var n MonitoringPolicyEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en MonitoringPolicyEntity) Set(bodyp ...string) (MonitoringPolicyEntity, error) {
 	var n MonitoringPolicyEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en MonitoringPolicyEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type NetworkEntity struct {
@@ -1128,41 +533,14 @@ type NetworkEntity struct {
 }
 
 func (en NetworkEntity) Reload() (NetworkEntity, error) {
-	var n NetworkEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en NetworkEntity) Set(bodyp ...string) (NetworkEntity, error) {
 	var n NetworkEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en NetworkEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type NetworkMappingEntity struct {
@@ -1176,41 +554,14 @@ type NetworkMappingEntity struct {
 }
 
 func (en NetworkMappingEntity) Reload() (NetworkMappingEntity, error) {
-	var n NetworkMappingEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en NetworkMappingEntity) Set(bodyp ...string) (NetworkMappingEntity, error) {
 	var n NetworkMappingEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en NetworkMappingEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type NicEntity struct {
@@ -1223,41 +574,14 @@ type NicEntity struct {
 }
 
 func (en NicEntity) Reload() (NicEntity, error) {
-	var n NicEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en NicEntity) Set(bodyp ...string) (NicEntity, error) {
 	var n NicEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en NicEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type NtpServerEntity struct {
@@ -1267,41 +591,14 @@ type NtpServerEntity struct {
 }
 
 func (en NtpServerEntity) Reload() (NtpServerEntity, error) {
-	var n NtpServerEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en NtpServerEntity) Set(bodyp ...string) (NtpServerEntity, error) {
 	var n NtpServerEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en NtpServerEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type NvmFlashDeviceEntity struct {
@@ -1315,41 +612,14 @@ type NvmFlashDeviceEntity struct {
 }
 
 func (en NvmFlashDeviceEntity) Reload() (NvmFlashDeviceEntity, error) {
-	var n NvmFlashDeviceEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en NvmFlashDeviceEntity) Set(bodyp ...string) (NvmFlashDeviceEntity, error) {
 	var n NvmFlashDeviceEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en NvmFlashDeviceEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type PerformancePolicyEntity struct {
@@ -1363,41 +633,14 @@ type PerformancePolicyEntity struct {
 }
 
 func (en PerformancePolicyEntity) Reload() (PerformancePolicyEntity, error) {
-	var n PerformancePolicyEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en PerformancePolicyEntity) Set(bodyp ...string) (PerformancePolicyEntity, error) {
 	var n PerformancePolicyEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en PerformancePolicyEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type RoleEntity struct {
@@ -1407,41 +650,14 @@ type RoleEntity struct {
 }
 
 func (en RoleEntity) Reload() (RoleEntity, error) {
-	var n RoleEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en RoleEntity) Set(bodyp ...string) (RoleEntity, error) {
 	var n RoleEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en RoleEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type SnapshotEntity struct {
@@ -1453,41 +669,14 @@ type SnapshotEntity struct {
 }
 
 func (en SnapshotEntity) Reload() (SnapshotEntity, error) {
-	var n SnapshotEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en SnapshotEntity) Set(bodyp ...string) (SnapshotEntity, error) {
 	var n SnapshotEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en SnapshotEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type SnapshotPolicyEntity struct {
@@ -1499,41 +688,14 @@ type SnapshotPolicyEntity struct {
 }
 
 func (en SnapshotPolicyEntity) Reload() (SnapshotPolicyEntity, error) {
-	var n SnapshotPolicyEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en SnapshotPolicyEntity) Set(bodyp ...string) (SnapshotPolicyEntity, error) {
 	var n SnapshotPolicyEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en SnapshotPolicyEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type SnmpPolicyEntity struct {
@@ -1545,41 +707,14 @@ type SnmpPolicyEntity struct {
 }
 
 func (en SnmpPolicyEntity) Reload() (SnmpPolicyEntity, error) {
-	var n SnmpPolicyEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en SnmpPolicyEntity) Set(bodyp ...string) (SnmpPolicyEntity, error) {
 	var n SnmpPolicyEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en SnmpPolicyEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type SnmpUserEntity struct {
@@ -1595,41 +730,14 @@ type SnmpUserEntity struct {
 }
 
 func (en SnmpUserEntity) Reload() (SnmpUserEntity, error) {
-	var n SnmpUserEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en SnmpUserEntity) Set(bodyp ...string) (SnmpUserEntity, error) {
 	var n SnmpUserEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en SnmpUserEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type StorageInstanceEntity struct {
@@ -1651,41 +759,14 @@ type StorageInstanceEntity struct {
 }
 
 func (en StorageInstanceEntity) Reload() (StorageInstanceEntity, error) {
-	var n StorageInstanceEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en StorageInstanceEntity) Set(bodyp ...string) (StorageInstanceEntity, error) {
 	var n StorageInstanceEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en StorageInstanceEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type StorageNodeEntity struct {
@@ -1733,41 +814,14 @@ type StorageNodeEntity struct {
 }
 
 func (en StorageNodeEntity) Reload() (StorageNodeEntity, error) {
-	var n StorageNodeEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en StorageNodeEntity) Set(bodyp ...string) (StorageNodeEntity, error) {
 	var n StorageNodeEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en StorageNodeEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type StorageTemplateEntity struct {
@@ -1779,41 +833,14 @@ type StorageTemplateEntity struct {
 }
 
 func (en StorageTemplateEntity) Reload() (StorageTemplateEntity, error) {
-	var n StorageTemplateEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en StorageTemplateEntity) Set(bodyp ...string) (StorageTemplateEntity, error) {
 	var n StorageTemplateEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en StorageTemplateEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type SubsystemEntity struct {
@@ -1828,41 +855,14 @@ type SubsystemEntity struct {
 }
 
 func (en SubsystemEntity) Reload() (SubsystemEntity, error) {
-	var n SubsystemEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en SubsystemEntity) Set(bodyp ...string) (SubsystemEntity, error) {
 	var n SubsystemEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en SubsystemEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type SystemEntity struct {
@@ -1894,41 +894,14 @@ type SystemEntity struct {
 }
 
 func (en SystemEntity) Reload() (SystemEntity, error) {
-	var n SystemEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en SystemEntity) Set(bodyp ...string) (SystemEntity, error) {
 	var n SystemEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en SystemEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type TenantEntity struct {
@@ -1940,41 +913,14 @@ type TenantEntity struct {
 }
 
 func (en TenantEntity) Reload() (TenantEntity, error) {
-	var n TenantEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en TenantEntity) Set(bodyp ...string) (TenantEntity, error) {
 	var n TenantEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en TenantEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type UserEntity struct {
@@ -1990,41 +936,14 @@ type UserEntity struct {
 }
 
 func (en UserEntity) Reload() (UserEntity, error) {
-	var n UserEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en UserEntity) Set(bodyp ...string) (UserEntity, error) {
 	var n UserEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en UserEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type VipEntity struct {
@@ -2034,41 +953,14 @@ type VipEntity struct {
 }
 
 func (en VipEntity) Reload() (VipEntity, error) {
-	var n VipEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en VipEntity) Set(bodyp ...string) (VipEntity, error) {
 	var n VipEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en VipEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type VolumeEntity struct {
@@ -2089,41 +981,14 @@ type VolumeEntity struct {
 }
 
 func (en VolumeEntity) Reload() (VolumeEntity, error) {
-	var n VolumeEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en VolumeEntity) Set(bodyp ...string) (VolumeEntity, error) {
 	var n VolumeEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en VolumeEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type VolumeTemplateEntity struct {
@@ -2135,41 +1000,14 @@ type VolumeTemplateEntity struct {
 }
 
 func (en VolumeTemplateEntity) Reload() (VolumeTemplateEntity, error) {
-	var n VolumeTemplateEntity
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(d, &n)
-	return n, nil
-}
-func (en VolumeTemplateEntity) Set(bodyp ...string) (VolumeTemplateEntity, error) {
 	var n VolumeTemplateEntity
-	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
 	err = json.Unmarshal(d, &n)
 	return n, nil
-}
-func (en VolumeTemplateEntity) Delete(bodyp ...string) error {
-	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
-	if e.Message != "" {
-		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 type MetadataEndpoint struct {
@@ -2200,15 +1038,12 @@ type AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint struct {
 }
 
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint) Create(bodyp ...string) (VolumeEntity, error) {
-	var en VolumeEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en VolumeEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -2216,15 +1051,12 @@ func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint) Creat
 	return en, nil
 }
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesEndpoint) List(queryp ...string) ([]VolumeEntity, error) {
-	var ens []VolumeEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []VolumeEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -2259,15 +1091,12 @@ type EventLogsEndpoint struct {
 }
 
 func (ep EventLogsEndpoint) Create(bodyp ...string) (EventLogEntity, error) {
-	var en EventLogEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en EventLogEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -2275,15 +1104,12 @@ func (ep EventLogsEndpoint) Create(bodyp ...string) (EventLogEntity, error) {
 	return en, nil
 }
 func (ep EventLogsEndpoint) List(queryp ...string) ([]EventLogEntity, error) {
-	var ens []EventLogEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []EventLogEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -2340,15 +1166,12 @@ type SystemSnmpPolicyUsersEndpoint struct {
 }
 
 func (ep SystemSnmpPolicyUsersEndpoint) Create(bodyp ...string) (UserEntity, error) {
-	var en UserEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en UserEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -2356,15 +1179,12 @@ func (ep SystemSnmpPolicyUsersEndpoint) Create(bodyp ...string) (UserEntity, err
 	return en, nil
 }
 func (ep SystemSnmpPolicyUsersEndpoint) List(queryp ...string) ([]UserEntity, error) {
-	var ens []UserEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []UserEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -2475,15 +1295,12 @@ type AccessNetworkIpPoolsEndpoint struct {
 }
 
 func (ep AccessNetworkIpPoolsEndpoint) Create(bodyp ...string) (AccessNetworkIpPoolEntity, error) {
-	var en AccessNetworkIpPoolEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en AccessNetworkIpPoolEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -2491,15 +1308,12 @@ func (ep AccessNetworkIpPoolsEndpoint) Create(bodyp ...string) (AccessNetworkIpP
 	return en, nil
 }
 func (ep AccessNetworkIpPoolsEndpoint) List(queryp ...string) ([]AccessNetworkIpPoolEntity, error) {
-	var ens []AccessNetworkIpPoolEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []AccessNetworkIpPoolEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -2544,15 +1358,12 @@ type AppTemplatesNameSnapshotPoliciesEndpoint struct {
 }
 
 func (ep AppTemplatesNameSnapshotPoliciesEndpoint) Create(bodyp ...string) (SnapshotPolicyEntity, error) {
-	var en SnapshotPolicyEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en SnapshotPolicyEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -2560,15 +1371,12 @@ func (ep AppTemplatesNameSnapshotPoliciesEndpoint) Create(bodyp ...string) (Snap
 	return en, nil
 }
 func (ep AppTemplatesNameSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
-	var ens []SnapshotPolicyEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []SnapshotPolicyEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -2662,15 +1470,12 @@ type EventsSystemEndpoint struct {
 }
 
 func (ep EventsSystemEndpoint) Create(bodyp ...string) (SystemEntity, error) {
-	var en SystemEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en SystemEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -2678,15 +1483,12 @@ func (ep EventsSystemEndpoint) Create(bodyp ...string) (SystemEntity, error) {
 	return en, nil
 }
 func (ep EventsSystemEndpoint) List(queryp ...string) ([]SystemEntity, error) {
-	var ens []SystemEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []SystemEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -2719,15 +1521,12 @@ type SystemDnsEndpoint struct {
 }
 
 func (ep SystemDnsEndpoint) Create(bodyp ...string) (DnsEntity, error) {
-	var en DnsEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en DnsEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -2735,15 +1534,12 @@ func (ep SystemDnsEndpoint) Create(bodyp ...string) (DnsEntity, error) {
 	return en, nil
 }
 func (ep SystemDnsEndpoint) List(queryp ...string) ([]DnsEntity, error) {
-	var ens []DnsEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []DnsEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -2789,15 +1585,12 @@ type AppTemplatesNameStorageTemplatesEndpoint struct {
 }
 
 func (ep AppTemplatesNameStorageTemplatesEndpoint) Create(bodyp ...string) (StorageTemplateEntity, error) {
-	var en StorageTemplateEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en StorageTemplateEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -2805,15 +1598,12 @@ func (ep AppTemplatesNameStorageTemplatesEndpoint) Create(bodyp ...string) (Stor
 	return en, nil
 }
 func (ep AppTemplatesNameStorageTemplatesEndpoint) List(queryp ...string) ([]StorageTemplateEntity, error) {
-	var ens []StorageTemplateEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []StorageTemplateEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -2846,15 +1636,12 @@ type AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint struct {
 }
 
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint) Create(bodyp ...string) (AclPolicyEntity, error) {
-	var en AclPolicyEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en AclPolicyEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -2862,15 +1649,12 @@ func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint) Cre
 	return en, nil
 }
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyEndpoint) List(queryp ...string) ([]AclPolicyEntity, error) {
-	var ens []AclPolicyEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []AclPolicyEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -2947,15 +1731,12 @@ type AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoin
 }
 
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint) Create(bodyp ...string) (InitiatorEntity, error) {
-	var en InitiatorEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en InitiatorEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -2963,15 +1744,12 @@ func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEnd
 	return en, nil
 }
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorsEndpoint) List(queryp ...string) ([]InitiatorEntity, error) {
-	var ens []InitiatorEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []InitiatorEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3002,15 +1780,12 @@ type AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerforman
 }
 
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint) Create(bodyp ...string) (PerformancePolicyEntity, error) {
-	var en PerformancePolicyEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en PerformancePolicyEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3018,15 +1793,12 @@ func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerfo
 	return en, nil
 }
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNamePerformancePolicyEndpoint) List(queryp ...string) ([]PerformancePolicyEntity, error) {
-	var ens []PerformancePolicyEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []PerformancePolicyEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3046,15 +1818,12 @@ type AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint struct {
 }
 
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint) Create(bodyp ...string) (AuthEntity, error) {
-	var en AuthEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en AuthEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3062,15 +1831,12 @@ func (ep AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint) Create(b
 	return en, nil
 }
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameAuthEndpoint) List(queryp ...string) ([]AuthEntity, error) {
-	var ens []AuthEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []AuthEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3090,15 +1856,12 @@ type UsersUserIdRolesEndpoint struct {
 }
 
 func (ep UsersUserIdRolesEndpoint) Create(bodyp ...string) (RoleEntity, error) {
-	var en RoleEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en RoleEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3106,15 +1869,12 @@ func (ep UsersUserIdRolesEndpoint) Create(bodyp ...string) (RoleEntity, error) {
 	return en, nil
 }
 func (ep UsersUserIdRolesEndpoint) List(queryp ...string) ([]RoleEntity, error) {
-	var ens []RoleEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []RoleEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3135,15 +1895,12 @@ type TenantsEndpoint struct {
 }
 
 func (ep TenantsEndpoint) Create(bodyp ...string) (TenantEntity, error) {
-	var en TenantEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en TenantEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3151,15 +1908,12 @@ func (ep TenantsEndpoint) Create(bodyp ...string) (TenantEntity, error) {
 	return en, nil
 }
 func (ep TenantsEndpoint) List(queryp ...string) ([]TenantEntity, error) {
-	var ens []TenantEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []TenantEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3181,15 +1935,12 @@ type InitiatorsEndpoint struct {
 }
 
 func (ep InitiatorsEndpoint) Create(bodyp ...string) (InitiatorEntity, error) {
-	var en InitiatorEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en InitiatorEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3197,15 +1948,12 @@ func (ep InitiatorsEndpoint) Create(bodyp ...string) (InitiatorEntity, error) {
 	return en, nil
 }
 func (ep InitiatorsEndpoint) List(queryp ...string) ([]InitiatorEntity, error) {
-	var ens []InitiatorEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []InitiatorEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3238,15 +1986,12 @@ type AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotP
 }
 
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint) Create(bodyp ...string) (SnapshotPolicyEntity, error) {
-	var en SnapshotPolicyEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en SnapshotPolicyEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3254,15 +1999,12 @@ func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnaps
 	return en, nil
 }
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
-	var ens []SnapshotPolicyEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []SnapshotPolicyEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3323,15 +2065,12 @@ type AuditLogsEndpoint struct {
 }
 
 func (ep AuditLogsEndpoint) Create(bodyp ...string) (AuditLogEntity, error) {
-	var en AuditLogEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en AuditLogEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3339,15 +2078,12 @@ func (ep AuditLogsEndpoint) Create(bodyp ...string) (AuditLogEntity, error) {
 	return en, nil
 }
 func (ep AuditLogsEndpoint) List(queryp ...string) ([]AuditLogEntity, error) {
-	var ens []AuditLogEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []AuditLogEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3369,15 +2105,12 @@ type RolesEndpoint struct {
 }
 
 func (ep RolesEndpoint) Create(bodyp ...string) (RoleEntity, error) {
-	var en RoleEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en RoleEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3385,15 +2118,12 @@ func (ep RolesEndpoint) Create(bodyp ...string) (RoleEntity, error) {
 	return en, nil
 }
 func (ep RolesEndpoint) List(queryp ...string) ([]RoleEntity, error) {
-	var ens []RoleEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []RoleEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3414,15 +2144,12 @@ type AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplat
 }
 
 func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint) Create(bodyp ...string) (SnapshotPolicyEntity, error) {
-	var en SnapshotPolicyEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en SnapshotPolicyEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3430,15 +2157,12 @@ func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTem
 	return en, nil
 }
 func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNameSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
-	var ens []SnapshotPolicyEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []SnapshotPolicyEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3471,15 +2195,12 @@ type EventsUserEndpoint struct {
 }
 
 func (ep EventsUserEndpoint) Create(bodyp ...string) (UserEntity, error) {
-	var en UserEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en UserEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3487,15 +2208,12 @@ func (ep EventsUserEndpoint) Create(bodyp ...string) (UserEntity, error) {
 	return en, nil
 }
 func (ep EventsUserEndpoint) List(queryp ...string) ([]UserEntity, error) {
-	var ens []UserEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []UserEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3529,15 +2247,12 @@ type FaultLogsEndpoint struct {
 }
 
 func (ep FaultLogsEndpoint) Create(bodyp ...string) (FaultLogEntity, error) {
-	var en FaultLogEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en FaultLogEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3545,15 +2260,12 @@ func (ep FaultLogsEndpoint) Create(bodyp ...string) (FaultLogEntity, error) {
 	return en, nil
 }
 func (ep FaultLogsEndpoint) List(queryp ...string) ([]FaultLogEntity, error) {
-	var ens []FaultLogEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []FaultLogEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3585,15 +2297,12 @@ type SystemHttpProxyEndpoint struct {
 }
 
 func (ep SystemHttpProxyEndpoint) Create(bodyp ...string) (HttpProxyEntity, error) {
-	var en HttpProxyEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en HttpProxyEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3601,15 +2310,12 @@ func (ep SystemHttpProxyEndpoint) Create(bodyp ...string) (HttpProxyEntity, erro
 	return en, nil
 }
 func (ep SystemHttpProxyEndpoint) List(queryp ...string) ([]HttpProxyEntity, error) {
-	var ens []HttpProxyEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []HttpProxyEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3667,15 +2373,12 @@ type SystemEndpoint struct {
 }
 
 func (ep SystemEndpoint) Create(bodyp ...string) (SystemEntity, error) {
-	var en SystemEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en SystemEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3683,15 +2386,12 @@ func (ep SystemEndpoint) Create(bodyp ...string) (SystemEntity, error) {
 	return en, nil
 }
 func (ep SystemEndpoint) List(queryp ...string) ([]SystemEntity, error) {
-	var ens []SystemEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []SystemEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3718,15 +2418,12 @@ type StorageNodesEndpoint struct {
 }
 
 func (ep StorageNodesEndpoint) Create(bodyp ...string) (StorageNodeEntity, error) {
-	var en StorageNodeEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en StorageNodeEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3734,15 +2431,12 @@ func (ep StorageNodesEndpoint) Create(bodyp ...string) (StorageNodeEntity, error
 	return en, nil
 }
 func (ep StorageNodesEndpoint) List(queryp ...string) ([]StorageNodeEntity, error) {
-	var ens []StorageNodeEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []StorageNodeEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3764,15 +2458,12 @@ type AppTemplatesEndpoint struct {
 }
 
 func (ep AppTemplatesEndpoint) Create(bodyp ...string) (AppTemplateEntity, error) {
-	var en AppTemplateEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en AppTemplateEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3780,15 +2471,12 @@ func (ep AppTemplatesEndpoint) Create(bodyp ...string) (AppTemplateEntity, error
 	return en, nil
 }
 func (ep AppTemplatesEndpoint) List(queryp ...string) ([]AppTemplateEntity, error) {
-	var ens []AppTemplateEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []AppTemplateEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3823,15 +2511,12 @@ type AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshots
 }
 
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint) Create(bodyp ...string) (SnapshotEntity, error) {
-	var en SnapshotEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en SnapshotEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3839,15 +2524,12 @@ func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnaps
 	return en, nil
 }
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameVolumesVolumeNameSnapshotsEndpoint) List(queryp ...string) ([]SnapshotEntity, error) {
-	var ens []SnapshotEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []SnapshotEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -3914,15 +2596,12 @@ type AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEn
 }
 
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint) Create(bodyp ...string) (InitiatorGroupEntity, error) {
-	var en InitiatorGroupEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en InitiatorGroupEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -3930,15 +2609,12 @@ func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGrou
 	return en, nil
 }
 func (ep AppInstancesIdStorageInstancesStorageInstanceNameAclPolicyInitiatorGroupsEndpoint) List(queryp ...string) ([]InitiatorGroupEntity, error) {
-	var ens []InitiatorGroupEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []InitiatorGroupEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4003,15 +2679,12 @@ type InitiatorGroupsEndpoint struct {
 }
 
 func (ep InitiatorGroupsEndpoint) Create(bodyp ...string) (InitiatorGroupEntity, error) {
-	var en InitiatorGroupEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en InitiatorGroupEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4019,15 +2692,12 @@ func (ep InitiatorGroupsEndpoint) Create(bodyp ...string) (InitiatorGroupEntity,
 	return en, nil
 }
 func (ep InitiatorGroupsEndpoint) List(queryp ...string) ([]InitiatorGroupEntity, error) {
-	var ens []InitiatorGroupEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []InitiatorGroupEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4071,15 +2741,12 @@ type AppInstancesIdSnapshotsEndpoint struct {
 }
 
 func (ep AppInstancesIdSnapshotsEndpoint) Create(bodyp ...string) (SnapshotEntity, error) {
-	var en SnapshotEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en SnapshotEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4087,15 +2754,12 @@ func (ep AppInstancesIdSnapshotsEndpoint) Create(bodyp ...string) (SnapshotEntit
 	return en, nil
 }
 func (ep AppInstancesIdSnapshotsEndpoint) List(queryp ...string) ([]SnapshotEntity, error) {
-	var ens []SnapshotEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []SnapshotEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4117,15 +2781,12 @@ type SystemSnmpPolicyEndpoint struct {
 }
 
 func (ep SystemSnmpPolicyEndpoint) Create(bodyp ...string) (SnmpPolicyEntity, error) {
-	var en SnmpPolicyEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en SnmpPolicyEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4133,15 +2794,12 @@ func (ep SystemSnmpPolicyEndpoint) Create(bodyp ...string) (SnmpPolicyEntity, er
 	return en, nil
 }
 func (ep SystemSnmpPolicyEndpoint) List(queryp ...string) ([]SnmpPolicyEntity, error) {
-	var ens []SnmpPolicyEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []SnmpPolicyEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4174,15 +2832,12 @@ type AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplat
 }
 
 func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint) Create(bodyp ...string) (VolumeTemplateEntity, error) {
-	var en VolumeTemplateEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en VolumeTemplateEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4190,15 +2845,12 @@ func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTem
 	return en, nil
 }
 func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesEndpoint) List(queryp ...string) ([]VolumeTemplateEntity, error) {
-	var ens []VolumeTemplateEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []VolumeTemplateEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4247,15 +2899,12 @@ type AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint 
 }
 
 func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint) Create(bodyp ...string) (AuthEntity, error) {
-	var en AuthEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en AuthEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4263,15 +2912,12 @@ func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpo
 	return en, nil
 }
 func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameAuthEndpoint) List(queryp ...string) ([]AuthEntity, error) {
-	var ens []AuthEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []AuthEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4292,15 +2938,12 @@ type StorageNodesUuidHddsEndpoint struct {
 }
 
 func (ep StorageNodesUuidHddsEndpoint) Create(bodyp ...string) (HddEntity, error) {
-	var en HddEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en HddEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4308,15 +2951,12 @@ func (ep StorageNodesUuidHddsEndpoint) Create(bodyp ...string) (HddEntity, error
 	return en, nil
 }
 func (ep StorageNodesUuidHddsEndpoint) List(queryp ...string) ([]HddEntity, error) {
-	var ens []HddEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []HddEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4377,15 +3017,12 @@ type AppInstancesIdSnapshotPoliciesEndpoint struct {
 }
 
 func (ep AppInstancesIdSnapshotPoliciesEndpoint) Create(bodyp ...string) (SnapshotPolicyEntity, error) {
-	var en SnapshotPolicyEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en SnapshotPolicyEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4393,15 +3030,12 @@ func (ep AppInstancesIdSnapshotPoliciesEndpoint) Create(bodyp ...string) (Snapsh
 	return en, nil
 }
 func (ep AppInstancesIdSnapshotPoliciesEndpoint) List(queryp ...string) ([]SnapshotPolicyEntity, error) {
-	var ens []SnapshotPolicyEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []SnapshotPolicyEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4434,15 +3068,12 @@ type AppInstancesIdStorageInstancesEndpoint struct {
 }
 
 func (ep AppInstancesIdStorageInstancesEndpoint) Create(bodyp ...string) (StorageInstanceEntity, error) {
-	var en StorageInstanceEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en StorageInstanceEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4450,15 +3081,12 @@ func (ep AppInstancesIdStorageInstancesEndpoint) Create(bodyp ...string) (Storag
 	return en, nil
 }
 func (ep AppInstancesIdStorageInstancesEndpoint) List(queryp ...string) ([]StorageInstanceEntity, error) {
-	var ens []StorageInstanceEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []StorageInstanceEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4505,15 +3133,12 @@ type SystemNetworkEndpoint struct {
 }
 
 func (ep SystemNetworkEndpoint) Create(bodyp ...string) (NetworkEntity, error) {
-	var en NetworkEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en NetworkEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4521,15 +3146,12 @@ func (ep SystemNetworkEndpoint) Create(bodyp ...string) (NetworkEntity, error) {
 	return en, nil
 }
 func (ep SystemNetworkEndpoint) List(queryp ...string) ([]NetworkEntity, error) {
-	var ens []NetworkEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []NetworkEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4554,15 +3176,12 @@ type UsersEndpoint struct {
 }
 
 func (ep UsersEndpoint) Create(bodyp ...string) (UserEntity, error) {
-	var en UserEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en UserEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4570,15 +3189,12 @@ func (ep UsersEndpoint) Create(bodyp ...string) (UserEntity, error) {
 	return en, nil
 }
 func (ep UsersEndpoint) List(queryp ...string) ([]UserEntity, error) {
-	var ens []UserEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []UserEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4623,15 +3239,12 @@ type SystemNtpServersEndpoint struct {
 }
 
 func (ep SystemNtpServersEndpoint) Create(bodyp ...string) (NtpServerEntity, error) {
-	var en NtpServerEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en NtpServerEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4639,15 +3252,12 @@ func (ep SystemNtpServersEndpoint) Create(bodyp ...string) (NtpServerEntity, err
 	return en, nil
 }
 func (ep SystemNtpServersEndpoint) List(queryp ...string) ([]NtpServerEntity, error) {
-	var ens []NtpServerEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []NtpServerEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4696,15 +3306,12 @@ type AppInstancesEndpoint struct {
 }
 
 func (ep AppInstancesEndpoint) Create(bodyp ...string) (AppInstanceEntity, error) {
-	var en AppInstanceEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en AppInstanceEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4712,15 +3319,12 @@ func (ep AppInstancesEndpoint) Create(bodyp ...string) (AppInstanceEntity, error
 	return en, nil
 }
 func (ep AppInstancesEndpoint) List(queryp ...string) ([]AppInstanceEntity, error) {
-	var ens []AppInstanceEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []AppInstanceEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4753,15 +3357,12 @@ type StorageNodesUuidNicsEndpoint struct {
 }
 
 func (ep StorageNodesUuidNicsEndpoint) Create(bodyp ...string) (NicEntity, error) {
-	var en NicEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en NicEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4769,15 +3370,12 @@ func (ep StorageNodesUuidNicsEndpoint) Create(bodyp ...string) (NicEntity, error
 	return en, nil
 }
 func (ep StorageNodesUuidNicsEndpoint) List(queryp ...string) ([]NicEntity, error) {
-	var ens []NicEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []NicEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)
@@ -4820,15 +3418,12 @@ type AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplat
 }
 
 func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint) Create(bodyp ...string) (PerformancePolicyEntity, error) {
-	var en PerformancePolicyEntity
-	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	r, _ := conn.Post(ep.Path)
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var en PerformancePolicyEntity
 	err = json.Unmarshal(d, &en)
 	if err != nil {
 		panic(err)
@@ -4836,15 +3431,12 @@ func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTem
 	return en, nil
 }
 func (ep AppTemplatesAppTemplateNameStorageTemplatesStorageTemplateNameVolumeTemplatesVolumeTemplateNamePerformancePolicyEndpoint) List(queryp ...string) ([]PerformancePolicyEntity, error) {
-	var ens []PerformancePolicyEntity
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
-	if e.Message != "" {
-		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
-	}
+	d, err := getData(r)
 	if err != nil {
 		panic(err)
 	}
+	var ens []PerformancePolicyEntity
 	err = json.Unmarshal(d, &ens)
 	if err != nil {
 		panic(err)

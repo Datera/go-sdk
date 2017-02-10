@@ -80,6 +80,9 @@ class ApiWriter(object):
 
 class GoApiWriter(ApiWriter):
 
+    en_struct_template = ("type {name}Entity struct {{\n"
+                          "{attrs}\n}}\n")
+
     en_func_template = """
 func (en {en_name}Entity) Reload() ({en_name}Entity, error) {{
 \tvar n {en_name}Entity
@@ -119,6 +122,10 @@ func (en {en_name}Entity) Delete(bodyp ...string) error {{
 \treturn nil
 }}
 """
+
+    ep_struct_template = ("type {name}Endpoint struct {{\n"
+                          "\tPath string\n"
+                          "{attrs}\n}}\n")
     ep_new_template = """
 func New{ep_name}Endpoint(parent string) {ep_name}Endpoint {{
 \tpath := strings.Trim(strings.Join([]string{{parent, "{path}"}}, "/"), "/")
@@ -267,10 +274,9 @@ func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout s
             attrib = attr_template.format(
                 name=attr_name, type=attr_type, json=attr_json)
             attr_list.append(attrib)
-        result = ("type {name}Entity struct {{\n"
-                  "{attrs}\n}}\n").format(
-                 name=snake_to_cap_camel(name),
-                 attrs="\n".join(sorted(attr_list)))
+        result = self.en_struct_template.format(
+            name=snake_to_cap_camel(name),
+            attrs="\n".join(sorted(attr_list)))
         result = "\n".join((result,
                             self.en_func_template.format(
                                 en_name=snake_to_cap_camel(
@@ -290,11 +296,9 @@ func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout s
             new_attr_list.append(new_attr_template.format(
                 name=snake_to_cap_camel(subendpoint_name),
                 type=snake_to_cap_camel(subendpoint)))
-        result = ("type {name}Endpoint struct {{\n"
-                  "\tPath string\n"
-                  "{attrs}\n}}\n").format(
-                  name=snake_to_cap_camel(name),
-                  attrs="\n".join(sorted(attr_list)))
+        result = self.ep_struct_template.format(
+            name=snake_to_cap_camel(name),
+            attrs="\n".join(sorted(attr_list)))
         # if attrs['type'] == "endpoint":
         en_name = attrs['path'].split("/")[-1]
         if singularize(en_name) in entities:
@@ -333,10 +337,10 @@ def parse_schema(schema):
         if "(" in endpoint:
             endpoint = endpoint.split("(")[0]
         ep_dict = {"name": endpoint.strip("/").replace(
-                           "/", "_").replace(":", ""),
-                   "ops": [],
-                   "subep": [],
-                   "path": endpoint}
+            "/", "_").replace(":", ""),
+            "ops": [],
+            "subep": [],
+            "path": endpoint}
         if type(ep_body) == dict:
             for op, op_body in ep_body.items():
                 if op in OP_FILTERS:

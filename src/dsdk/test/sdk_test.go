@@ -19,6 +19,15 @@ const (
 	PASSWORD = "testpass"
 )
 
+func getClient(t *testing.T) *dsdk.RootEp {
+	headers := make(map[string]string)
+	client, err := dsdk.NewRootEp("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	return client
+}
+
 func TestApiBasic(t *testing.T) {
 
 }
@@ -70,11 +79,15 @@ func TestSubendpoint(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
+	name, _ := dsdk.NewUUID()
+	ai, err := client.AppInstances.Create(
+		fmt.Sprintf("name=%s", name))
+	ai.StorageInstances.Create()
 	ais, err := client.AppInstances.List()
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	ai := ais[0]
+	ai = ais[0]
 	si := ai.StorageInstances[0]
 	si, err = si.Reload()
 	if err != nil {
@@ -106,6 +119,11 @@ func TestCreate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
+}
+
+func TestACL(t *testing.T) {
+	client := getClient(t)
+	fmt.Println(client)
 }
 
 func TestClean(t *testing.T) {
