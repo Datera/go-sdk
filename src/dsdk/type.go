@@ -4,19 +4,19 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
-	// "fmt"
 )
 
-var conn *ApiConnection
+var conn IApiConnection
 
-type RootEndpoint struct {
+type RootEp struct {
 	Path string
 }
 
 type IEndpoint interface {
-	GetEndpoint(string) IEndpoint
-	Create(bodyp ...string) (IEntity, error)
+	GetEp(string) IEndpoint
+	Create(bodyp ...interface{}) (IEntity, error)
 	List(queryp ...string) ([]IEntity, error)
+	Set(bodyp ...interface{}) (IEntity, error)
 }
 
 type Endpoint struct {
@@ -25,11 +25,11 @@ type Endpoint struct {
 
 type IEntity interface {
 	Get(string) interface{}
-	GetEntities(string) []IEntity
-	GetEndpoint(string) IEndpoint
+	GetEn(string) []IEntity
+	GetEp(string) IEndpoint
 	Reload() (IEntity, error)
-	Set(bodyp ...string) (IEntity, error)
-	Delete(bodyp ...string) error
+	Set(bodyp ...interface{}) (IEntity, error)
+	Delete(bodyp ...interface{}) error
 }
 
 type Entity struct {
@@ -37,7 +37,7 @@ type Entity struct {
 	Items map[string]interface{}
 }
 
-func NewRootEndpoint(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*RootEndpoint, error) {
+func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*RootEp, error) {
 	var err error
 	//Initialize global connection object
 	conn, err = NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
@@ -48,13 +48,13 @@ func NewRootEndpoint(hostname, port, username, password, apiVersion, tenant, tim
 	if err != nil {
 		return nil, err
 	}
-	return &RootEndpoint{
+	return &RootEp{
 		Path: "",
 	}, nil
 
 }
 
-func NewEndpoint(parent, child string) IEndpoint {
+func NewEp(parent, child string) IEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, child}, "/"), "/")
 	return Endpoint{
 		Path: path,
@@ -68,15 +68,15 @@ func NewEntity(path string, items map[string]interface{}) IEntity {
 	}
 }
 
-func (ep RootEndpoint) GetEndpoint(path string) IEndpoint {
-	return NewEndpoint(ep.Path, path)
+func (ep RootEp) GetEp(path string) IEndpoint {
+	return NewEp(ep.Path, path)
 }
 
-func (ep Endpoint) GetEndpoint(path string) IEndpoint {
-	return NewEndpoint(ep.Path, path)
+func (ep Endpoint) GetEp(path string) IEndpoint {
+	return NewEp(ep.Path, path)
 }
 
-func (ep Endpoint) Create(bodyp ...string) (IEntity, error) {
+func (ep Endpoint) Create(bodyp ...interface{}) (IEntity, error) {
 	var en Entity
 	r, _ := conn.Post(ep.Path, bodyp...)
 	d, e, err := getData(r)
@@ -121,15 +121,35 @@ func (ep Endpoint) List(queryp ...string) ([]IEntity, error) {
 	return ens, nil
 }
 
+func (ep Endpoint) Set(bodyp ...interface{}) (IEntity, error) {
+	var n Entity
+	r, _ := conn.Put(ep.Path, false, bodyp...)
+	d, e, err := getData(r)
+	if e.Message != "" {
+		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	var i map[string]interface{}
+	err = json.Unmarshal(d, &i)
+	if err != nil {
+		return n, err
+	}
+	p := i["path"].(string)
+	n = NewEntity(p, i).(Entity)
+	return n, nil
+}
+
 func (en Entity) Get(key string) interface{} {
 	return en.Items[key]
 }
 
-func (en Entity) GetEndpoint(path string) IEndpoint {
-	return NewEndpoint(en.Path, path)
+func (en Entity) GetEp(path string) IEndpoint {
+	return NewEp(en.Path, path)
 }
 
-func (en Entity) GetEntities(en_key string) []IEntity {
+func (en Entity) GetEn(en_key string) []IEntity {
 	ens := []IEntity{}
 	eitems := en.Items[en_key].([]interface{})
 	for _, i := range eitems {
@@ -162,7 +182,7 @@ func (en Entity) Reload() (IEntity, error) {
 	return n, nil
 }
 
-func (en Entity) Set(bodyp ...string) (IEntity, error) {
+func (en Entity) Set(bodyp ...interface{}) (IEntity, error) {
 	var n Entity
 	r, _ := conn.Put(en.Path, false, bodyp...)
 	d, e, err := getData(r)
@@ -182,7 +202,7 @@ func (en Entity) Set(bodyp ...string) (IEntity, error) {
 	return n, nil
 }
 
-func (en Entity) Delete(bodyp ...string) error {
+func (en Entity) Delete(bodyp ...interface{}) error {
 	r, _ := conn.Delete(en.Path, bodyp...)
 	_, e, err := getData(r)
 	if e.Message != "" {

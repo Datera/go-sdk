@@ -28,6 +28,15 @@ var Errors = map[int]bool{
 	422: true,
 	500: true}
 
+type IApiConnection interface {
+	Post(string, ...interface{}) ([]byte, error)
+	Get(string, ...string) ([]byte, error)
+	Put(string, bool, ...interface{}) ([]byte, error)
+	Delete(string, ...interface{}) ([]byte, error)
+	Login() error
+	UpdateHeaders(...string) error
+}
+
 type ApiConnection struct {
 	Mutex      *sync.Mutex
 	Method     string
@@ -71,12 +80,8 @@ type ErrResponse21 struct {
 	Errors              []string `json:"errors,omitempty"`
 }
 
-type Ep interface {
-	SetEp(string, *ApiConnection)
-}
-
 // Changing tenant should require changing the API connection object maybe?
-func NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*ApiConnection, error) {
+func NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (IApiConnection, error) {
 	InitLog(true, "")
 	t, err := time.ParseDuration(timeout)
 	if err != nil {
@@ -86,7 +91,7 @@ func NewApiConnection(hostname, port, username, password, apiVersion, tenant, ti
 	for p, v := range headers {
 		h[p] = v
 	}
-	c := &ApiConnection{
+	c := ApiConnection{
 		Mutex:      &sync.Mutex{},
 		Hostname:   hostname,
 		Port:       port,
@@ -100,7 +105,7 @@ func NewApiConnection(hostname, port, username, password, apiVersion, tenant, ti
 	}
 	c.UpdateHeaders(fmt.Sprintf("tenant=%s", tenant))
 	log.Debugf("New API connection: %#v", c)
-	return c, nil
+	return &c, nil
 }
 
 // Args have the form "name=value"
@@ -271,16 +276,10 @@ func (r *ApiConnection) Get(endpoint string, qparams ...string) ([]byte, error) 
 	return r.doRequest("get", endpoint, nil, qparams, false)
 }
 
-func (r *ApiConnection) Put(endpoint string, sensitive bool, bodyp ...string) ([]byte, error) {
-	params := make(map[string]interface{})
-	for _, b := range bodyp {
-		p := strings.Split(b, "=")
-		var v interface{}
-		v = p[1]
-		if p[1] == "true" || p[1] == "false" {
-			v, _ = strconv.ParseBool(p[1])
-		}
-		params[p[0]] = v
+func (r *ApiConnection) Put(endpoint string, sensitive bool, bodyp ...interface{}) ([]byte, error) {
+	params, err := parseParams(bodyp...)
+	if err != nil {
+		return []byte(""), err
 	}
 	body, err := json.Marshal(params)
 	if err != nil {
@@ -289,16 +288,10 @@ func (r *ApiConnection) Put(endpoint string, sensitive bool, bodyp ...string) ([
 	return r.doRequest("put", endpoint, body, nil, sensitive)
 }
 
-func (r *ApiConnection) Post(endpoint string, bodyp ...string) ([]byte, error) {
-	params := make(map[string]interface{})
-	for _, b := range bodyp {
-		p := strings.Split(b, "=")
-		var v interface{}
-		v = p[1]
-		if p[1] == "true" || p[1] == "false" {
-			v, _ = strconv.ParseBool(p[1])
-		}
-		params[p[0]] = v
+func (r *ApiConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, error) {
+	params, err := parseParams(bodyp...)
+	if err != nil {
+		return []byte(""), err
 	}
 	body, err := json.Marshal(params)
 	if err != nil {
@@ -308,16 +301,10 @@ func (r *ApiConnection) Post(endpoint string, bodyp ...string) ([]byte, error) {
 }
 
 // qparams have form "param=value"
-func (r *ApiConnection) Delete(endpoint string, bodyp ...string) ([]byte, error) {
-	params := make(map[string]interface{})
-	for _, b := range bodyp {
-		p := strings.Split(b, "=")
-		var v interface{}
-		v = p[1]
-		if p[1] == "true" || p[1] == "false" {
-			v, _ = strconv.ParseBool(p[1])
-		}
-		params[p[0]] = v
+func (r *ApiConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, error) {
+	params, err := parseParams(bodyp...)
+	if err != nil {
+		return []byte(""), err
 	}
 	body, err := json.Marshal(params)
 	if err != nil {
@@ -368,4 +355,33 @@ func handleBadResponse(resp *http.Response) error {
 		return errors.New(fmt.Sprintf("%s", resp.Status))
 	}
 	return nil
+}
+
+func parseParams(params ...interface{}) (map[string]interface{}, error) {
+	result := make(map[string]interface{})
+	if len(params) == 0 {
+		return result, nil
+	}
+	fparam := params[0]
+	switch fparam.(type) {
+	case map[string]interface{}:
+		r := fparam.(map[string]interface{})
+		return r, nil
+	case interface{}:
+		for _, param := range params {
+			s := param.(string)
+			p := strings.Split(s, "=")
+			var v interface{}
+			v = p[1]
+			if p[1] == "true" || p[1] == "false" {
+				v, _ = strconv.ParseBool(p[1])
+			}
+			result[p[0]] = v
+		}
+		return result, nil
+	default:
+		return result, errors.New(
+			fmt.Sprintf("Couldn't Parse Params: %s", params))
+	}
+
 }

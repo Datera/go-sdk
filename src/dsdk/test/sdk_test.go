@@ -1,7 +1,7 @@
 package dsdk_test
 
 import (
-	// "encoding/json"
+	"encoding/json"
 	"fmt"
 	// "strings"
 	"dsdk"
@@ -9,19 +9,23 @@ import (
 	// "net/http"
 	// "net/http/httptest"
 	// "github.com/stretchr/testify/assert"
-	// "github.com/stretchr/testify/mock"
+	// "github.com/pkg/profile"
 )
 
 const (
-	ADDR     = "192.168.1.1"
+	ADDR     = "172.19.1.41"
+	PORT     = "7717"
 	APIVER   = "2.1"
-	USERNAME = "testuser"
-	PASSWORD = "testpass"
+	USERNAME = "admin"
+	PASSWORD = "password"
+	TENANT   = "/root"
+	TIMEOUT  = "30s"
 )
 
-func getClient(t *testing.T) *dsdk.RootEndpoint {
+func getClient(t *testing.T) *dsdk.RootEp {
 	headers := make(map[string]string)
-	client, err := dsdk.NewRootEndpoint("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	client, err := dsdk.NewRootEp(
+		ADDR, PORT, USERNAME, PASSWORD, APIVER, TENANT, TIMEOUT, headers, false)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -34,8 +38,6 @@ func TestApiBasic(t *testing.T) {
 
 func TestConnection(t *testing.T) {
 	headers := make(map[string]string)
-	// test := map[string]string{"name": "admin", "password": "password"}
-	// j, _ := json.Marshal(test)
 	conn, err := dsdk.NewApiConnection("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
 		t.Fatalf("%s", err)
@@ -53,35 +55,27 @@ func TestConnection(t *testing.T) {
 }
 
 func TestEndpoint(t *testing.T) {
-	headers := make(map[string]string)
-	client, err := dsdk.NewRootEndpoint("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
-	if err != nil {
-		t.Fatalf("%s", err)
-	}
-	_, err = client.GetEndpoint("app_instances").List()
+	client := getClient(t)
+	_, err := client.GetEp("app_instances").List()
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 }
 
 func TestSubendpoint(t *testing.T) {
-	headers := make(map[string]string)
-	client, err := dsdk.NewRootEndpoint("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
-	if err != nil {
-		t.Fatalf("%s", err)
-	}
+	client := getClient(t)
 	name, _ := dsdk.NewUUID()
-	ai, err := client.GetEndpoint("app_instances").Create(
+	ai, err := client.GetEp("app_instances").Create(
 		fmt.Sprintf("name=%s", name))
-	ai.GetEndpoint("storage_instances").Create()
-	ais, err := client.GetEndpoint("app_instances").List()
+	ai.GetEp("storage_instances").Create()
+	ais, err := client.GetEp("app_instances").List()
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 	ai = ais[0]
-	ai.GetEndpoint("storage_instances").Create("name=storage-1")
+	ai.GetEp("storage_instances").Create("name=storage-1")
 	ai, _ = ai.Reload()
-	si := ai.GetEntities("storage_instances")[0]
+	si := ai.GetEn("storage_instances")[0]
 	si, err = si.Reload()
 	if err != nil {
 		t.Fatalf("%s", err)
@@ -89,13 +83,9 @@ func TestSubendpoint(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	headers := make(map[string]string)
-	client, err := dsdk.NewRootEndpoint("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
-	if err != nil {
-		t.Fatalf("%s", err)
-	}
+	client := getClient(t)
 	name, _ := dsdk.NewUUID()
-	ai, err := client.GetEndpoint("app_instances").Create(
+	ai, err := client.GetEp("app_instances").Create(
 		fmt.Sprintf("name=%s", name))
 	if err != nil {
 		t.Fatalf("%s", err)
@@ -114,25 +104,50 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-// func TestACL(t *testing.T) {
-// client := getClient(t)
-// fmt.Println(client)
-// }
-
-func TestClean(t *testing.T) {
-	headers := make(map[string]string)
-	client, err := dsdk.NewRootEndpoint("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+func TestACL(t *testing.T) {
+	client := getClient(t)
+	name, _ := dsdk.NewUUID()
+	ai, err := client.GetEp("app_instances").Create(
+		fmt.Sprintf("name=%s", name))
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
+	si, _ := ai.GetEp("storage_instances").Create("name=storage-1")
+	initep := client.GetEp("initiators")
+	_, err = initep.Create(
+		"name=test-initiator",
+		"id=iqn.1993-08.org.debian:01:71be38c985a")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	aclep := si.GetEp("acl_policy")
+	var args map[string]interface{}
+	err = json.Unmarshal([]byte(`{"initiators":[{"path": "/initiators/iqn.1993-08.org.debian:01:71be38c985a"}]}`), &args)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	_, err = aclep.Set(args)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+}
 
-	ais, err := client.GetEndpoint("app_instances").List()
+func TestClean(t *testing.T) {
+	client := getClient(t)
+	ais, err := client.GetEp("app_instances").List()
 	for _, ai := range ais {
 		_, err = ai.Set("admin_state=offline", "force=true")
 		if err != nil {
 			t.Fatal(err)
 		}
 		err = ai.Delete("force=true")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	inits, _ := client.GetEp("initiators").List()
+	for _, init := range inits {
+		err = init.Delete()
 		if err != nil {
 			t.Fatal(err)
 		}
