@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var conn IApiConnection
+var conn IAPIConnection
 
 type RootEp struct {
 	Path string
@@ -40,7 +40,7 @@ type Entity struct {
 func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*RootEp, error) {
 	var err error
 	//Initialize global connection object
-	conn, err = NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
+	conn, err = NewAPIConnection(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
 	if err != nil {
 		return nil, err
 	}
@@ -149,9 +149,9 @@ func (en Entity) GetEp(path string) IEndpoint {
 	return NewEp(en.Path, path)
 }
 
-func (en Entity) GetEn(en_key string) []IEntity {
+func (en Entity) GetEn(enKey string) []IEntity {
 	ens := []IEntity{}
-	eitems := en.Items[en_key].([]interface{})
+	eitems := en.Items[enKey].([]interface{})
 	for _, i := range eitems {
 		var en Entity
 		v := i.(map[string]interface{})

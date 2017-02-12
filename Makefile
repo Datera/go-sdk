@@ -1,9 +1,9 @@
 GOPATH=$(shell pwd)
 
 all:
-	# test -e src/datera_api/dapi/types.go || echo "Please run the schema-parser.py script"; exit 1
 	env GOPATH=${GOPATH} go get dsdk
 	env GOPATH=${GOPATH} go build dsdk
+	env GOPATH=${GOPATH} go vet dsdk
 
 clean:
 	rm -f -- datera_api.log

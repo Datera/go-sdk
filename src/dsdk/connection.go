@@ -3,7 +3,6 @@ package dsdk
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"io"
@@ -18,17 +17,17 @@ import (
 )
 
 const (
-	ConnTemplate    = "http://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
-	SecConnTemplate = "https://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
+	connTemplate    = "http://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
+	secConnTemplate = "https://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
 )
 
-var Errors = map[int]bool{
+var httpErrors = map[int]bool{
 	400: true,
 	401: true,
 	422: true,
 	500: true}
 
-type IApiConnection interface {
+type IAPIConnection interface {
 	Post(string, ...interface{}) ([]byte, error)
 	Get(string, ...string) ([]byte, error)
 	Put(string, bool, ...interface{}) ([]byte, error)
@@ -37,20 +36,20 @@ type IApiConnection interface {
 	UpdateHeaders(...string) error
 }
 
-type ApiConnection struct {
+type APIConnection struct {
 	Mutex      *sync.Mutex
 	Method     string
 	Endpoint   string
 	Headers    map[string]string
 	QParams    []string
 	Hostname   string
-	ApiVersion string
+	APIVersion string
 	Port       string
 	Username   string
 	Password   string
 	Secure     bool
 	Client     *http.Client
-	ApiToken   string
+	APIToken   string
 	Tenant     string
 }
 
@@ -69,19 +68,19 @@ type Response21 struct {
 type ErrResponse21 struct {
 	Name                string   `json:"name"`
 	Code                int      `json:"code"`
-	Http                int      `json:"http`
+	HTTP                int      `json:"http"`
 	Message             string   `json:"message"`
 	Debug               string   `json:"debug"`
 	Ts                  string   `json:"ts"`
-	ApiReqId            int      `json:"api_req_id"`
-	StorageNodeUuid     string   `json:"storage_node_uuid"`
+	APIReqId            int      `json:"api_req_id"`
+	StorageNodeUUID     string   `json:"storage_node_uuid"`
 	StorageNodeHostname string   `json:"storage_node_hostname"`
 	Schema              string   `json:"schema,omitempty"`
 	Errors              []string `json:"errors,omitempty"`
 }
 
 // Changing tenant should require changing the API connection object maybe?
-func NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (IApiConnection, error) {
+func NewAPIConnection(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (IAPIConnection, error) {
 	InitLog(true, "")
 	t, err := time.ParseDuration(timeout)
 	if err != nil {
@@ -91,7 +90,7 @@ func NewApiConnection(hostname, port, username, password, apiVersion, tenant, ti
 	for p, v := range headers {
 		h[p] = v
 	}
-	c := ApiConnection{
+	c := APIConnection{
 		Mutex:      &sync.Mutex{},
 		Hostname:   hostname,
 		Port:       port,
@@ -99,7 +98,7 @@ func NewApiConnection(hostname, port, username, password, apiVersion, tenant, ti
 		Password:   password,
 		Tenant:     tenant,
 		Headers:    h,
-		ApiVersion: apiVersion,
+		APIVersion: apiVersion,
 		Secure:     secure,
 		Client:     &http.Client{Timeout: t},
 	}
@@ -129,9 +128,9 @@ func parseTemplate(fstring string, args ...interface{}) (string, error) {
 	case map[string]string:
 		argm = t
 	}
-	for k, _ := range argm {
+	for k := range argm {
 		if !strings.Contains(fstring, "{{."+k+"}}") {
-			err := fmt.Errorf("Could not find arg: '%s' in template: '%s'", fstring)
+			err := fmt.Errorf("Could not find arg: '%s' in template: '%s'", fstring, k)
 			return "", err
 		}
 	}
@@ -145,7 +144,7 @@ func parseTemplate(fstring string, args ...interface{}) (string, error) {
 }
 
 // Headers: "header=value"
-func (r *ApiConnection) UpdateHeaders(headers ...string) error {
+func (r *APIConnection) UpdateHeaders(headers ...string) error {
 	for _, h := range headers {
 		h := strings.Split(h, "=")
 		r.Headers[h[0]] = h[1]
@@ -153,25 +152,25 @@ func (r *ApiConnection) UpdateHeaders(headers ...string) error {
 	return nil
 }
 
-func (r *ApiConnection) prepConn() (string, error) {
+func (r *APIConnection) prepConn() (string, error) {
 	var fstring string
 	if r.Secure {
-		fstring = SecConnTemplate
+		fstring = secConnTemplate
 	} else {
-		fstring = ConnTemplate
+		fstring = connTemplate
 	}
 	m := map[string]string{
 		"hostname": r.Hostname,
 		"port":     r.Port,
 		"endpoint": r.Endpoint,
-		"version":  r.ApiVersion,
+		"version":  r.APIVersion,
 	}
 	conn, err := parseTemplate(fstring, m)
 	if err != nil {
 		return "", err
 	}
-	if r.ApiToken != "" {
-		r.UpdateHeaders(fmt.Sprintf("Auth-Token=%s", r.ApiToken))
+	if r.APIToken != "" {
+		r.UpdateHeaders(fmt.Sprintf("Auth-Token=%s", r.APIToken))
 	}
 	for i, p := range r.QParams {
 		r.QParams[i] = url.QueryEscape(p)
@@ -183,13 +182,13 @@ func (r *ApiConnection) prepConn() (string, error) {
 	return conn, err
 }
 
-func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams []string, sensitive bool) ([]byte, error) {
+func (r *APIConnection) doRequest(method, endpoint string, body []byte, qparams []string, sensitive bool) ([]byte, error) {
 	r.Mutex.Lock()
 	// Handle method
 	var m string
 	switch strings.ToLower(method) {
 	default:
-		panic(fmt.Sprintf("Did not understand method request %s"))
+		panic(fmt.Sprintf("Did not understand method request %s", method))
 	case "get":
 		m = http.MethodGet
 	case "put":
@@ -222,7 +221,7 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams 
 	if err != nil {
 		return []byte(""), err
 	}
-	reqUuid, err := NewUUID()
+	reqUUID, err := NewUUID()
 	if err != nil {
 		return []byte(""), err
 	}
@@ -241,7 +240,7 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams 
 		"Datera Request Payload: %s",
 		"Datera Request Headers: %s"}, "\n"),
 		nil,
-		reqUuid,
+		reqUUID,
 		conn,
 		r.Method,
 		logb,
@@ -262,7 +261,7 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams 
 		"Datera Response Payload: %s",
 		"Datera Response Headers: %s"}, "\n"),
 		nil,
-		reqUuid,
+		reqUUID,
 		resp.Status,
 		rbody,
 		resp.Header)
@@ -272,11 +271,11 @@ func (r *ApiConnection) doRequest(method, endpoint string, body []byte, qparams 
 }
 
 // qparams have form "param=value"
-func (r *ApiConnection) Get(endpoint string, qparams ...string) ([]byte, error) {
+func (r *APIConnection) Get(endpoint string, qparams ...string) ([]byte, error) {
 	return r.doRequest("get", endpoint, nil, qparams, false)
 }
 
-func (r *ApiConnection) Put(endpoint string, sensitive bool, bodyp ...interface{}) ([]byte, error) {
+func (r *APIConnection) Put(endpoint string, sensitive bool, bodyp ...interface{}) ([]byte, error) {
 	params, err := parseParams(bodyp...)
 	if err != nil {
 		return []byte(""), err
@@ -288,7 +287,7 @@ func (r *ApiConnection) Put(endpoint string, sensitive bool, bodyp ...interface{
 	return r.doRequest("put", endpoint, body, nil, sensitive)
 }
 
-func (r *ApiConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, error) {
+func (r *APIConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, error) {
 	params, err := parseParams(bodyp...)
 	if err != nil {
 		return []byte(""), err
@@ -301,7 +300,7 @@ func (r *ApiConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, err
 }
 
 // qparams have form "param=value"
-func (r *ApiConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, error) {
+func (r *APIConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, error) {
 	params, err := parseParams(bodyp...)
 	if err != nil {
 		return []byte(""), err
@@ -313,7 +312,7 @@ func (r *ApiConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, e
 	return r.doRequest("delete", endpoint, body, nil, false)
 }
 
-func (r *ApiConnection) Login() error {
+func (r *APIConnection) Login() error {
 	p1 := fmt.Sprintf("name=%s", r.Username)
 	p2 := fmt.Sprintf("password=%s", r.Password)
 	var l ReturnLogin
@@ -324,17 +323,16 @@ func (r *ApiConnection) Login() error {
 		if serr != nil {
 			return err
 		}
-		return errors.New(e.Message)
+		return fmt.Errorf("%s", e.Message)
 	}
 	err = json.Unmarshal(resp, &l)
 	if err != nil {
 		return err
 	}
 	if l.Key == "" {
-		return errors.New(
-			fmt.Sprintf("No Api Token In Response: %s", resp))
+		return fmt.Errorf("No Api Token In Response: %s", resp)
 	}
-	r.ApiToken = l.Key
+	r.APIToken = l.Key
 	return nil
 }
 
@@ -350,9 +348,9 @@ func getData(resp []byte) (json.RawMessage, *ErrResponse21, error) {
 }
 
 func handleBadResponse(resp *http.Response) error {
-	_, ok := Errors[resp.StatusCode]
+	_, ok := httpErrors[resp.StatusCode]
 	if ok {
-		return errors.New(fmt.Sprintf("%s", resp.Status))
+		return fmt.Errorf("%s", resp.Status)
 	}
 	return nil
 }
@@ -380,8 +378,7 @@ func parseParams(params ...interface{}) (map[string]interface{}, error) {
 		}
 		return result, nil
 	default:
-		return result, errors.New(
-			fmt.Sprintf("Couldn't Parse Params: %s", params))
+		return result, fmt.Errorf("Couldn't Parse Params: %s", params)
 	}
 
 }

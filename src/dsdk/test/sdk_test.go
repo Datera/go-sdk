@@ -38,7 +38,7 @@ func TestApiBasic(t *testing.T) {
 
 func TestConnection(t *testing.T) {
 	headers := make(map[string]string)
-	conn, err := dsdk.NewApiConnection("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	conn, err := dsdk.NewAPIConnection("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
