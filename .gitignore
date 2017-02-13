@@ -3,8 +3,10 @@ pkg/*
 src/github.com/*
 src/golang.com/*
 src/gopkg.in/*
+src/golang.org/*
 github.com/*
 golang.com/*
+golang.org/*
 gopkg.in/*
 *.log
 *.txt

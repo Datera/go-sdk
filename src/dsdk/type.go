@@ -8,6 +8,8 @@ import (
 
 var conn IAPIConnection
 
+// var conn ConnectionPool
+
 type RootEp struct {
 	Path string
 }

@@ -19,13 +19,19 @@ import (
 const (
 	connTemplate    = "http://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
 	secConnTemplate = "https://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
+	permDeniedError = "PermissionDeniedError"
+	USetToken       = ""
 )
 
-var httpErrors = map[int]bool{
-	400: true,
-	401: true,
-	422: true,
-	500: true}
+var (
+	httpErrors = map[int]bool{
+		400: true,
+		401: true,
+		422: true,
+		500: true}
+
+	Retry = fmt.Errorf("Retry")
+)
 
 type IAPIConnection interface {
 	Post(string, ...interface{}) ([]byte, error)
@@ -34,6 +40,10 @@ type IAPIConnection interface {
 	Delete(string, ...interface{}) ([]byte, error)
 	Login() error
 	UpdateHeaders(...string) error
+}
+
+type ConnectionPool struct {
+	conns []*APIConnection
 }
 
 type APIConnection struct {
@@ -169,7 +179,7 @@ func (r *APIConnection) prepConn() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if r.APIToken != "" {
+	if r.APIToken != USetToken {
 		r.UpdateHeaders(fmt.Sprintf("Auth-Token=%s", r.APIToken))
 	}
 	for i, p := range r.QParams {
@@ -182,7 +192,7 @@ func (r *APIConnection) prepConn() (string, error) {
 	return conn, err
 }
 
-func (r *APIConnection) doRequest(method, endpoint string, body []byte, qparams []string, sensitive bool) ([]byte, error) {
+func (r *APIConnection) doRequest(method, endpoint string, body []byte, qparams []string, sensitive bool, retry bool) ([]byte, error) {
 	r.Mutex.Lock()
 	// Handle method
 	var m string
@@ -245,36 +255,62 @@ func (r *APIConnection) doRequest(method, endpoint string, body []byte, qparams 
 		r.Method,
 		logb,
 		r.Headers)
+	start1 := time.Now()
 	resp, err := r.Client.Do(req)
 	if err != nil {
 		return []byte(""), err
 	}
 	defer resp.Body.Close()
+	dur := time.Since(start1).Seconds()
+	start2 := time.Now()
 	rbody, err := ioutil.ReadAll(resp.Body)
+	dur2 := time.Since(start2).Seconds()
 	if err != nil {
 		return []byte(""), err
 	}
 	log.Debugf(strings.Join([]string{
-		"\nDatera Trace ID: %s",
+		// "\nDatera Trace ID: %s",
 		"Datera Response ID: %s",
 		"Datera Response Status: %s",
 		"Datera Response Payload: %s",
 		"Datera Response Headers: %s"}, "\n"),
-		nil,
+		// nil,
 		reqUUID,
 		resp.Status,
 		rbody,
 		resp.Header)
+	log.Debugf("\nRequest %s Duration Response: %.2fs", reqUUID, dur)
+	log.Debugf("\nRequest %s Duration Read: %.2fs", reqUUID, dur2)
 	err = handleBadResponse(resp)
+	// Retry if we need to login, but only once
+	if err == Retry && !retry {
+		r.Mutex.Unlock()
+		r.APIToken = USetToken
+		r.Login()
+		r.doRequest(method, endpoint, body, qparams, sensitive, true)
+	}
 	r.Mutex.Unlock()
 	return rbody, err
 }
 
-// qparams have form "param=value"
 func (r *APIConnection) Get(endpoint string, qparams ...string) ([]byte, error) {
-	return r.doRequest("get", endpoint, nil, qparams, false)
+	return r.doRequest("get", endpoint, nil, qparams, false, false)
 }
 
+// bodyp arguments can be in one of two forms
+//
+// 1. Vararg strings follwing this pattern: "key=value"
+//    These strings have a limitation in that they cannot be arbitrarily nested
+//    JSON values, instead they must be simple strings
+//    Eg.  "key=value" is fine, but `key=["some", "list"]` will fail
+//    the arbitrary JSON usecase is handled by #2
+//
+// 2. A single map[string]interface{} argument.  This handles the case where
+//    we need to send arbitrarily nested JSON as an argument
+//
+// Function arguments are setup this way to provide an easy way to handle 90%
+// of the use cases (where we're just passing key, value string pairs) but that
+// remaining 10% we need to pass something more complex
 func (r *APIConnection) Put(endpoint string, sensitive bool, bodyp ...interface{}) ([]byte, error) {
 	params, err := parseParams(bodyp...)
 	if err != nil {
@@ -284,9 +320,23 @@ func (r *APIConnection) Put(endpoint string, sensitive bool, bodyp ...interface{
 	if err != nil {
 		return []byte(""), err
 	}
-	return r.doRequest("put", endpoint, body, nil, sensitive)
+	return r.doRequest("put", endpoint, body, nil, sensitive, false)
 }
 
+// bodyp arguments can be in one of two forms
+//
+// 1. Vararg strings follwing this pattern: "key=value"
+//    These strings have a limitation in that they cannot be arbitrarily nested
+//    JSON values, instead they must be simple strings
+//    Eg.  "key=value" is fine, but `key=["some", "list"]` will fail
+//    the arbitrary JSON usecase is handled by #2
+//
+// 2. A single map[string]interface{} argument.  This handles the case where
+//    we need to send arbitrarily nested JSON as an argument
+//
+// Function arguments are setup this way to provide an easy way to handle 90%
+// of the use cases (where we're just passing key, value string pairs) but that
+// remaining 10% we need to pass something more complex
 func (r *APIConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, error) {
 	params, err := parseParams(bodyp...)
 	if err != nil {
@@ -296,10 +346,23 @@ func (r *APIConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, err
 	if err != nil {
 		return []byte(""), err
 	}
-	return r.doRequest("post", endpoint, body, nil, false)
+	return r.doRequest("post", endpoint, body, nil, false, false)
 }
 
-// qparams have form "param=value"
+// bodyp arguments can be in one of two forms
+//
+// 1. Vararg strings follwing this pattern: "key=value"
+//    These strings have a limitation in that they cannot be arbitrarily nested
+//    JSON values, instead they must be simple strings
+//    Eg.  "key=value" is fine, but `key=["some", "list"]` will fail
+//    the arbitrary JSON usecase is handled by #2
+//
+// 2. A single map[string]interface{} argument.  This handles the case where
+//    we need to send arbitrarily nested JSON as an argument
+//
+// Function arguments are setup this way to provide an easy way to handle 90%
+// of the use cases (where we're just passing key, value string pairs) but that
+// remaining 10% we need to pass something more complex
 func (r *APIConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, error) {
 	params, err := parseParams(bodyp...)
 	if err != nil {
@@ -309,30 +372,34 @@ func (r *APIConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, e
 	if err != nil {
 		return []byte(""), err
 	}
-	return r.doRequest("delete", endpoint, body, nil, false)
+	return r.doRequest("delete", endpoint, body, nil, false, false)
 }
 
+// After successful login the API token is saved in the APIConnection object
 func (r *APIConnection) Login() error {
 	p1 := fmt.Sprintf("name=%s", r.Username)
 	p2 := fmt.Sprintf("password=%s", r.Password)
 	var l ReturnLogin
 	var e ErrResponse21
-	resp, err := r.Put("login", true, p1, p2)
-	if err != nil {
-		serr := json.Unmarshal(resp, &e)
-		if serr != nil {
+	// Only login if we need to
+	if r.APIToken == "" {
+		resp, err := r.Put("login", true, p1, p2)
+		if err != nil {
+			serr := json.Unmarshal(resp, &e)
+			if serr != nil {
+				return err
+			}
+			return fmt.Errorf("%s", e.Message)
+		}
+		err = json.Unmarshal(resp, &l)
+		if err != nil {
 			return err
 		}
-		return fmt.Errorf("%s", e.Message)
+		if l.Key == "" {
+			return fmt.Errorf("No Api Token In Response: %s", resp)
+		}
+		r.APIToken = l.Key
 	}
-	err = json.Unmarshal(resp, &l)
-	if err != nil {
-		return err
-	}
-	if l.Key == "" {
-		return fmt.Errorf("No Api Token In Response: %s", resp)
-	}
-	r.APIToken = l.Key
 	return nil
 }
 
@@ -349,6 +416,22 @@ func getData(resp []byte) (json.RawMessage, *ErrResponse21, error) {
 
 func handleBadResponse(resp *http.Response) error {
 	_, ok := httpErrors[resp.StatusCode]
+	if resp.StatusCode == 401 {
+		var e ErrResponse21
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Errorf("Bad Response: %#v", resp)
+			panic("Couldn't understand response")
+		}
+		err = json.Unmarshal(b, &e)
+		if err != nil {
+			log.Errorf("Bad Response: %#v", resp)
+			panic("Couldn't understand response")
+		}
+		if e.Name == permDeniedError {
+			return Retry
+		}
+	}
 	if ok {
 		return fmt.Errorf("%s", resp.Status)
 	}
