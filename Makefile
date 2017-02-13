@@ -15,9 +15,6 @@ clean:
 test:
 	env GOPATH=${GOPATH} go get dsdk
 	env GOPATH=${GOPATH} go build dsdk
-	env GOPATH=${GOPATH} go get github.com/stretchr/testify/assert
-	env GOPATH=${GOPATH} go get github.com/pkg/profile
-	env GOPATH=${GOPATH} go get github.com/stretchr/testify/mock
 	env GOPATH=${GOPATH} go test -v dsdk/test
 
 fmt:

@@ -21,6 +21,7 @@ const (
 	secConnTemplate = "https://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
 	permDeniedError = "PermissionDeniedError"
 	USetToken       = ""
+	MaxPoolConn     = 5
 )
 
 var (
@@ -42,12 +43,38 @@ type IAPIConnection interface {
 	UpdateHeaders(...string) error
 }
 
+type IHTTPClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
+// Connection Pool to allow for concurrent connections to the backend
 type ConnectionPool struct {
-	conns []*APIConnection
+	conns chan IAPIConnection
+}
+
+func NewConnPool(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*ConnectionPool, error) {
+	c := &ConnectionPool{}
+	c.conns = make(chan IAPIConnection, MaxPoolConn)
+	auth := NewAuth(username, password)
+	for i := 0; i < MaxPoolConn; i++ {
+		api, err := NewAPIConnection(hostname, port, apiVersion, tenant, timeout, headers, secure, auth)
+		if err != nil {
+			return nil, err
+		}
+		c.conns <- api
+	}
+	return c, nil
+}
+
+func (c *ConnectionPool) GetConn() IAPIConnection {
+	return <-c.conns
+}
+
+func (c *ConnectionPool) ReleaseConn(api IAPIConnection) {
+	c.conns <- api
 }
 
 type APIConnection struct {
-	Mutex      *sync.Mutex
 	Method     string
 	Endpoint   string
 	Headers    map[string]string
@@ -55,12 +82,38 @@ type APIConnection struct {
 	Hostname   string
 	APIVersion string
 	Port       string
-	Username   string
-	Password   string
 	Secure     bool
-	Client     *http.Client
-	APIToken   string
+	Client     IHTTPClient
 	Tenant     string
+	Auth       *Auth
+}
+
+type Auth struct {
+	APIToken string
+	Username string
+	Password string
+	Mutex    *sync.Mutex
+}
+
+func NewAuth(username, password string) *Auth {
+	return &Auth{
+		Username: username,
+		Password: password,
+		APIToken: "",
+		Mutex:    &sync.Mutex{},
+	}
+}
+
+func (a *Auth) SetToken(t string) {
+	a.Mutex.Lock()
+	defer a.Mutex.Unlock()
+	a.APIToken = t
+}
+
+func (a *Auth) GetToken() string {
+	a.Mutex.Lock()
+	defer a.Mutex.Unlock()
+	return a.APIToken
 }
 
 type ReturnLogin struct {
@@ -90,7 +143,7 @@ type ErrResponse21 struct {
 }
 
 // Changing tenant should require changing the API connection object maybe?
-func NewAPIConnection(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (IAPIConnection, error) {
+func NewAPIConnection(hostname, port, apiVersion, tenant, timeout string, headers map[string]string, secure bool, auth *Auth) (IAPIConnection, error) {
 	InitLog(true, "")
 	t, err := time.ParseDuration(timeout)
 	if err != nil {
@@ -101,16 +154,14 @@ func NewAPIConnection(hostname, port, username, password, apiVersion, tenant, ti
 		h[p] = v
 	}
 	c := APIConnection{
-		Mutex:      &sync.Mutex{},
 		Hostname:   hostname,
 		Port:       port,
-		Username:   username,
-		Password:   password,
 		Tenant:     tenant,
 		Headers:    h,
 		APIVersion: apiVersion,
 		Secure:     secure,
 		Client:     &http.Client{Timeout: t},
+		Auth:       auth,
 	}
 	c.UpdateHeaders(fmt.Sprintf("tenant=%s", tenant))
 	log.Debugf("New API connection: %#v", c)
@@ -179,8 +230,8 @@ func (r *APIConnection) prepConn() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if r.APIToken != USetToken {
-		r.UpdateHeaders(fmt.Sprintf("Auth-Token=%s", r.APIToken))
+	if r.Auth.GetToken() != USetToken {
+		r.UpdateHeaders(fmt.Sprintf("Auth-Token=%s", r.Auth.GetToken()))
 	}
 	for i, p := range r.QParams {
 		r.QParams[i] = url.QueryEscape(p)
@@ -193,7 +244,6 @@ func (r *APIConnection) prepConn() (string, error) {
 }
 
 func (r *APIConnection) doRequest(method, endpoint string, body []byte, qparams []string, sensitive bool, retry bool) ([]byte, error) {
-	r.Mutex.Lock()
 	// Handle method
 	var m string
 	switch strings.ToLower(method) {
@@ -281,15 +331,13 @@ func (r *APIConnection) doRequest(method, endpoint string, body []byte, qparams 
 		resp.Header)
 	log.Debugf("\nRequest %s Duration Response: %.2fs", reqUUID, dur)
 	log.Debugf("\nRequest %s Duration Read: %.2fs", reqUUID, dur2)
-	err = handleBadResponse(resp)
+	err = handleBadResponse(resp, rbody)
 	// Retry if we need to login, but only once
 	if err == Retry && !retry {
-		r.Mutex.Unlock()
-		r.APIToken = USetToken
+		r.Auth.SetToken(USetToken)
 		r.Login()
-		r.doRequest(method, endpoint, body, qparams, sensitive, true)
+		return r.doRequest(method, endpoint, body, qparams, sensitive, true)
 	}
-	r.Mutex.Unlock()
 	return rbody, err
 }
 
@@ -377,12 +425,12 @@ func (r *APIConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, e
 
 // After successful login the API token is saved in the APIConnection object
 func (r *APIConnection) Login() error {
-	p1 := fmt.Sprintf("name=%s", r.Username)
-	p2 := fmt.Sprintf("password=%s", r.Password)
+	p1 := fmt.Sprintf("name=%s", r.Auth.Username)
+	p2 := fmt.Sprintf("password=%s", r.Auth.Password)
 	var l ReturnLogin
 	var e ErrResponse21
 	// Only login if we need to
-	if r.APIToken == "" {
+	if r.Auth.GetToken() == USetToken {
 		resp, err := r.Put("login", true, p1, p2)
 		if err != nil {
 			serr := json.Unmarshal(resp, &e)
@@ -398,7 +446,7 @@ func (r *APIConnection) Login() error {
 		if l.Key == "" {
 			return fmt.Errorf("No Api Token In Response: %s", resp)
 		}
-		r.APIToken = l.Key
+		r.Auth.SetToken(l.Key)
 	}
 	return nil
 }
@@ -414,19 +462,14 @@ func getData(resp []byte) (json.RawMessage, *ErrResponse21, error) {
 	return r.DataRaw, &e, nil
 }
 
-func handleBadResponse(resp *http.Response) error {
+func handleBadResponse(resp *http.Response, rbody []byte) error {
 	_, ok := httpErrors[resp.StatusCode]
 	if resp.StatusCode == 401 {
 		var e ErrResponse21
-		b, err := ioutil.ReadAll(resp.Body)
+		err := json.Unmarshal(rbody, &e)
 		if err != nil {
 			log.Errorf("Bad Response: %#v", resp)
-			panic("Couldn't understand response")
-		}
-		err = json.Unmarshal(b, &e)
-		if err != nil {
-			log.Errorf("Bad Response: %#v", resp)
-			panic("Couldn't understand response")
+			panic(err)
 		}
 		if e.Name == permDeniedError {
 			return Retry

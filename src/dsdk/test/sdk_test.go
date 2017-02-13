@@ -1,15 +1,11 @@
 package dsdk_test
 
 import (
+	"dsdk"
 	"encoding/json"
 	"fmt"
-	// "strings"
-	"dsdk"
+	"net/http"
 	"testing"
-	// "net/http"
-	// "net/http/httptest"
-	// "github.com/stretchr/testify/assert"
-	// "github.com/pkg/profile"
 )
 
 const (
@@ -21,6 +17,14 @@ const (
 	TENANT   = "/root"
 	TIMEOUT  = "30s"
 )
+
+type mockHTTPClient struct {
+}
+
+func (c *mockHTTPClient) Do(req *http.Request) (*http.Response, error) {
+
+	return &http.Response{}, nil
+}
 
 func getClient(t *testing.T) *dsdk.RootEp {
 	headers := make(map[string]string)
@@ -38,7 +42,8 @@ func TestApiBasic(t *testing.T) {
 
 func TestConnection(t *testing.T) {
 	headers := make(map[string]string)
-	conn, err := dsdk.NewAPIConnection("172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
+	auth := dsdk.NewAuth("admin", "password")
+	conn, err := dsdk.NewAPIConnection("172.19.1.41", "7717", "2.1", "/root", "30s", headers, false, auth)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -130,6 +135,26 @@ func TestACL(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
+}
+
+func TestConcurrency(t *testing.T) {
+	client := getClient(t)
+	n := dsdk.MaxPoolConn * 5
+	var dones []chan int
+	for i := 0; i <= n; i++ {
+		dones = append(dones, make(chan int))
+	}
+	f := func(lc chan int) {
+		client.GetEp("app_instances").List()
+		lc <- 1
+	}
+	for _, c := range dones {
+		go f(c)
+	}
+	for _, c := range dones {
+		<-c
+	}
+
 }
 
 func TestClean(t *testing.T) {
