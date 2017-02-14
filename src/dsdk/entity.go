@@ -8,38 +8,38 @@ type AccessNetworkIpPool struct {
 }
 
 type AclPolicy struct {
-	InitiatorGroups []InitiatorGroup `json:"initiator_groups,omitempty"`
-	Initiators      []Initiator      `json:"initiators,omitempty"`
-	Path            string           `json:"path,omitempty"`
+	InitiatorGroups *[]InitiatorGroup `json:"initiator_groups,omitempty"`
+	Initiators      *[]Initiator      `json:"initiators,omitempty"`
+	Path            string            `json:"path,omitempty"`
 }
 
 type AppInstance struct {
-	AccessControlMode string            `json:"access_control_mode,omitempty"`
-	AdminState        string            `json:"admin_state,omitempty"`
-	AppTemplate       AppTemplate       `json:"app_template,omitempty"`
-	Causes            []interface{}     `json:"causes,omitempty"`
-	CloneSrc          map[string]string `json:"clone_src,omitempty"`
-	CreateMode        string            `json:"create_mode,omitempty"`
-	Descr             string            `json:"descr,omitempty"`
-	Health            string            `json:"health,omitempty"`
-	Id                string            `json:"id,omitempty"`
-	Name              string            `json:"name,omitempty"`
-	OpStatus          string            `json:"op_status,omitempty"`
-	Path              string            `json:"path,omitempty"`
-	RestorePoint      string            `json:"restore_point,omitempty"`
-	SnapshotPolicies  []SnapshotPolicy  `json:"snapshot_policies,omitempty"`
-	Snapshots         []Snapshot        `json:"snapshots,omitempty"`
-	StorageInstances  []StorageInstance `json:"storage_instances,omitempty"`
-	Uuid              string            `json:"uuid,omitempty"`
+	AccessControlMode string             `json:"access_control_mode,omitempty"`
+	AdminState        string             `json:"admin_state,omitempty"`
+	AppTemplate       *AppTemplate       `json:"app_template,omitempty"`
+	Causes            []interface{}      `json:"causes,omitempty"`
+	CloneSrc          map[string]string  `json:"clone_src,omitempty"`
+	CreateMode        string             `json:"create_mode,omitempty"`
+	Descr             string             `json:"descr,omitempty"`
+	Health            string             `json:"health,omitempty"`
+	Id                string             `json:"id,omitempty"`
+	Name              string             `json:"name,omitempty"`
+	OpStatus          string             `json:"op_status,omitempty"`
+	Path              string             `json:"path,omitempty"`
+	RestorePoint      string             `json:"restore_point,omitempty"`
+	SnapshotPolicies  *[]SnapshotPolicy  `json:"snapshot_policies,omitempty"`
+	Snapshots         *[]Snapshot        `json:"snapshots,omitempty"`
+	StorageInstances  *[]StorageInstance `json:"storage_instances,omitempty"`
+	Uuid              string             `json:"uuid,omitempty"`
 }
 
 type AppTemplate struct {
-	AppInstances     []AppInstance     `json:"app_instances,omitempty"`
-	Descr            string            `json:"descr,omitempty"`
-	Name             string            `json:"name,omitempty"`
-	Path             string            `json:"path,omitempty"`
-	SnapshotPolicies []SnapshotPolicy  `json:"snapshot_policies,omitempty"`
-	StorageTemplates []StorageTemplate `json:"storage_templates,omitempty"`
+	AppInstances     *[]AppInstance     `json:"app_instances,omitempty"`
+	Descr            string             `json:"descr,omitempty"`
+	Name             string             `json:"name,omitempty"`
+	Path             string             `json:"path,omitempty"`
+	SnapshotPolicies *[]SnapshotPolicy  `json:"snapshot_policies,omitempty"`
+	StorageTemplates *[]StorageTemplate `json:"storage_templates,omitempty"`
 }
 
 type AuditLog struct {
@@ -53,7 +53,7 @@ type AuditLog struct {
 	Path        string `json:"path,omitempty"`
 	SessionInfo string `json:"session_info,omitempty"`
 	Timestamp   string `json:"timestamp,omitempty"`
-	User        User   `json:"user,omitempty"`
+	User        *User  `json:"user,omitempty"`
 	Version     string `json:"version,omitempty"`
 }
 
@@ -146,7 +146,7 @@ type HttpProxy struct {
 	Password string `json:"password,omitempty"`
 	Path     string `json:"path,omitempty"`
 	Port     int    `json:"port,omitempty"`
-	User     User   `json:"user,omitempty"`
+	User     *User  `json:"user,omitempty"`
 }
 
 type Initiator struct {
@@ -295,11 +295,11 @@ type SnapshotPolicy struct {
 }
 
 type SnmpPolicy struct {
-	Contact  string `json:"contact,omitempty"`
-	Enabled  bool   `json:"enabled,omitempty"`
-	Location string `json:"location,omitempty"`
-	Path     string `json:"path,omitempty"`
-	Users    []User `json:"users,omitempty"`
+	Contact  string  `json:"contact,omitempty"`
+	Enabled  bool    `json:"enabled,omitempty"`
+	Location string  `json:"location,omitempty"`
+	Path     string  `json:"path,omitempty"`
+	Users    *[]User `json:"users,omitempty"`
 }
 
 type SnmpUser struct {
@@ -317,78 +317,78 @@ type SnmpUser struct {
 type StorageInstance struct {
 	Access             interface{}   `json:"access,omitempty"`
 	AccessControlMode  string        `json:"access_control_mode,omitempty"`
-	AclPolicy          AclPolicy     `json:"acl_policy,omitempty"`
+	AclPolicy          *AclPolicy    `json:"acl_policy,omitempty"`
 	ActiveInitiators   []interface{} `json:"active_initiators,omitempty"`
 	ActiveStorageNodes []interface{} `json:"active_storage_nodes,omitempty"`
 	AdminState         string        `json:"admin_state,omitempty"`
-	Auth               Auth          `json:"auth,omitempty"`
+	Auth               *Auth         `json:"auth,omitempty"`
 	Causes             []interface{} `json:"causes,omitempty"`
 	Health             string        `json:"health,omitempty"`
-	IpPool             IpPool        `json:"ip_pool,omitempty"`
+	IpPool             *IpPool       `json:"ip_pool,omitempty"`
 	Name               string        `json:"name,omitempty"`
 	OpState            string        `json:"op_state,omitempty"`
 	Path               string        `json:"path,omitempty"`
 	Uuid               string        `json:"uuid,omitempty"`
-	Volumes            []Volume      `json:"volumes,omitempty"`
+	Volumes            *[]Volume     `json:"volumes,omitempty"`
 }
 
 type StorageNode struct {
-	AdminState          string            `json:"admin_state,omitempty"`
-	AvailableCapacity   int               `json:"available_capacity,omitempty"`
-	BiosVersion         string            `json:"bios_version,omitempty"`
-	BootDrives          interface{}       `json:"boot_drives,omitempty"`
-	BuildVersion        string            `json:"build_version,omitempty"`
-	Causes              []interface{}     `json:"causes,omitempty"`
-	Disconnected        bool              `json:"disconnected,omitempty"`
-	FlashDevices        interface{}       `json:"flash_devices,omitempty"`
-	Hdds                []Hdd             `json:"hdds,omitempty"`
-	Health              string            `json:"health,omitempty"`
-	HwHealth            string            `json:"hw_health,omitempty"`
-	HwState             string            `json:"hw_state,omitempty"`
-	InternalIp1         string            `json:"internal_ip_1,omitempty"`
-	InternalIp2         string            `json:"internal_ip_2,omitempty"`
-	LastRebootTimestamp int               `json:"last_reboot_timestamp,omitempty"`
-	MgmtIp1             string            `json:"mgmt_ip_1,omitempty"`
-	MgmtIp2             string            `json:"mgmt_ip_2,omitempty"`
-	Model               string            `json:"model,omitempty"`
-	Name                string            `json:"name,omitempty"`
-	Nics                []Nic             `json:"nics,omitempty"`
-	NvmFlashDevices     []NvmFlashDevice  `json:"nvm_flash_devices,omitempty"`
-	OpProgress          interface{}       `json:"op_progress,omitempty"`
-	OpState             string            `json:"op_state,omitempty"`
-	OpStatus            string            `json:"op_status,omitempty"`
-	OsVersion           string            `json:"os_version,omitempty"`
-	Path                string            `json:"path,omitempty"`
-	Psus                interface{}       `json:"psus,omitempty"`
-	SerialNo            string            `json:"serial_no,omitempty"`
-	StorageInstances    []StorageInstance `json:"storage_instances,omitempty"`
-	SubsystemHealth     interface{}       `json:"subsystem_health,omitempty"`
-	SubsystemStates     interface{}       `json:"subsystem_states,omitempty"`
-	SwHealth            string            `json:"sw_health,omitempty"`
-	SwState             string            `json:"sw_state,omitempty"`
-	SwVersion           string            `json:"sw_version,omitempty"`
-	TotalCapacity       int               `json:"total_capacity,omitempty"`
-	TotalRawCapacity    int               `json:"total_raw_capacity,omitempty"`
-	Type                string            `json:"type,omitempty"`
-	Upgrade             interface{}       `json:"upgrade,omitempty"`
-	Uuid                string            `json:"uuid,omitempty"`
-	Vendor              string            `json:"vendor,omitempty"`
-	Volumes             []Volume          `json:"volumes,omitempty"`
+	AdminState          string             `json:"admin_state,omitempty"`
+	AvailableCapacity   int                `json:"available_capacity,omitempty"`
+	BiosVersion         string             `json:"bios_version,omitempty"`
+	BootDrives          interface{}        `json:"boot_drives,omitempty"`
+	BuildVersion        string             `json:"build_version,omitempty"`
+	Causes              []interface{}      `json:"causes,omitempty"`
+	Disconnected        bool               `json:"disconnected,omitempty"`
+	FlashDevices        interface{}        `json:"flash_devices,omitempty"`
+	Hdds                *[]Hdd             `json:"hdds,omitempty"`
+	Health              string             `json:"health,omitempty"`
+	HwHealth            string             `json:"hw_health,omitempty"`
+	HwState             string             `json:"hw_state,omitempty"`
+	InternalIp1         string             `json:"internal_ip_1,omitempty"`
+	InternalIp2         string             `json:"internal_ip_2,omitempty"`
+	LastRebootTimestamp int                `json:"last_reboot_timestamp,omitempty"`
+	MgmtIp1             string             `json:"mgmt_ip_1,omitempty"`
+	MgmtIp2             string             `json:"mgmt_ip_2,omitempty"`
+	Model               string             `json:"model,omitempty"`
+	Name                string             `json:"name,omitempty"`
+	Nics                *[]Nic             `json:"nics,omitempty"`
+	NvmFlashDevices     *[]NvmFlashDevice  `json:"nvm_flash_devices,omitempty"`
+	OpProgress          interface{}        `json:"op_progress,omitempty"`
+	OpState             string             `json:"op_state,omitempty"`
+	OpStatus            string             `json:"op_status,omitempty"`
+	OsVersion           string             `json:"os_version,omitempty"`
+	Path                string             `json:"path,omitempty"`
+	Psus                interface{}        `json:"psus,omitempty"`
+	SerialNo            string             `json:"serial_no,omitempty"`
+	StorageInstances    *[]StorageInstance `json:"storage_instances,omitempty"`
+	SubsystemHealth     interface{}        `json:"subsystem_health,omitempty"`
+	SubsystemStates     interface{}        `json:"subsystem_states,omitempty"`
+	SwHealth            string             `json:"sw_health,omitempty"`
+	SwState             string             `json:"sw_state,omitempty"`
+	SwVersion           string             `json:"sw_version,omitempty"`
+	TotalCapacity       int                `json:"total_capacity,omitempty"`
+	TotalRawCapacity    int                `json:"total_raw_capacity,omitempty"`
+	Type                string             `json:"type,omitempty"`
+	Upgrade             interface{}        `json:"upgrade,omitempty"`
+	Uuid                string             `json:"uuid,omitempty"`
+	Vendor              string             `json:"vendor,omitempty"`
+	Volumes             *[]Volume          `json:"volumes,omitempty"`
 }
 
 type StorageTemplate struct {
-	Auth            Auth             `json:"auth,omitempty"`
-	IpPool          IpPool           `json:"ip_pool,omitempty"`
-	Name            string           `json:"name,omitempty"`
-	Path            string           `json:"path,omitempty"`
-	VolumeTemplates []VolumeTemplate `json:"volume_templates,omitempty"`
+	Auth            *Auth             `json:"auth,omitempty"`
+	IpPool          *IpPool           `json:"ip_pool,omitempty"`
+	Name            string            `json:"name,omitempty"`
+	Path            string            `json:"path,omitempty"`
+	VolumeTemplates *[]VolumeTemplate `json:"volume_templates,omitempty"`
 }
 
 type Subsystem struct {
 	Causes      []interface{} `json:"causes,omitempty"`
 	Fan         string        `json:"fan,omitempty"`
 	Health      string        `json:"health,omitempty"`
-	Network     Network       `json:"network,omitempty"`
+	Network     *Network      `json:"network,omitempty"`
 	Path        string        `json:"path,omitempty"`
 	Power       string        `json:"power,omitempty"`
 	Temperature string        `json:"temperature,omitempty"`
@@ -403,16 +403,16 @@ type System struct {
 	BuildVersion                string        `json:"build_version,omitempty"`
 	CallhomeEnabled             bool          `json:"callhome_enabled,omitempty"`
 	Causes                      []interface{} `json:"causes,omitempty"`
-	Dns                         Dns           `json:"dns,omitempty"`
+	Dns                         *Dns          `json:"dns,omitempty"`
 	Health                      string        `json:"health,omitempty"`
-	HttpProxy                   HttpProxy     `json:"http_proxy,omitempty"`
+	HttpProxy                   *HttpProxy    `json:"http_proxy,omitempty"`
 	HybridAvailableCapacity     int           `json:"hybrid_available_capacity,omitempty"`
 	HybridProvisionedCapacity   int           `json:"hybrid_provisioned_capacity,omitempty"`
 	HybridTotalCapacity         int           `json:"hybrid_total_capacity,omitempty"`
 	LastRebootTimestamp         string        `json:"last_reboot_timestamp,omitempty"`
 	Name                        string        `json:"name,omitempty"`
-	Network                     Network       `json:"network,omitempty"`
-	NtpServers                  []NtpServer   `json:"ntp_servers,omitempty"`
+	Network                     *Network      `json:"network,omitempty"`
+	NtpServers                  *[]NtpServer  `json:"ntp_servers,omitempty"`
 	OpState                     string        `json:"op_state,omitempty"`
 	Path                        string        `json:"path,omitempty"`
 	SwVersion                   string        `json:"sw_version,omitempty"`
@@ -432,15 +432,15 @@ type Tenant struct {
 }
 
 type User struct {
-	Email    string   `json:"email,omitempty"`
-	Enabled  bool     `json:"enabled,omitempty"`
-	FullName string   `json:"full_name,omitempty"`
-	Password string   `json:"password,omitempty"`
-	Path     string   `json:"path,omitempty"`
-	Roles    []Role   `json:"roles,omitempty"`
-	Tenants  []Tenant `json:"tenants,omitempty"`
-	UserId   string   `json:"user_id,omitempty"`
-	Version  string   `json:"version,omitempty"`
+	Email    string    `json:"email,omitempty"`
+	Enabled  bool      `json:"enabled,omitempty"`
+	FullName string    `json:"full_name,omitempty"`
+	Password string    `json:"password,omitempty"`
+	Path     string    `json:"path,omitempty"`
+	Roles    *[]Role   `json:"roles,omitempty"`
+	Tenants  *[]Tenant `json:"tenants,omitempty"`
+	UserId   string    `json:"user_id,omitempty"`
+	Version  string    `json:"version,omitempty"`
 }
 
 type Vip struct {
@@ -462,7 +462,7 @@ type Volume struct {
 	ReplicaCount       int           `json:"replica_count,omitempty"`
 	RestorePoint       string        `json:"restore_point,omitempty"`
 	Size               int           `json:"size,omitempty"`
-	Snapshots          []Snapshot    `json:"snapshots,omitempty"`
+	Snapshots          *[]Snapshot   `json:"snapshots,omitempty"`
 	Uuid               string        `json:"uuid,omitempty"`
 }
 

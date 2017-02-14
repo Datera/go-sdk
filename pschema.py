@@ -110,12 +110,12 @@ type {en_name} struct {{
             attr_type = None
             # Check if type exists as an entity
             if not attr_type and attr['name'] in entities:
-                attr_type = snake_to_cap_camel(attr['name'])
+                attr_type = "*" + snake_to_cap_camel(attr['name'])
             # Check if singularized type exists as an entity
             if (not attr_type and
                     singularize(attr['name']) in entities):
                 attr_type = "".join((
-                    "[]",
+                    "*[]",
                     singularize(snake_to_cap_camel(attr['name']))))
             if not attr_type:
                 attr_type = go_types.get(attr['type'], "interface{}")

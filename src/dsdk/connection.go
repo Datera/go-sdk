@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	structs "github.com/fatih/structs"
+	// snaker "github.com/serenize/snaker"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -361,13 +363,21 @@ func (r *APIConnection) Get(endpoint string, qparams ...string) ([]byte, error) 
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
 func (r *APIConnection) Put(endpoint string, sensitive bool, bodyp ...interface{}) ([]byte, error) {
-	params, err := parseParams(bodyp...)
-	if err != nil {
-		return []byte(""), err
-	}
-	body, err := json.Marshal(params)
-	if err != nil {
-		return []byte(""), err
+	var body []byte
+	var params map[string]interface{}
+	var p interface{}
+	if len(bodyp) > 0 {
+		p = bodyp[0]
+		b, err := parseStruct(p)
+		if err == nil {
+			body = b
+		} else {
+			params, err = parseParams(bodyp...)
+			body, err = json.Marshal(params)
+			if err != nil {
+				return []byte(""), err
+			}
+		}
 	}
 	return r.doRequest("put", endpoint, body, nil, sensitive, false)
 }
@@ -387,13 +397,21 @@ func (r *APIConnection) Put(endpoint string, sensitive bool, bodyp ...interface{
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
 func (r *APIConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, error) {
-	params, err := parseParams(bodyp...)
-	if err != nil {
-		return []byte(""), err
-	}
-	body, err := json.Marshal(params)
-	if err != nil {
-		return []byte(""), err
+	var body []byte
+	var params map[string]interface{}
+	var p interface{}
+	if len(bodyp) > 0 {
+		p = bodyp[0]
+		b, err := parseStruct(p)
+		if err == nil {
+			body = b
+		} else {
+			params, err = parseParams(bodyp...)
+			body, err = json.Marshal(params)
+			if err != nil {
+				return []byte(""), err
+			}
+		}
 	}
 	return r.doRequest("post", endpoint, body, nil, false, false)
 }
@@ -413,13 +431,21 @@ func (r *APIConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, err
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
 func (r *APIConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, error) {
-	params, err := parseParams(bodyp...)
-	if err != nil {
-		return []byte(""), err
-	}
-	body, err := json.Marshal(params)
-	if err != nil {
-		return []byte(""), err
+	var body []byte
+	var params map[string]interface{}
+	var p interface{}
+	if len(bodyp) > 0 {
+		p = bodyp[0]
+		b, err := parseStruct(p)
+		if err == nil {
+			body = b
+		} else {
+			params, err = parseParams(bodyp...)
+			body, err = json.Marshal(params)
+			if err != nil {
+				return []byte(""), err
+			}
+		}
 	}
 	return r.doRequest("delete", endpoint, body, nil, false, false)
 }
@@ -508,4 +534,12 @@ func parseParams(params ...interface{}) (map[string]interface{}, error) {
 		return result, fmt.Errorf("Couldn't Parse Params: %s", params)
 	}
 
+}
+
+func parseStruct(s interface{}) ([]byte, error) {
+	if structs.IsStruct(s) {
+		b, err := json.Marshal(s)
+		return b, err
+	}
+	return []byte(""), fmt.Errorf("Not a struct")
 }
