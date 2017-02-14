@@ -45,9 +45,9 @@ Getting Started
 
     func main() {
 
-        // First we'll get the client/root endpoint setup
+        // First we'll get the client setup
         headers = make(map[string]string)
-        client, err := dsdk.NewRootEp(
+        client, err := dsdk.NewClient(
             "172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
         if err != nil {
             panic(err)

@@ -1,12 +1,11 @@
 package dsdk
 
-type RootEp struct {
-	Path string
+type Client struct {
 }
 
 var Cpool *ConnectionPool
 
-func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*RootEp, error) {
+func NewClient(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*Client, error) {
 	var err error
 	//Initialize global connection object
 	Cpool, err = NewConnPool(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
@@ -15,16 +14,10 @@ func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout s
 	}
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
-	// err = conn.Login()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return &RootEp{
-		Path: "",
-	}, nil
+	return &Client{}, nil
 
 }
 
-func (ep RootEp) GetEp(path string) IEndpoint {
-	return NewEp(ep.Path, path)
+func (ep Client) GetEp(path string) IEndpoint {
+	return NewEp("", path)
 }

@@ -76,9 +76,9 @@ func (r mockAPIConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte
 	return []byte(""), nil
 }
 
-func getClient(t *testing.T) *dsdk.RootEp {
+func getClient(t *testing.T) *dsdk.Client {
 	headers := make(map[string]string)
-	client, err := dsdk.NewRootEp(
+	client, err := dsdk.NewClient(
 		ADDR, PORT, USERNAME, PASSWORD, APIVER, TENANT, TIMEOUT, headers, false)
 	if err != nil {
 		t.Fatalf("%s", err)
