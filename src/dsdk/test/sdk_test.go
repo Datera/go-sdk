@@ -42,7 +42,7 @@ type mockAPIConnection struct {
 	Secure     bool
 	Client     *mockHTTPClient
 	Tenant     string
-	Auth       *dsdk.Auth
+	Auth       *dsdk.LogAuth
 }
 
 func (r mockAPIConnection) UpdateHeaders(h ...string) error {
@@ -98,7 +98,7 @@ func TestApiBasic(t *testing.T) {
 
 func TestConnection(t *testing.T) {
 	headers := make(map[string]string)
-	auth := dsdk.NewAuth("admin", "password")
+	auth := dsdk.NewLogAuth("admin", "password")
 	conn, err := dsdk.NewAPIConnection("172.19.1.41", "7717", "2.1", "/root", "30s", headers, false, auth)
 	if err != nil {
 		t.Fatalf("%s", err)
@@ -211,6 +211,29 @@ func TestConcurrency(t *testing.T) {
 		<-c
 	}
 
+}
+
+func TestAutoGenEntities(t *testing.T) {
+	client := getClient(t)
+	name, _ := dsdk.NewUUID()
+	siname := "storage-1"
+	ai, _ := client.GetEp("app_instances").Create(
+		fmt.Sprintf("name=%s", name))
+	ai.GetEp("storage_instances").Create(
+		fmt.Sprintf("name=%s", siname))
+
+	ai, err := ai.Reload()
+
+	var enai dsdk.AppInstance
+	err = json.Unmarshal(ai.GetB(), &enai)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	if enai.StorageInstances[0].Name != siname {
+		t.Fatalf(
+			"Storage Instance name doesn't match.  Expected: %s, Actual %s",
+			siname, enai.StorageInstances[0].Name)
+	}
 }
 
 func TestClean(t *testing.T) {

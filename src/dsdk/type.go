@@ -26,6 +26,8 @@ type Endpoint struct {
 
 type IEntity interface {
 	Get(string) interface{}
+	GetA() map[string]interface{}
+	GetB() []byte
 	GetEn(string) []IEntity
 	GetEp(string) IEndpoint
 	GetPath() string
@@ -159,6 +161,21 @@ func (en Entity) Get(key string) interface{} {
 	return en.Items[key]
 }
 
+// Short for "Get All"
+func (en Entity) GetA() map[string]interface{} {
+	return en.Items
+}
+
+// Short for "Get Bytes"
+func (en Entity) GetB() []byte {
+	b, err := json.Marshal(en.Items)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
+
+// Short for "Get Endpoint"
 func (en Entity) GetEp(path string) IEndpoint {
 	return NewEp(en.Path, path)
 }
@@ -167,6 +184,16 @@ func (en Entity) GetPath() string {
 	return en.Path
 }
 
+// Short for "Get Entities"
+// Usage:
+//		ai, _ = client.GetEp("app_instances").Create("name=my-app")
+// 		ai.GetEp("storage_instances").Create("name=my-stor")
+//		ai, _ = ai.Reload()
+//		si = ai.GetEn("storage_instances")[0]
+//      // Optionally you could unpack the IEntity object into a struct
+//      var unpackedSI StorageInstance
+//      json.Unmarshal(ai.GetB(), &unpackedSI)
+//      fmt.Println("SI Name", unpackedSI.Name)
 func (en Entity) GetEn(enKey string) []IEntity {
 	ens := []IEntity{}
 	eitems := en.Items[enKey].([]interface{})

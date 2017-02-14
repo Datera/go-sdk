@@ -110,7 +110,7 @@ type {en_name} struct {{
             attr_type = None
             # Check if type exists as an entity
             if not attr_type and attr['name'] in entities:
-                attr_type = snake_to_cap_camel(attr['name']) + "Entity"
+                attr_type = snake_to_cap_camel(attr['name'])
             # Check if singularized type exists as an entity
             if (not attr_type and
                     singularize(attr['name']) in entities):

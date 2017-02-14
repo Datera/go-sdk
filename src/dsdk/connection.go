@@ -55,7 +55,7 @@ type ConnectionPool struct {
 func NewConnPool(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*ConnectionPool, error) {
 	c := &ConnectionPool{}
 	c.Conns = make(chan IAPIConnection, MaxPoolConn)
-	auth := NewAuth(username, password)
+	auth := NewLogAuth(username, password)
 	for i := 0; i < MaxPoolConn; i++ {
 		api, err := NewAPIConnection(hostname, port, apiVersion, tenant, timeout, headers, secure, auth)
 		if err != nil {
@@ -85,18 +85,19 @@ type APIConnection struct {
 	Secure     bool
 	Client     IHTTPClient
 	Tenant     string
-	Auth       *Auth
+	Auth       *LogAuth
 }
 
-type Auth struct {
+// Unrelated to Auth object in entity.go
+type LogAuth struct {
 	APIToken string
 	Username string
 	Password string
 	Mutex    *sync.Mutex
 }
 
-func NewAuth(username, password string) *Auth {
-	return &Auth{
+func NewLogAuth(username, password string) *LogAuth {
+	return &LogAuth{
 		Username: username,
 		Password: password,
 		APIToken: "",
@@ -104,13 +105,13 @@ func NewAuth(username, password string) *Auth {
 	}
 }
 
-func (a *Auth) SetToken(t string) {
+func (a *LogAuth) SetToken(t string) {
 	a.Mutex.Lock()
 	defer a.Mutex.Unlock()
 	a.APIToken = t
 }
 
-func (a *Auth) GetToken() string {
+func (a *LogAuth) GetToken() string {
 	a.Mutex.Lock()
 	defer a.Mutex.Unlock()
 	return a.APIToken
@@ -143,7 +144,7 @@ type ErrResponse21 struct {
 }
 
 // Changing tenant should require changing the API connection object maybe?
-func NewAPIConnection(hostname, port, apiVersion, tenant, timeout string, headers map[string]string, secure bool, auth *Auth) (IAPIConnection, error) {
+func NewAPIConnection(hostname, port, apiVersion, tenant, timeout string, headers map[string]string, secure bool, auth *LogAuth) (IAPIConnection, error) {
 	InitLog(true, "")
 	t, err := time.ParseDuration(timeout)
 	if err != nil {
