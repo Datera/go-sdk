@@ -6,12 +6,6 @@ import (
 	"strings"
 )
 
-var Cpool *ConnectionPool
-
-type RootEp struct {
-	Path string
-}
-
 type IEndpoint interface {
 	GetEp(string) IEndpoint
 	Create(bodyp ...interface{}) (IEntity, error)
@@ -41,25 +35,6 @@ type Entity struct {
 	Items map[string]interface{}
 }
 
-func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*RootEp, error) {
-	var err error
-	//Initialize global connection object
-	Cpool, err = NewConnPool(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
-	if err != nil {
-		return nil, err
-	}
-	conn := Cpool.GetConn()
-	defer Cpool.ReleaseConn(conn)
-	// err = conn.Login()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return &RootEp{
-		Path: "",
-	}, nil
-
-}
-
 func NewEp(parent, child string) IEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, child}, "/"), "/")
 	return Endpoint{
@@ -72,10 +47,6 @@ func NewEntity(path string, items map[string]interface{}) IEntity {
 		Path:  path,
 		Items: items,
 	}
-}
-
-func (ep RootEp) GetEp(path string) IEndpoint {
-	return NewEp(ep.Path, path)
 }
 
 func (ep Endpoint) GetEp(path string) IEndpoint {
