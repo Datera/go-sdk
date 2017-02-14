@@ -81,96 +81,8 @@ class ApiWriter(object):
 class GoApiWriter(ApiWriter):
 
     en_template = """
-type {en_name}Entity struct {{
+type {en_name} struct {{
 {struct_attrs}\n}}
-
-func (en {en_name}Entity) Reload() ({en_name}Entity, error) {{
-\tvar n {en_name}Entity
-\tr, _ := conn.Get(en.Path)
-\td, e, err := getData(r)
-\tif e.Message != "" {{
-\t\treturn n, errors.New(strings.Join(append([]string{{e.Message}}, e.Errors...), ":"))
-\t}}
-\tif err != nil {{
-\t\tpanic(err)
-\t}}
-\terr = json.Unmarshal(d, &n)
-\treturn n, nil
-}}
-
-func (en {en_name}Entity) Set(bodyp ...string) ({en_name}Entity, error) {{
-\tvar n {en_name}Entity
-\tr, _ := conn.Put(en.Path, false, bodyp...)
-\td, e, err := getData(r)
-\tif e.Message != "" {{
-\t\treturn n, errors.New(strings.Join(append([]string{{e.Message}}, e.Errors...), ":"))
-\t}}
-\tif err != nil {{
-\t\tpanic(err)
-\t}}
-\terr = json.Unmarshal(d, &n)
-\treturn n, nil
-}}
-
-func (en {en_name}Entity) Delete(bodyp ...string) error {{
-\tr, _ := conn.Delete(en.Path, bodyp...)
-\t_, e, err := getData(r)
-\tif e.Message != "" {{
-\t\treturn errors.New(strings.Join(append([]string{{e.Message}}, e.Errors...), ":"))
-\t}}
-\tif err != nil {{
-\t\tpanic(err)
-\t}}
-\treturn nil
-}}
-"""
-
-    ep_template = """
-type {ep_name}Endpoint struct {{\n
-\tPath string
-{struct_attrs}\n}}
-
-func New{ep_name}Endpoint(parent string) {ep_name}Endpoint {{
-\tpath := strings.Trim(strings.Join([]string{{parent, "{path}"}}, "/"), "/")
-\treturn {ep_name}Endpoint{{
-\t\tPath: path,
-\t\t{new_attrs}
-\t}}
-}}
-
-func (ep {ep_name}Endpoint) Create(bodyp ...string) ({en_name}Entity, error) {{
-\tvar en {en_name}Entity
-\tr, _ := conn.Post(ep.Path, bodyp...)
-\td, e, err := getData(r)
-\tif e.Message != "" {{
-\t\treturn en, errors.New(strings.Join(append([]string{{e.Message}}, e.Errors...), ":"))
-\t}}
-\tif err != nil {{
-\t\tpanic(err)
-\t}}
-\terr = json.Unmarshal(d, &en)
-\tif err != nil {{
-\t\tpanic(err)
-\t}}
-\treturn en, nil
-}}
-
-func (ep {ep_name}Endpoint) List(queryp ...string) ([]{en_name}Entity, error) {{
-\tvar ens []{en_name}Entity
-\tr, _ := conn.Get(ep.Path, queryp...)
-\td, e, err := getData(r)
-\tif e.Message != "" {{
-\t\treturn ens, errors.New(strings.Join(append([]string{{e.Message}}, e.Errors...), ":"))
-\t}}
-\tif err != nil {{
-\t\tpanic(err)
-\t}}
-\terr = json.Unmarshal(d, &ens)
-\tif err != nil {{
-\t\tpanic(err)
-\t}}
-\treturn ens, nil
-}}
 """
 
     def __init__(self):
@@ -178,72 +90,7 @@ func (ep {ep_name}Endpoint) List(queryp ...string) ([]{en_name}Entity, error) {{
 
     def module_header(self):
         return (
-            """package dsdk
-
-import (
-    "encoding/json"
-    //"fmt"
-    "strings"
-    "errors"
-)
-
-// Using a global here because screw having to pass this around to everything
-// even via an autogeneration script.  We may hit some limitations later with
-// concurrency, but I need this working now.
-var conn *ApiConnection
-
-type RootEp struct {
-\tPath string
-\tAppInstances AppInstancesEndpoint
-\tApi ApiEndpoint
-\tAppTemplates AppTemplatesEndpoint
-\tInitiators InitiatorsEndpoint
-\tInitiatorGroups InitiatorGroupsEndpoint
-\tAccessNetworkIpPools AccessNetworkIpPoolsEndpoint
-\tStorageNodes StorageNodesEndpoint
-\tSystem SystemEndpoint
-\tEventLogs EventLogsEndpoint
-\tAuditLogs AuditLogsEndpoint
-\tFaultLogs FaultLogsEndpoint
-\tRoles RolesEndpoint
-\tUsers UsersEndpoint
-\tUpgrade UpgradeEndpoint
-\tTime TimeEndpoint
-\tTenants TenantsEndpoint
-}
-
-func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*RootEp, error) {
-\tvar err error
-\t//Initialize global connection object
-\tconn, err = NewApiConnection(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
-\tif err != nil {
-\t\treturn nil, err
-\t}
-\terr = conn.Login()
-\tif err != nil {
-\t\treturn nil, err
-\t}
-\treturn &RootEp{
-\t\tPath:         "",
-\tAppInstances: NewAppInstancesEndpoint(""),
-\tApi: NewApiEndpoint(""),
-\tAppTemplates: NewAppTemplatesEndpoint(""),
-\tInitiators: NewInitiatorsEndpoint(""),
-\tInitiatorGroups: NewInitiatorGroupsEndpoint(""),
-\tAccessNetworkIpPools: NewAccessNetworkIpPoolsEndpoint(""),
-\tStorageNodes: NewStorageNodesEndpoint(""),
-\tSystem: NewSystemEndpoint(""),
-\tEventLogs: NewEventLogsEndpoint(""),
-\tAuditLogs: NewAuditLogsEndpoint(""),
-\tFaultLogs: NewFaultLogsEndpoint(""),
-\tRoles: NewRolesEndpoint(""),
-\tUsers: NewUsersEndpoint(""),
-\tUpgrade: NewUpgradeEndpoint(""),
-\tTime: NewTimeEndpoint(""),
-\tTenants: NewTenantsEndpoint(""),
-\t}, nil
-}
-""")
+            """package dsdk\n""")
 
     def entity_header(self):
         pass
@@ -269,58 +116,25 @@ func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout s
                     singularize(attr['name']) in entities):
                 attr_type = "".join((
                     "[]",
-                    singularize(snake_to_cap_camel(attr['name'])),
-                    "Entity"))
+                    singularize(snake_to_cap_camel(attr['name']))))
             if not attr_type:
                 attr_type = go_types.get(attr['type'], "interface{}")
             attr_json = json_template.format(attr['name'])
             attrib = attr_template.format(
                 name=attr_name, type=attr_type, json=attr_json)
             attr_list.append(attrib)
-        result = self.en_struct_template.format(
-            name=snake_to_cap_camel(name),
-            attrs="\n".join(sorted(attr_list)))
-        result = "\n".join((result,
-                            self.en_func_template.format(
-                                en_name=snake_to_cap_camel(
-                                    singularize(name)))))
+        result = self.en_template.format(
+            en_name=snake_to_cap_camel(name),
+            struct_attrs="\n".join(sorted(attr_list)))
         return result
 
     def endpoint(self, name, attrs, entities):
-        attr_list = []
-        attr_template = "\t{name} {type}Endpoint"
-        new_attr_list = []
-        new_attr_template = "\t{name}: New{type}Endpoint(path),"
-        for subendpoint in attrs['subep']:
-            subendpoint_name = subendpoint.replace(name, "")
-            attr_list.append(attr_template.format(
-                name=snake_to_cap_camel(subendpoint_name),
-                type=snake_to_cap_camel(subendpoint)))
-            new_attr_list.append(new_attr_template.format(
-                name=snake_to_cap_camel(subendpoint_name),
-                type=snake_to_cap_camel(subendpoint)))
-        result = self.ep_struct_template.format(
-            name=snake_to_cap_camel(name),
-            attrs="\n".join(sorted(attr_list)))
-        # if attrs['type'] == "endpoint":
-        en_name = attrs['path'].split("/")[-1]
-        if singularize(en_name) in entities:
-            result = "\n".join((
-                result,
-                self.ep_func_template.format(
-                    en_name=snake_to_cap_camel(
-                        singularize(en_name)),
-                    ep_name=snake_to_cap_camel(name))))
-        result = "\n".join((
-            result,
-            self.ep_new_template.format(
-                ep_name=snake_to_cap_camel(name),
-                path=attrs['path'].strip("/"),
-                attrs="\n".join(sorted(new_attr_list)))))
+        result = ""
         return result
 
     def entity_endpoint(self, entity_endpoint_data):
-        pass
+        result = ""
+        return result
 
 
 def parse_schema(schema):
@@ -438,7 +252,8 @@ def main(args):
 
     endpoint_strs = []
     for endpoint in endpoints:
-        endpoint_strs.append(api.endpoint(endpoint['name'], endpoint, entities))
+        endpoint_strs.append(
+            api.endpoint(endpoint['name'], endpoint, entities))
     result_str = "\n".join(((result_str, "\n".join(endpoint_strs))))
     print(result_str)
 
