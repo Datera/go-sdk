@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -16,14 +17,63 @@ const (
 	PASSWORD = "password"
 	TENANT   = "/root"
 	TIMEOUT  = "30s"
+	TOKEN    = "test1234"
 )
 
+// TODO (_alastor_) implement real unit tests using these mocked structures
+// currently all the following tests are "integration tests" since they require
+// being pointed at a working cluster via the above constants
 type mockHTTPClient struct {
 }
 
 func (c *mockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 
 	return &http.Response{}, nil
+}
+
+type mockAPIConnection struct {
+	Method     string
+	Endpoint   string
+	Headers    map[string]string
+	QParams    []string
+	Hostname   string
+	APIVersion string
+	Port       string
+	Secure     bool
+	Client     *mockHTTPClient
+	Tenant     string
+	Auth       *dsdk.Auth
+}
+
+func (r mockAPIConnection) UpdateHeaders(h ...string) error {
+	fmt.Println("Headers:", h)
+	return nil
+}
+
+func (r mockAPIConnection) Login() error {
+	fmt.Println("Login")
+	r.Auth.SetToken(TOKEN)
+	return nil
+}
+
+func (r mockAPIConnection) Get(endpoint string, qparams ...string) ([]byte, error) {
+	fmt.Println(endpoint, qparams)
+	return []byte(""), nil
+}
+
+func (r mockAPIConnection) Put(endpoint string, sensitive bool, bodyp ...interface{}) ([]byte, error) {
+	fmt.Println(endpoint, sensitive, bodyp)
+	return []byte(""), nil
+}
+
+func (r mockAPIConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, error) {
+	fmt.Println(endpoint, bodyp)
+	return []byte(""), nil
+}
+
+func (r mockAPIConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, error) {
+	fmt.Println(endpoint, bodyp)
+	return []byte(""), nil
 }
 
 func getClient(t *testing.T) *dsdk.RootEp {
@@ -33,6 +83,12 @@ func getClient(t *testing.T) *dsdk.RootEp {
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
+	// Mock the connection pool clients
+	// auth := dsdk.NewAuth("test", "pass")
+	// for i := 0; i <= dsdk.MaxPoolConn; i++ {
+	// 	<-dsdk.Cpool.Conns
+	// 	dsdk.Cpool.Conns <- &mockAPIConnection{Auth: auth}
+	// }
 	return client
 }
 
@@ -159,22 +215,38 @@ func TestConcurrency(t *testing.T) {
 
 func TestClean(t *testing.T) {
 	client := getClient(t)
-	ais, err := client.GetEp("app_instances").List()
-	for _, ai := range ais {
-		_, err = ai.Set("admin_state=offline", "force=true")
-		if err != nil {
-			t.Fatal(err)
+	var dones []chan int
+	f := func(lc chan int, en dsdk.IEntity) {
+		if strings.Contains(en.GetPath(), "app_instances") {
+			en.Set("admin_state=offline", "force=true")
 		}
-		err = ai.Delete("force=true")
-		if err != nil {
-			t.Fatal(err)
-		}
+		en.Delete("force=true")
+		lc <- 1
 	}
+
+	// Count number of requests we need to make
+	ais, _ := client.GetEp("app_instances").List()
 	inits, _ := client.GetEp("initiators").List()
+
+	// Populate channel array
+	ldones := len(ais) + len(inits)
+	for i := 0; i < ldones; i++ {
+		dones = append(dones, make(chan int))
+	}
+
+	// Initiate goroutines with channels
+	chi := 0
+	for _, ai := range ais {
+		go f(dones[chi], ai)
+		chi += 1
+	}
 	for _, init := range inits {
-		err = init.Delete()
-		if err != nil {
-			t.Fatal(err)
-		}
+		go f(dones[chi], init)
+		chi += 1
+	}
+
+	// Check channels for completion
+	for _, ch := range dones {
+		<-ch
 	}
 }

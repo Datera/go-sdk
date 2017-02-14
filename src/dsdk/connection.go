@@ -49,29 +49,29 @@ type IHTTPClient interface {
 
 // Connection Pool to allow for concurrent connections to the backend
 type ConnectionPool struct {
-	conns chan IAPIConnection
+	Conns chan IAPIConnection
 }
 
 func NewConnPool(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*ConnectionPool, error) {
 	c := &ConnectionPool{}
-	c.conns = make(chan IAPIConnection, MaxPoolConn)
+	c.Conns = make(chan IAPIConnection, MaxPoolConn)
 	auth := NewAuth(username, password)
 	for i := 0; i < MaxPoolConn; i++ {
 		api, err := NewAPIConnection(hostname, port, apiVersion, tenant, timeout, headers, secure, auth)
 		if err != nil {
 			return nil, err
 		}
-		c.conns <- api
+		c.Conns <- api
 	}
 	return c, nil
 }
 
 func (c *ConnectionPool) GetConn() IAPIConnection {
-	return <-c.conns
+	return <-c.Conns
 }
 
 func (c *ConnectionPool) ReleaseConn(api IAPIConnection) {
-	c.conns <- api
+	c.Conns <- api
 }
 
 type APIConnection struct {

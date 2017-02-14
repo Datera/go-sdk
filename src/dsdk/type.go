@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var cpool *ConnectionPool
+var Cpool *ConnectionPool
 
 type RootEp struct {
 	Path string
@@ -17,6 +17,7 @@ type IEndpoint interface {
 	Create(bodyp ...interface{}) (IEntity, error)
 	List(queryp ...string) ([]IEntity, error)
 	Set(bodyp ...interface{}) (IEntity, error)
+	GetPath() string
 }
 
 type Endpoint struct {
@@ -27,6 +28,7 @@ type IEntity interface {
 	Get(string) interface{}
 	GetEn(string) []IEntity
 	GetEp(string) IEndpoint
+	GetPath() string
 	Reload() (IEntity, error)
 	Set(bodyp ...interface{}) (IEntity, error)
 	Delete(bodyp ...interface{}) error
@@ -40,16 +42,16 @@ type Entity struct {
 func NewRootEp(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*RootEp, error) {
 	var err error
 	//Initialize global connection object
-	cpool, err = NewConnPool(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
+	Cpool, err = NewConnPool(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
 	if err != nil {
 		return nil, err
 	}
-	conn := cpool.GetConn()
-	defer cpool.ReleaseConn(conn)
-	err = conn.Login()
-	if err != nil {
-		return nil, err
-	}
+	conn := Cpool.GetConn()
+	defer Cpool.ReleaseConn(conn)
+	// err = conn.Login()
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return &RootEp{
 		Path: "",
 	}, nil
@@ -78,10 +80,14 @@ func (ep Endpoint) GetEp(path string) IEndpoint {
 	return NewEp(ep.Path, path)
 }
 
+func (ep Endpoint) GetPath() string {
+	return ep.Path
+}
+
 func (ep Endpoint) Create(bodyp ...interface{}) (IEntity, error) {
 	var en Entity
-	conn := cpool.GetConn()
-	defer cpool.ReleaseConn(conn)
+	conn := Cpool.GetConn()
+	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Post(ep.Path, bodyp...)
 	d, e, err := getData(r)
 	if e.Message != "" {
@@ -102,8 +108,8 @@ func (ep Endpoint) Create(bodyp ...interface{}) (IEntity, error) {
 
 func (ep Endpoint) List(queryp ...string) ([]IEntity, error) {
 	ens := []IEntity{}
-	conn := cpool.GetConn()
-	defer cpool.ReleaseConn(conn)
+	conn := Cpool.GetConn()
+	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Get(ep.Path, queryp...)
 	d, e, err := getData(r)
 	if e.Message != "" {
@@ -129,8 +135,8 @@ func (ep Endpoint) List(queryp ...string) ([]IEntity, error) {
 
 func (ep Endpoint) Set(bodyp ...interface{}) (IEntity, error) {
 	var n Entity
-	conn := cpool.GetConn()
-	defer cpool.ReleaseConn(conn)
+	conn := Cpool.GetConn()
+	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Put(ep.Path, false, bodyp...)
 	d, e, err := getData(r)
 	if e.Message != "" {
@@ -157,6 +163,10 @@ func (en Entity) GetEp(path string) IEndpoint {
 	return NewEp(en.Path, path)
 }
 
+func (en Entity) GetPath() string {
+	return en.Path
+}
+
 func (en Entity) GetEn(enKey string) []IEntity {
 	ens := []IEntity{}
 	eitems := en.Items[enKey].([]interface{})
@@ -172,8 +182,8 @@ func (en Entity) GetEn(enKey string) []IEntity {
 
 func (en Entity) Reload() (IEntity, error) {
 	var n Entity
-	conn := cpool.GetConn()
-	defer cpool.ReleaseConn(conn)
+	conn := Cpool.GetConn()
+	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Get(en.Path)
 	d, e, err := getData(r)
 	if e.Message != "" {
@@ -194,8 +204,8 @@ func (en Entity) Reload() (IEntity, error) {
 
 func (en Entity) Set(bodyp ...interface{}) (IEntity, error) {
 	var n Entity
-	conn := cpool.GetConn()
-	defer cpool.ReleaseConn(conn)
+	conn := Cpool.GetConn()
+	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Put(en.Path, false, bodyp...)
 	d, e, err := getData(r)
 	if e.Message != "" {
@@ -215,8 +225,8 @@ func (en Entity) Set(bodyp ...interface{}) (IEntity, error) {
 }
 
 func (en Entity) Delete(bodyp ...interface{}) error {
-	conn := cpool.GetConn()
-	defer cpool.ReleaseConn(conn)
+	conn := Cpool.GetConn()
+	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Delete(en.Path, bodyp...)
 	_, e, err := getData(r)
 	if e.Message != "" {
