@@ -478,15 +478,15 @@ func (r *APIConnection) Login() error {
 	return nil
 }
 
-func getData(resp []byte) (json.RawMessage, *ErrResponse21, error) {
+func getData(resp []byte) (json.RawMessage, *Response21, *ErrResponse21, error) {
 	var r Response21
 	var e ErrResponse21
 	err := json.Unmarshal(resp, &r)
 	if err != nil {
-		return []byte{}, nil, err
+		return []byte{}, nil, nil, err
 	}
 	err = json.Unmarshal(resp, &e)
-	return r.DataRaw, &e, nil
+	return r.DataRaw, &r, &e, nil
 }
 
 func handleBadResponse(resp *http.Response, rbody []byte) error {

@@ -128,4 +128,14 @@ Getting Started
 
     }
 
+Handy Functions
+---------------
+
+::
+
+    // Use this function with caution.  Currently it will clean everything
+    // under the configured Tenant.  This may change in the future to include
+    // all tenants under the available login.
+    client.ForceClean()
+
 Please consult the test files for more in depth API usage

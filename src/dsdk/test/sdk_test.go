@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 )
 
@@ -236,6 +235,22 @@ func TestAutoGenEntities(t *testing.T) {
 	}
 }
 
+func TestSystem(t *testing.T) {
+	// client := getClient(t)
+
+	// svs, err := client.GetEp("system").GetEp("ntp_servers").List()
+	// if err != nil {
+	// 	t.Fatalf("%s", err)
+	// }
+	// var mysv dsdk.NtpServer
+	// err = json.Unmarshal(svs[0].GetB(), &mysv)
+	// if err != nil {
+	// 	t.Fatalf("%s", err)
+	// }
+
+	// fmt.Println(mysv)
+}
+
 func TestReadme(t *testing.T) {
 	client := getClient(t)
 	// Now that we have the client, lets create an AppInstance
@@ -314,38 +329,5 @@ func TestReadme(t *testing.T) {
 
 func TestClean(t *testing.T) {
 	client := getClient(t)
-	var dones []chan int
-	f := func(lc chan int, en dsdk.IEntity) {
-		if strings.Contains(en.GetPath(), "app_instances") {
-			en.Set("admin_state=offline", "force=true")
-		}
-		en.Delete("force=true")
-		lc <- 1
-	}
-
-	// Count number of requests we need to make
-	ais, _ := client.GetEp("app_instances").List()
-	inits, _ := client.GetEp("initiators").List()
-
-	// Populate channel array
-	ldones := len(ais) + len(inits)
-	for i := 0; i < ldones; i++ {
-		dones = append(dones, make(chan int))
-	}
-
-	// Initiate goroutines with channels
-	chi := 0
-	for _, ai := range ais {
-		go f(dones[chi], ai)
-		chi += 1
-	}
-	for _, init := range inits {
-		go f(dones[chi], init)
-		chi += 1
-	}
-
-	// Check channels for completion
-	for _, ch := range dones {
-		<-ch
-	}
+	client.ForceClean()
 }

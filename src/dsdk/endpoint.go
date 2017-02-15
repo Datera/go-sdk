@@ -62,7 +62,7 @@ func (ep Endpoint) Create(bodyp ...interface{}) (IEntity, error) {
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Post(ep.Path, bodyp...)
-	d, e, err := getData(r)
+	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
 	}
@@ -84,7 +84,7 @@ func (ep Endpoint) List(queryp ...string) ([]IEntity, error) {
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Get(ep.Path, queryp...)
-	d, e, err := getData(r)
+	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
 	}
@@ -111,7 +111,7 @@ func (ep Endpoint) Set(bodyp ...interface{}) (IEntity, error) {
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Put(ep.Path, false, bodyp...)
-	d, e, err := getData(r)
+	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
 	}
@@ -183,7 +183,7 @@ func (en Entity) Reload() (IEntity, error) {
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Get(en.Path)
-	d, e, err := getData(r)
+	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
 	}
@@ -205,7 +205,7 @@ func (en Entity) Set(bodyp ...interface{}) (IEntity, error) {
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Put(en.Path, false, bodyp...)
-	d, e, err := getData(r)
+	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
 	}
@@ -226,7 +226,7 @@ func (en Entity) Delete(bodyp ...interface{}) error {
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Delete(en.Path, bodyp...)
-	_, e, err := getData(r)
+	_, _, e, err := getData(r)
 	if e.Message != "" {
 		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
 	}
