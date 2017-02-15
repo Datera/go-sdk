@@ -11,6 +11,7 @@ type IEndpoint interface {
 	Create(bodyp ...interface{}) (IEntity, error)
 	List(queryp ...string) ([]IEntity, error)
 	Set(bodyp ...interface{}) (IEntity, error)
+	Get(queryp ...string) (IEntity, error)
 	GetPath() string
 }
 
@@ -104,6 +105,28 @@ func (ep Endpoint) List(queryp ...string) ([]IEntity, error) {
 		ens = append(ens, en)
 	}
 	return ens, nil
+}
+
+func (ep Endpoint) Get(queryp ...string) (IEntity, error) {
+	var en IEntity
+	conn := Cpool.GetConn()
+	defer Cpool.ReleaseConn(conn)
+	r, _ := conn.Get(ep.Path, queryp...)
+	d, _, e, err := getData(r)
+	if e.Message != "" {
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+	}
+	if err != nil {
+		panic(err)
+	}
+	var i map[string]interface{}
+	err = json.Unmarshal(d, &i)
+	if err != nil {
+		return en, err
+	}
+	p := i["path"].(string)
+	en = NewEntity(p, i).(Entity)
+	return en, nil
 }
 
 func (ep Endpoint) Set(bodyp ...interface{}) (IEntity, error) {

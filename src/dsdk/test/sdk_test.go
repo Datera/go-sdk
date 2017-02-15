@@ -154,6 +154,16 @@ func TestCreate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
+
+	// Test getting this ai directly
+	myai, err := client.GetEp("app_instances").GetEp(name).Get()
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	if myai.GetA()["name"] != name {
+		t.Fatalf("Ai name %s did not match actual name %s", name, myai.GetA()["name"])
+	}
+
 	ai, err = ai.Set("admin_state=offline")
 	if err != nil {
 		t.Fatalf("%s", err)
