@@ -2,6 +2,7 @@ package dsdk
 
 import (
 	"strings"
+	"time"
 )
 
 const (
@@ -31,12 +32,26 @@ func (c Client) GetEp(path string) IEndpoint {
 	return NewEp("", path)
 }
 
-// Cleans AppInstances, StorageInstances, Initiators and InitiatorGroups under
+// Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under
 // the currently configured tenant
 func (c Client) ForceClean() {
 	f := func(lc chan int, en IEntity) {
 		if strings.Contains(en.GetPath(), "app_instances") {
 			en.Set("admin_state=offline", "force=true")
+		}
+		if strings.Contains(en.GetPath(), "app_templates") {
+			for {
+				err := en.Delete("force=true")
+				if err != nil {
+					if strings.Contains(err.Error(), "read-only") {
+						break
+					} else {
+						time.Sleep(2 * time.Second)
+					}
+				} else {
+					break
+				}
+			}
 		}
 		en.Delete("force=true")
 		lc <- 1
@@ -44,7 +59,7 @@ func (c Client) ForceClean() {
 
 	var dones []chan int
 	chi := 0
-	for _, epStr := range []string{"app_instances", "initiators", "initiator_groups"} {
+	for _, epStr := range []string{"app_instances", "app_templates", "initiators", "initiator_groups"} {
 		items, _ := c.GetEp(epStr).List()
 		numItems := len(items)
 		for i := 0; i < numItems; i++ {

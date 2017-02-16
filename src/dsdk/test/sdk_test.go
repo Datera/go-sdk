@@ -176,7 +176,26 @@ func TestCreate(t *testing.T) {
 
 func TestCreateWithTemplate(t *testing.T) {
 	client := getClient(t)
+	// Create initial app_template
 	name, _ := dsdk.NewUUID()
+	vol := dsdk.VolumeTemplate{
+		Name:         "volume-1",
+		ReplicaCount: 1,
+		Size:         100,
+	}
+	st := dsdk.StorageTemplate{
+		Name:            "storage-1",
+		VolumeTemplates: &[]dsdk.VolumeTemplate{vol},
+	}
+	apptc := dsdk.AppTemplate{
+		Name:             "basic_small_single",
+		StorageTemplates: &[]dsdk.StorageTemplate{st},
+	}
+	_, err := client.GetEp("app_templates").Create(apptc)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	// Use new app template to create app instance
 	appt := dsdk.AppTemplate{
 		Path: "/app_templates/basic_small_single",
 	}
@@ -193,6 +212,7 @@ func TestCreateWithTemplate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
+	// Check the created app instance
 
 	var myAi dsdk.AppInstance
 	err = json.Unmarshal(ai.GetB(), &myAi)
