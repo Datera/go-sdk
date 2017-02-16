@@ -174,6 +174,38 @@ func TestCreate(t *testing.T) {
 	}
 }
 
+func TestCreateWithTemplate(t *testing.T) {
+	client := getClient(t)
+	name, _ := dsdk.NewUUID()
+	appt := dsdk.AppTemplate{
+		Path: "/app_templates/basic_small_single",
+	}
+	aie := dsdk.AppInstance{
+		Name:        name,
+		AppTemplate: &appt,
+	}
+	ai, err := client.GetEp("app_instances").Create(aie)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	ai, err = ai.Reload()
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	var myAi dsdk.AppInstance
+	err = json.Unmarshal(ai.GetB(), &myAi)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	if myAi.Name != aie.Name {
+		t.Fatalf("Instantiated App Template name does not match requested name: %s, %s", myAi.Name, aie.Name)
+	}
+
+}
+
 func TestACL(t *testing.T) {
 	client := getClient(t)
 	name, _ := dsdk.NewUUID()
