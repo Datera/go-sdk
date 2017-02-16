@@ -59,7 +59,9 @@ func (ep Endpoint) GetPath() string {
 }
 
 func (ep Endpoint) Create(bodyp ...interface{}) (IEntity, error) {
-	var en Entity
+	// We actually create a concrete entity to return in failure conditions
+	// so it can be deleted without nul pointer panics
+	en := Entity{}
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Post(ep.Path, bodyp...)
@@ -98,17 +100,18 @@ func (ep Endpoint) List(queryp ...string) ([]IEntity, error) {
 		panic(err)
 	}
 	for _, val := range j {
-		var en Entity
 		v := val.(map[string]interface{})
 		p := v["path"].(string)
-		en = NewEntity(p, v).(Entity)
+		en := NewEntity(p, v).(Entity)
 		ens = append(ens, en)
 	}
 	return ens, nil
 }
 
 func (ep Endpoint) Get(queryp ...string) (IEntity, error) {
-	var en IEntity
+	// We actually create a concrete entity to return in failure conditions
+	// so it can be deleted without nul pointer panics
+	en := Entity{}
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Get(ep.Path, queryp...)
@@ -130,13 +133,15 @@ func (ep Endpoint) Get(queryp ...string) (IEntity, error) {
 }
 
 func (ep Endpoint) Set(bodyp ...interface{}) (IEntity, error) {
-	var n Entity
+	// We actually create a concrete entity to return in failure conditions
+	// so it can be deleted without nul pointer panics
+	en := Entity{}
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Put(ep.Path, false, bodyp...)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
-		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
+		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
 	}
 	if err != nil {
 		panic(err)
@@ -144,11 +149,11 @@ func (ep Endpoint) Set(bodyp ...interface{}) (IEntity, error) {
 	var i map[string]interface{}
 	err = json.Unmarshal(d, &i)
 	if err != nil {
-		return n, err
+		return en, err
 	}
 	p := i["path"].(string)
-	n = NewEntity(p, i).(Entity)
-	return n, nil
+	en = NewEntity(p, i).(Entity)
+	return en, nil
 }
 
 func (en Entity) Get(key string) interface{} {
@@ -192,17 +197,18 @@ func (en Entity) GetEn(enKey string) []IEntity {
 	ens := []IEntity{}
 	eitems := en.Items[enKey].([]interface{})
 	for _, i := range eitems {
-		var en Entity
 		v := i.(map[string]interface{})
 		p := v["path"].(string)
-		en = NewEntity(p, v).(Entity)
-		ens = append(ens, en)
+		n := NewEntity(p, v).(Entity)
+		ens = append(ens, n)
 	}
 	return ens
 }
 
 func (en Entity) Reload() (IEntity, error) {
-	var n Entity
+	// We actually create a concrete entity to return in failure conditions
+	// so it can be deleted without nul pointer panics
+	n := Entity{}
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Get(en.Path)
@@ -224,7 +230,9 @@ func (en Entity) Reload() (IEntity, error) {
 }
 
 func (en Entity) Set(bodyp ...interface{}) (IEntity, error) {
-	var n Entity
+	// We actually create a concrete entity to return in failure conditions
+	// so it can be deleted without nul pointer panics
+	n := Entity{}
 	conn := Cpool.GetConn()
 	defer Cpool.ReleaseConn(conn)
 	r, _ := conn.Put(en.Path, false, bodyp...)

@@ -202,6 +202,17 @@ func TestACL(t *testing.T) {
 	}
 }
 
+func TestFailDelete(t *testing.T) {
+	client := getClient(t)
+	name, _ := dsdk.NewUUID()
+	ai, err := client.GetEp("app_instances").GetEp(name).Get()
+	if err != nil {
+		ai.Delete()
+	} else {
+		t.Fatalf("Get request for non-existent app_instance succeeded.  AI: %s", ai)
+	}
+}
+
 func TestConcurrency(t *testing.T) {
 	client := getClient(t)
 	n := dsdk.MaxPoolConn * 5
