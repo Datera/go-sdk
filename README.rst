@@ -45,17 +45,17 @@ Getting Started
 
     func main() {
 
-        // First we'll get the client setup
+        // First we'll get the sdk setup
         headers = make(map[string]string)
-        client, err := dsdk.NewClient(
+        sdk, err := dsdk.NewSDK(
             "172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
         if err != nil {
             panic(err)
         }
 
-        // Now that we have the client, lets create an AppInstance
+        // Now that we have the sdk, lets create an AppInstance
         // Each call to a SubEndpoint is done via the "GetEp" function
-        ai, err := client.GetEp("app_instances").Create("name=my-app")
+        ai, err := sdk.GetEp("app_instances").Create("name=my-app")
         if err != nil {
             panic(err)
         }
@@ -104,7 +104,7 @@ Getting Started
             Name:             "my-ai",
             StorageInstances: &[]dsdk.StorageInstance{testSi},
         }
-        ai, err = client.GetEp("app_instances").Create(testAi)
+        ai, err = sdk.GetEp("app_instances").Create(testAi)
         ai, err = ai.Reload()
         var myAi dsdk.AppInstance
         if err != nil {
@@ -136,6 +136,6 @@ Handy Functions
     // Use this function with caution.  Currently it will clean everything
     // under the configured Tenant.  This may change in the future to include
     // all tenants under the available login.
-    client.ForceClean()
+    sdk.ForceClean()
 
 Please consult the test files for more in depth API usage
