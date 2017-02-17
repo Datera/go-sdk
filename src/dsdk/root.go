@@ -10,13 +10,13 @@ const (
 )
 
 var (
-	Cpool *ConnectionPool
+	Cpool *connectionPool
 )
 
-type Client struct {
+type SDK struct {
 }
 
-func NewClient(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*Client, error) {
+func NewSDK(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*SDK, error) {
 	var err error
 	//Initialize global connection object
 	Cpool, err = newConnPool(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
@@ -25,16 +25,16 @@ func NewClient(hostname, port, username, password, apiVersion, tenant, timeout s
 	}
 	conn := Cpool.getConn()
 	defer Cpool.releaseConn(conn)
-	return &Client{}, nil
+	return &SDK{}, nil
 }
 
-func (c Client) GetEp(path string) IEndpoint {
+func (c SDK) GetEp(path string) IEndpoint {
 	return newEp("", path)
 }
 
 // Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under
 // the currently configured tenant
-func (c Client) ForceClean() {
+func (c SDK) ForceClean() {
 	f := func(lc chan int, en IEntity) {
 		if strings.Contains(en.GetPath(), "app_instances") {
 			en.Set("admin_state=offline", "force=true")

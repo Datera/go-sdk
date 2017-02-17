@@ -18,37 +18,37 @@ const (
 	TOKEN    = "test1234"
 )
 
-func getClient(t *testing.T) *dsdk.Client {
+func getSDK(t *testing.T) *dsdk.SDK {
 	headers := make(map[string]string)
-	client, err := dsdk.NewClient(
+	sdk, err := dsdk.NewSDK(
 		ADDR, PORT, USERNAME, PASSWORD, APIVER, TENANT, TIMEOUT, headers, false)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	// Mock the connection pool clients
+	// Mock the connection pool sdks
 	// auth := dsdk.NewAuth("test", "pass")
 	// for i := 0; i <= dsdk.MaxPoolConn; i++ {
 	// 	<-dsdk.Cpool.Conns
 	// 	dsdk.Cpool.Conns <- &mockAPIConnection{Auth: auth}
 	// }
-	return client
+	return sdk
 }
 
 func TestEndpoint(t *testing.T) {
-	client := getClient(t)
-	_, err := client.GetEp("app_instances").List()
+	sdk := getSDK(t)
+	_, err := sdk.GetEp("app_instances").List()
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 }
 
 func TestSubendpoint(t *testing.T) {
-	client := getClient(t)
+	sdk := getSDK(t)
 	name, _ := dsdk.NewUUID()
-	ai, err := client.GetEp("app_instances").Create(
+	ai, err := sdk.GetEp("app_instances").Create(
 		fmt.Sprintf("name=%s", name))
 	ai.GetEp("storage_instances").Create()
-	ais, err := client.GetEp("app_instances").List()
+	ais, err := sdk.GetEp("app_instances").List()
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -63,9 +63,9 @@ func TestSubendpoint(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	client := getClient(t)
+	sdk := getSDK(t)
 	name, _ := dsdk.NewUUID()
-	ai, err := client.GetEp("app_instances").Create(
+	ai, err := sdk.GetEp("app_instances").Create(
 		fmt.Sprintf("name=%s", name))
 	if err != nil {
 		t.Fatalf("%s", err)
@@ -76,7 +76,7 @@ func TestCreate(t *testing.T) {
 	}
 
 	// Test getting this ai directly
-	myai, err := client.GetEp("app_instances").GetEp(name).Get()
+	myai, err := sdk.GetEp("app_instances").GetEp(name).Get()
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -95,7 +95,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestCreateWithTemplate(t *testing.T) {
-	client := getClient(t)
+	sdk := getSDK(t)
 	// Create initial app_template
 	name, _ := dsdk.NewUUID()
 	vol := dsdk.VolumeTemplate{
@@ -111,7 +111,7 @@ func TestCreateWithTemplate(t *testing.T) {
 		Name:             "basic_small_single",
 		StorageTemplates: &[]dsdk.StorageTemplate{st},
 	}
-	_, err := client.GetEp("app_templates").Create(apptc)
+	_, err := sdk.GetEp("app_templates").Create(apptc)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -123,7 +123,7 @@ func TestCreateWithTemplate(t *testing.T) {
 		Name:        name,
 		AppTemplate: &appt,
 	}
-	ai, err := client.GetEp("app_instances").Create(aie)
+	ai, err := sdk.GetEp("app_instances").Create(aie)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -147,15 +147,15 @@ func TestCreateWithTemplate(t *testing.T) {
 }
 
 func TestACL(t *testing.T) {
-	client := getClient(t)
+	sdk := getSDK(t)
 	name, _ := dsdk.NewUUID()
-	ai, err := client.GetEp("app_instances").Create(
+	ai, err := sdk.GetEp("app_instances").Create(
 		fmt.Sprintf("name=%s", name))
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 	si, _ := ai.GetEp("storage_instances").Create("name=storage-1")
-	initep := client.GetEp("initiators")
+	initep := sdk.GetEp("initiators")
 	_, err = initep.Create(
 		"name=test-initiator",
 		"id=iqn.1993-08.org.debian:01:71be38c985a")
@@ -175,9 +175,9 @@ func TestACL(t *testing.T) {
 }
 
 func TestFailDelete(t *testing.T) {
-	client := getClient(t)
+	sdk := getSDK(t)
 	name, _ := dsdk.NewUUID()
-	ai, err := client.GetEp("app_instances").GetEp(name).Get()
+	ai, err := sdk.GetEp("app_instances").GetEp(name).Get()
 	if err != nil {
 		ai.Delete()
 	} else {
@@ -186,14 +186,14 @@ func TestFailDelete(t *testing.T) {
 }
 
 func TestConcurrency(t *testing.T) {
-	client := getClient(t)
+	sdk := getSDK(t)
 	n := dsdk.MaxPoolConn * 5
 	var dones []chan int
 	for i := 0; i <= n; i++ {
 		dones = append(dones, make(chan int))
 	}
 	f := func(lc chan int) {
-		client.GetEp("app_instances").List()
+		sdk.GetEp("app_instances").List()
 		lc <- 1
 	}
 	for _, c := range dones {
@@ -206,10 +206,10 @@ func TestConcurrency(t *testing.T) {
 }
 
 func TestAutoGenEntities(t *testing.T) {
-	client := getClient(t)
+	sdk := getSDK(t)
 	name, _ := dsdk.NewUUID()
 	siname := "storage-1"
-	ai, _ := client.GetEp("app_instances").Create(
+	ai, _ := sdk.GetEp("app_instances").Create(
 		fmt.Sprintf("name=%s", name))
 	ai.GetEp("storage_instances").Create(
 		fmt.Sprintf("name=%s", siname))
@@ -229,9 +229,9 @@ func TestAutoGenEntities(t *testing.T) {
 }
 
 func TestSystem(t *testing.T) {
-	// client := getClient(t)
+	// sdk := getSDK(t)
 
-	// svs, err := client.GetEp("system").GetEp("ntp_servers").List()
+	// svs, err := sdk.GetEp("system").GetEp("ntp_servers").List()
 	// if err != nil {
 	// 	t.Fatalf("%s", err)
 	// }
@@ -245,10 +245,10 @@ func TestSystem(t *testing.T) {
 }
 
 func TestReadme(t *testing.T) {
-	client := getClient(t)
-	// Now that we have the client, lets create an AppInstance
+	sdk := getSDK(t)
+	// Now that we have the sdk, lets create an AppInstance
 	// Each call to a SubEndpoint is done via the "GetEp" function
-	ai, err := client.GetEp("app_instances").Create("name=my-app")
+	ai, err := sdk.GetEp("app_instances").Create("name=my-app")
 	if err != nil {
 		panic(err)
 	}
@@ -297,7 +297,7 @@ func TestReadme(t *testing.T) {
 		Name:             "my-ai",
 		StorageInstances: &[]dsdk.StorageInstance{testSi},
 	}
-	ai, err = client.GetEp("app_instances").Create(testAi)
+	ai, err = sdk.GetEp("app_instances").Create(testAi)
 	ai, err = ai.Reload()
 	var myAi dsdk.AppInstance
 	if err != nil {
@@ -321,6 +321,6 @@ func TestReadme(t *testing.T) {
 }
 
 func TestClean(t *testing.T) {
-	client := getClient(t)
-	client.ForceClean()
+	sdk := getSDK(t)
+	sdk.ForceClean()
 }
