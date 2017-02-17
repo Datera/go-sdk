@@ -21,7 +21,7 @@ type Endpoint struct {
 
 type IEntity interface {
 	Get(string) interface{}
-	GetA() map[string]interface{}
+	GetM() map[string]interface{}
 	GetB() []byte
 	GetEn(string) []IEntity
 	GetEp(string) IEndpoint
@@ -36,14 +36,14 @@ type Entity struct {
 	Items map[string]interface{}
 }
 
-func NewEp(parent, child string) IEndpoint {
+func newEp(parent, child string) IEndpoint {
 	path := strings.Trim(strings.Join([]string{parent, child}, "/"), "/")
 	return Endpoint{
 		Path: path,
 	}
 }
 
-func NewEntity(path string, items map[string]interface{}) IEntity {
+func newEntity(path string, items map[string]interface{}) IEntity {
 	return Entity{
 		Path:  path,
 		Items: items,
@@ -51,20 +51,36 @@ func NewEntity(path string, items map[string]interface{}) IEntity {
 }
 
 func (ep Endpoint) GetEp(path string) IEndpoint {
-	return NewEp(ep.Path, path)
+	return newEp(ep.Path, path)
 }
 
 func (ep Endpoint) GetPath() string {
 	return ep.Path
 }
 
+// Create an Entity via this Endpoint.  The IEntity object can be unmarshalled
+// into the matching Entity from the entity.go file
+// bodyp arguments can be in one of two forms
+//
+// 1. Vararg strings follwing this pattern: "key=value"
+//    These strings have a limitation in that they cannot be arbitrarily nested
+//    JSON values, instead they must be simple strings
+//    Eg.  "key=value" is fine, but `key=["some", "list"]` will fail
+//    the arbitrary JSON usecase is handled by #2
+//
+// 2. A single map[string]interface{} argument.  This handles the case where
+//    we need to send arbitrarily nested JSON as an argument
+//
+// Function arguments are setup this way to provide an easy way to handle 90%
+// of the use cases (where we're just passing key, value string pairs) but that
+// remaining 10% we need to pass something more complex
 func (ep Endpoint) Create(bodyp ...interface{}) (IEntity, error) {
 	// We actually create a concrete entity to return in failure conditions
 	// so it can be deleted without nul pointer panics
 	en := Entity{}
-	conn := Cpool.GetConn()
-	defer Cpool.ReleaseConn(conn)
-	r, _ := conn.Post(ep.Path, bodyp...)
+	conn := Cpool.getConn()
+	defer Cpool.releaseConn(conn)
+	r, _ := conn.post(ep.Path, bodyp...)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -75,18 +91,20 @@ func (ep Endpoint) Create(bodyp ...interface{}) (IEntity, error) {
 	var i map[string]interface{}
 	err = json.Unmarshal(d, &i)
 	p := i["path"].(string)
-	en = NewEntity(p, i).(Entity)
+	en = newEntity(p, i).(Entity)
 	if err != nil {
 		panic(err)
 	}
 	return en, nil
 }
 
+// List the Entities hosted on this Endpoint.  The IEntity objects can be unmarshalled
+// into the matching Entity from the entity.go file
 func (ep Endpoint) List(queryp ...string) ([]IEntity, error) {
 	ens := []IEntity{}
-	conn := Cpool.GetConn()
-	defer Cpool.ReleaseConn(conn)
-	r, _ := conn.Get(ep.Path, queryp...)
+	conn := Cpool.getConn()
+	defer Cpool.releaseConn(conn)
+	r, _ := conn.get(ep.Path, queryp...)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -102,19 +120,21 @@ func (ep Endpoint) List(queryp ...string) ([]IEntity, error) {
 	for _, val := range j {
 		v := val.(map[string]interface{})
 		p := v["path"].(string)
-		en := NewEntity(p, v).(Entity)
+		en := newEntity(p, v).(Entity)
 		ens = append(ens, en)
 	}
 	return ens, nil
 }
 
+// Get the Entity hosted on this Endpoint.  The IEntity object can be unmarshalled
+// into the matching Entity from the entity.go file
 func (ep Endpoint) Get(queryp ...string) (IEntity, error) {
 	// We actually create a concrete entity to return in failure conditions
 	// so it can be deleted without nul pointer panics
 	en := Entity{}
-	conn := Cpool.GetConn()
-	defer Cpool.ReleaseConn(conn)
-	r, _ := conn.Get(ep.Path, queryp...)
+	conn := Cpool.getConn()
+	defer Cpool.releaseConn(conn)
+	r, _ := conn.get(ep.Path, queryp...)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -128,17 +148,33 @@ func (ep Endpoint) Get(queryp ...string) (IEntity, error) {
 		return en, err
 	}
 	p := i["path"].(string)
-	en = NewEntity(p, i).(Entity)
+	en = newEntity(p, i).(Entity)
 	return en, nil
 }
 
+// Update attributes of the Entity hosted on this Endpoint.  The IEntity object can be
+// unmarshalled into the matching Entity from the entity.go file
+// bodyp arguments can be in one of two forms
+//
+// 1. Vararg strings follwing this pattern: "key=value"
+//    These strings have a limitation in that they cannot be arbitrarily nested
+//    JSON values, instead they must be simple strings
+//    Eg.  "key=value" is fine, but `key=["some", "list"]` will fail
+//    the arbitrary JSON usecase is handled by #2
+//
+// 2. A single map[string]interface{} argument.  This handles the case where
+//    we need to send arbitrarily nested JSON as an argument
+//
+// Function arguments are setup this way to provide an easy way to handle 90%
+// of the use cases (where we're just passing key, value string pairs) but that
+// remaining 10% we need to pass something more complex
 func (ep Endpoint) Set(bodyp ...interface{}) (IEntity, error) {
 	// We actually create a concrete entity to return in failure conditions
 	// so it can be deleted without nul pointer panics
 	en := Entity{}
-	conn := Cpool.GetConn()
-	defer Cpool.ReleaseConn(conn)
-	r, _ := conn.Put(ep.Path, false, bodyp...)
+	conn := Cpool.getConn()
+	defer Cpool.releaseConn(conn)
+	r, _ := conn.put(ep.Path, false, bodyp...)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -152,20 +188,23 @@ func (ep Endpoint) Set(bodyp ...interface{}) (IEntity, error) {
 		return en, err
 	}
 	p := i["path"].(string)
-	en = NewEntity(p, i).(Entity)
+	en = newEntity(p, i).(Entity)
 	return en, nil
 }
 
+// Access a key in this entity by name.  Must be type asserted after
+// recieving it
 func (en Entity) Get(key string) interface{} {
 	return en.Items[key]
 }
 
-// Short for "Get All"
-func (en Entity) GetA() map[string]interface{} {
+// Short for "Get Map", returns the entire map of this Entity
+func (en Entity) GetM() map[string]interface{} {
 	return en.Items
 }
 
-// Short for "Get Bytes"
+// Short for "Get Bytes".  Used for Unmarshalling into an Entity from the
+// entity.go file
 func (en Entity) GetB() []byte {
 	b, err := json.Marshal(en.Items)
 	if err != nil {
@@ -174,11 +213,13 @@ func (en Entity) GetB() []byte {
 	return b
 }
 
-// Short for "Get Endpoint"
+// Short for "Get Endpoint".  Does not make any request to the backend, just
+// used for constructing the path to that Endpoint.  Can be chained together.
 func (en Entity) GetEp(path string) IEndpoint {
-	return NewEp(en.Path, path)
+	return newEp(en.Path, path)
 }
 
+// Returns the full path to this Entity
 func (en Entity) GetPath() string {
 	return en.Path
 }
@@ -199,19 +240,21 @@ func (en Entity) GetEn(enKey string) []IEntity {
 	for _, i := range eitems {
 		v := i.(map[string]interface{})
 		p := v["path"].(string)
-		n := NewEntity(p, v).(Entity)
+		n := newEntity(p, v).(Entity)
 		ens = append(ens, n)
 	}
 	return ens
 }
 
+// Pull all the attributes of this Entity.  Useful if it has been changed at
+// some point and a newly updated version of the Entity is needed
 func (en Entity) Reload() (IEntity, error) {
 	// We actually create a concrete entity to return in failure conditions
 	// so it can be deleted without nul pointer panics
 	n := Entity{}
-	conn := Cpool.GetConn()
-	defer Cpool.ReleaseConn(conn)
-	r, _ := conn.Get(en.Path)
+	conn := Cpool.getConn()
+	defer Cpool.releaseConn(conn)
+	r, _ := conn.get(en.Path)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -225,17 +268,33 @@ func (en Entity) Reload() (IEntity, error) {
 		return n, err
 	}
 	p := i["path"].(string)
-	n = NewEntity(p, i).(Entity)
+	n = newEntity(p, i).(Entity)
 	return n, nil
 }
 
+// Update attributes of this Entity.  The IEntity object can be
+// unmarshalled into the matching Entity from the entity.go file
+// bodyp arguments can be in one of two forms
+//
+// 1. Vararg strings follwing this pattern: "key=value"
+//    These strings have a limitation in that they cannot be arbitrarily nested
+//    JSON values, instead they must be simple strings
+//    Eg.  "key=value" is fine, but `key=["some", "list"]` will fail
+//    the arbitrary JSON usecase is handled by #2
+//
+// 2. A single map[string]interface{} argument.  This handles the case where
+//    we need to send arbitrarily nested JSON as an argument
+//
+// Function arguments are setup this way to provide an easy way to handle 90%
+// of the use cases (where we're just passing key, value string pairs) but that
+// remaining 10% we need to pass something more complex
 func (en Entity) Set(bodyp ...interface{}) (IEntity, error) {
 	// We actually create a concrete entity to return in failure conditions
 	// so it can be deleted without nul pointer panics
 	n := Entity{}
-	conn := Cpool.GetConn()
-	defer Cpool.ReleaseConn(conn)
-	r, _ := conn.Put(en.Path, false, bodyp...)
+	conn := Cpool.getConn()
+	defer Cpool.releaseConn(conn)
+	r, _ := conn.put(en.Path, false, bodyp...)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -249,14 +308,29 @@ func (en Entity) Set(bodyp ...interface{}) (IEntity, error) {
 		return n, err
 	}
 	p := i["path"].(string)
-	n = NewEntity(p, i).(Entity)
+	n = newEntity(p, i).(Entity)
 	return n, nil
 }
 
+// Delete this Entity.
+// bodyp arguments can be in one of two forms
+//
+// 1. Vararg strings follwing this pattern: "key=value"
+//    These strings have a limitation in that they cannot be arbitrarily nested
+//    JSON values, instead they must be simple strings
+//    Eg.  "key=value" is fine, but `key=["some", "list"]` will fail
+//    the arbitrary JSON usecase is handled by #2
+//
+// 2. A single map[string]interface{} argument.  This handles the case where
+//    we need to send arbitrarily nested JSON as an argument
+//
+// Function arguments are setup this way to provide an easy way to handle 90%
+// of the use cases (where we're just passing key, value string pairs) but that
+// remaining 10% we need to pass something more complex
 func (en Entity) Delete(bodyp ...interface{}) error {
-	conn := Cpool.GetConn()
-	defer Cpool.ReleaseConn(conn)
-	r, _ := conn.Delete(en.Path, bodyp...)
+	conn := Cpool.getConn()
+	defer Cpool.releaseConn(conn)
+	r, _ := conn.delete(en.Path, bodyp...)
 	_, _, e, err := getData(r)
 	if e.Message != "" {
 		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))

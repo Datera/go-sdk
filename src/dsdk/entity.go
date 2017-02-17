@@ -1,5 +1,8 @@
 package dsdk
 
+// AccessNetworkIpPool Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type AccessNetworkIpPool struct {
 	Descr        string      `json:"descr,omitempty"`
 	Name         string      `json:"name,omitempty"`
@@ -7,12 +10,18 @@ type AccessNetworkIpPool struct {
 	Path         string      `json:"path,omitempty"`
 }
 
+// AclPolicy Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type AclPolicy struct {
 	InitiatorGroups *[]InitiatorGroup `json:"initiator_groups,omitempty"`
 	Initiators      *[]Initiator      `json:"initiators,omitempty"`
 	Path            string            `json:"path,omitempty"`
 }
 
+// AppInstance Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type AppInstance struct {
 	AccessControlMode string             `json:"access_control_mode,omitempty"`
 	AdminState        string             `json:"admin_state,omitempty"`
@@ -33,6 +42,9 @@ type AppInstance struct {
 	Uuid              string             `json:"uuid,omitempty"`
 }
 
+// AppTemplate Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type AppTemplate struct {
 	AppInstances     *[]AppInstance     `json:"app_instances,omitempty"`
 	Descr            string             `json:"descr,omitempty"`
@@ -42,6 +54,9 @@ type AppTemplate struct {
 	StorageTemplates *[]StorageTemplate `json:"storage_templates,omitempty"`
 }
 
+// AuditLog Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type AuditLog struct {
 	Description string `json:"description,omitempty"`
 	Id          string `json:"id,omitempty"`
@@ -57,6 +72,9 @@ type AuditLog struct {
 	Version     string `json:"version,omitempty"`
 }
 
+// Auth Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Auth struct {
 	InitiatorPswd     string `json:"initiator_pswd,omitempty"`
 	InitiatorUserName string `json:"initiator_user_name,omitempty"`
@@ -66,6 +84,9 @@ type Auth struct {
 	Type              string `json:"type,omitempty"`
 }
 
+// BootDrive Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type BootDrive struct {
 	Causes    []interface{} `json:"causes,omitempty"`
 	Health    string        `json:"health,omitempty"`
@@ -76,23 +97,35 @@ type BootDrive struct {
 	SlotLabel string        `json:"slot_label,omitempty"`
 }
 
+// Dns Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Dns struct {
 	Domain string `json:"domain,omitempty"`
 	Path   string `json:"path,omitempty"`
 }
 
+// DnsSearchDomain Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type DnsSearchDomain struct {
 	Domain string `json:"domain,omitempty"`
 	Order  int    `json:"order,omitempty"`
 	Path   string `json:"path,omitempty"`
 }
 
+// DnsServer Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type DnsServer struct {
 	Ip    string `json:"ip,omitempty"`
 	Order int    `json:"order,omitempty"`
 	Path  string `json:"path,omitempty"`
 }
 
+// EventLog Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type EventLog struct {
 	Cause        string `json:"cause,omitempty"`
 	Code         string `json:"code,omitempty"`
@@ -109,6 +142,9 @@ type EventLog struct {
 	Type         string `json:"type,omitempty"`
 }
 
+// FaultLog Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type FaultLog struct {
 	Acknowledged    bool   `json:"acknowledged,omitempty"`
 	CallhomeEnabled bool   `json:"callhome_enabled,omitempty"`
@@ -130,6 +166,9 @@ type FaultLog struct {
 	Type            string `json:"type,omitempty"`
 }
 
+// Hdd Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Hdd struct {
 	Causes    []interface{} `json:"causes,omitempty"`
 	Health    string        `json:"health,omitempty"`
@@ -140,6 +179,9 @@ type Hdd struct {
 	SlotLabel string        `json:"slot_label,omitempty"`
 }
 
+// HttpProxy Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type HttpProxy struct {
 	Enabled  bool   `json:"enabled,omitempty"`
 	Host     string `json:"host,omitempty"`
@@ -149,18 +191,27 @@ type HttpProxy struct {
 	User     *User  `json:"user,omitempty"`
 }
 
+// Initiator Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Initiator struct {
 	Id   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
 	Path string `json:"path,omitempty"`
 }
 
+// InitiatorGroup Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type InitiatorGroup struct {
 	Members []interface{} `json:"members,omitempty"`
 	Name    string        `json:"name,omitempty"`
 	Path    string        `json:"path,omitempty"`
 }
 
+// InternalIpBlock Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type InternalIpBlock struct {
 	Gateway string `json:"gateway,omitempty"`
 	Mtu     int    `json:"mtu,omitempty"`
@@ -172,6 +223,9 @@ type InternalIpBlock struct {
 	Vlan    int    `json:"vlan,omitempty"`
 }
 
+// IpAddress Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type IpAddress struct {
 	Gateway string `json:"gateway,omitempty"`
 	Ip      string `json:"ip,omitempty"`
@@ -182,6 +236,9 @@ type IpAddress struct {
 	Vlan    int    `json:"vlan,omitempty"`
 }
 
+// IpBlock Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type IpBlock struct {
 	Gateway string `json:"gateway,omitempty"`
 	Mtu     int    `json:"mtu,omitempty"`
@@ -193,6 +250,9 @@ type IpBlock struct {
 	Vlan    int    `json:"vlan,omitempty"`
 }
 
+// IpPool Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type IpPool struct {
 	Descr        string      `json:"descr,omitempty"`
 	Name         string      `json:"name,omitempty"`
@@ -200,6 +260,9 @@ type IpPool struct {
 	Path         string      `json:"path,omitempty"`
 }
 
+// MonitoringDestination Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type MonitoringDestination struct {
 	Facility  string `json:"facility,omitempty"`
 	Host      string `json:"host,omitempty"`
@@ -211,6 +274,9 @@ type MonitoringDestination struct {
 	Type      string `json:"type,omitempty"`
 }
 
+// MonitoringPolicy Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type MonitoringPolicy struct {
 	Destinations []interface{} `json:"destinations,omitempty"`
 	Enabled      bool          `json:"enabled,omitempty"`
@@ -218,6 +284,9 @@ type MonitoringPolicy struct {
 	Path         string        `json:"path,omitempty"`
 }
 
+// Network Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Network struct {
 	AccessNetworks  []interface{} `json:"access_networks,omitempty"`
 	AccessVip       interface{}   `json:"access_vip,omitempty"`
@@ -227,6 +296,9 @@ type Network struct {
 	Path            string        `json:"path,omitempty"`
 }
 
+// NetworkMapping Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type NetworkMapping struct {
 	Access1   string `json:"access_1,omitempty"`
 	Access2   string `json:"access_2,omitempty"`
@@ -237,6 +309,9 @@ type NetworkMapping struct {
 	Path      string `json:"path,omitempty"`
 }
 
+// Nic Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Nic struct {
 	Causes    []interface{} `json:"causes,omitempty"`
 	Health    string        `json:"health,omitempty"`
@@ -246,12 +321,18 @@ type Nic struct {
 	SlotLabel string        `json:"slot_label,omitempty"`
 }
 
+// NtpServer Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type NtpServer struct {
 	Ip    string `json:"ip,omitempty"`
 	Order int    `json:"order,omitempty"`
 	Path  string `json:"path,omitempty"`
 }
 
+// NvmFlashDevice Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type NvmFlashDevice struct {
 	Causes    []interface{} `json:"causes,omitempty"`
 	Health    string        `json:"health,omitempty"`
@@ -262,6 +343,9 @@ type NvmFlashDevice struct {
 	SlotLabel string        `json:"slot_label,omitempty"`
 }
 
+// PerformancePolicy Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type PerformancePolicy struct {
 	Path              string `json:"path,omitempty"`
 	ReadBandwidthMax  int    `json:"read_bandwidth_max,omitempty"`
@@ -272,12 +356,18 @@ type PerformancePolicy struct {
 	WriteIopsMax      int    `json:"write_iops_max,omitempty"`
 }
 
+// Role Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Role struct {
 	Path       string        `json:"path,omitempty"`
 	Privileges []interface{} `json:"privileges,omitempty"`
 	RoleId     string        `json:"role_id,omitempty"`
 }
 
+// Snapshot Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Snapshot struct {
 	OpState   string `json:"op_state,omitempty"`
 	Path      string `json:"path,omitempty"`
@@ -286,6 +376,9 @@ type Snapshot struct {
 	Uuid      string `json:"uuid,omitempty"`
 }
 
+// SnapshotPolicy Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type SnapshotPolicy struct {
 	Interval       string `json:"interval,omitempty"`
 	Name           string `json:"name,omitempty"`
@@ -294,6 +387,9 @@ type SnapshotPolicy struct {
 	StartTime      string `json:"start_time,omitempty"`
 }
 
+// SnmpPolicy Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type SnmpPolicy struct {
 	Contact  string  `json:"contact,omitempty"`
 	Enabled  bool    `json:"enabled,omitempty"`
@@ -302,6 +398,9 @@ type SnmpPolicy struct {
 	Users    *[]User `json:"users,omitempty"`
 }
 
+// SnmpUser Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type SnmpUser struct {
 	AuthPass      string `json:"auth_pass,omitempty"`
 	AuthProtocol  string `json:"auth_protocol,omitempty"`
@@ -314,6 +413,9 @@ type SnmpUser struct {
 	View          string `json:"view,omitempty"`
 }
 
+// StorageInstance Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type StorageInstance struct {
 	Access             interface{}   `json:"access,omitempty"`
 	AccessControlMode  string        `json:"access_control_mode,omitempty"`
@@ -332,6 +434,9 @@ type StorageInstance struct {
 	Volumes            *[]Volume     `json:"volumes,omitempty"`
 }
 
+// StorageNode Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type StorageNode struct {
 	AdminState          string             `json:"admin_state,omitempty"`
 	AvailableCapacity   int                `json:"available_capacity,omitempty"`
@@ -376,6 +481,9 @@ type StorageNode struct {
 	Volumes             *[]Volume          `json:"volumes,omitempty"`
 }
 
+// StorageTemplate Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type StorageTemplate struct {
 	Auth            *Auth             `json:"auth,omitempty"`
 	IpPool          *IpPool           `json:"ip_pool,omitempty"`
@@ -384,6 +492,9 @@ type StorageTemplate struct {
 	VolumeTemplates *[]VolumeTemplate `json:"volume_templates,omitempty"`
 }
 
+// Subsystem Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Subsystem struct {
 	Causes      []interface{} `json:"causes,omitempty"`
 	Fan         string        `json:"fan,omitempty"`
@@ -395,6 +506,9 @@ type Subsystem struct {
 	Voltage     string        `json:"voltage,omitempty"`
 }
 
+// System Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type System struct {
 	AllFlashAvailableCapacity   int           `json:"all_flash_available_capacity,omitempty"`
 	AllFlashProvisionedCapacity int           `json:"all_flash_provisioned_capacity,omitempty"`
@@ -423,6 +537,9 @@ type System struct {
 	Uuid                        string        `json:"uuid,omitempty"`
 }
 
+// Tenant Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Tenant struct {
 	Descr      string      `json:"descr,omitempty"`
 	Name       string      `json:"name,omitempty"`
@@ -431,6 +548,9 @@ type Tenant struct {
 	Subtenants interface{} `json:"subtenants,omitempty"`
 }
 
+// User Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type User struct {
 	Email    string    `json:"email,omitempty"`
 	Enabled  bool      `json:"enabled,omitempty"`
@@ -443,12 +563,18 @@ type User struct {
 	Version  string    `json:"version,omitempty"`
 }
 
+// Vip Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Vip struct {
 	Name         string      `json:"name,omitempty"`
 	NetworkPaths interface{} `json:"network_paths,omitempty"`
 	Path         string      `json:"path,omitempty"`
 }
 
+// Volume Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type Volume struct {
 	ActiveStorageNodes []interface{} `json:"active_storage_nodes,omitempty"`
 	CapacityInUse      int           `json:"capacity_in_use,omitempty"`
@@ -466,6 +592,9 @@ type Volume struct {
 	Uuid               string        `json:"uuid,omitempty"`
 }
 
+// VolumeTemplate Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type VolumeTemplate struct {
 	Name          string `json:"name,omitempty"`
 	Path          string `json:"path,omitempty"`

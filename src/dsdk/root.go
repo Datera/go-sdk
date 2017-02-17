@@ -19,17 +19,17 @@ type Client struct {
 func NewClient(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*Client, error) {
 	var err error
 	//Initialize global connection object
-	Cpool, err = NewConnPool(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
+	Cpool, err = newConnPool(hostname, port, username, password, apiVersion, tenant, timeout, headers, secure)
 	if err != nil {
 		return nil, err
 	}
-	conn := Cpool.GetConn()
-	defer Cpool.ReleaseConn(conn)
+	conn := Cpool.getConn()
+	defer Cpool.releaseConn(conn)
 	return &Client{}, nil
 }
 
 func (c Client) GetEp(path string) IEndpoint {
-	return NewEp("", path)
+	return newEp("", path)
 }
 
 // Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under

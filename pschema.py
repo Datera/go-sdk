@@ -81,6 +81,9 @@ class ApiWriter(object):
 class GoApiWriter(ApiWriter):
 
     en_template = """
+// {en_name} Entity Type for use when unpacking IEntity objects
+// returned from an Endpoint call or in a Create or Set request
+// to an Endpoint
 type {en_name} struct {{
 {struct_attrs}\n}}
 """

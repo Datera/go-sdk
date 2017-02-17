@@ -6,7 +6,6 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	structs "github.com/fatih/structs"
-	// snaker "github.com/serenize/snaker"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -37,12 +36,12 @@ var (
 )
 
 type IAPIConnection interface {
-	Post(string, ...interface{}) ([]byte, error)
-	Get(string, ...string) ([]byte, error)
-	Put(string, bool, ...interface{}) ([]byte, error)
-	Delete(string, ...interface{}) ([]byte, error)
-	Login() error
-	UpdateHeaders(...string) error
+	post(string, ...interface{}) ([]byte, error)
+	get(string, ...string) ([]byte, error)
+	put(string, bool, ...interface{}) ([]byte, error)
+	delete(string, ...interface{}) ([]byte, error)
+	login() error
+	updateHeaders(...string) error
 }
 
 type IHTTPClient interface {
@@ -54,12 +53,12 @@ type ConnectionPool struct {
 	Conns chan IAPIConnection
 }
 
-func NewConnPool(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*ConnectionPool, error) {
+func newConnPool(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*ConnectionPool, error) {
 	c := &ConnectionPool{}
 	c.Conns = make(chan IAPIConnection, MaxPoolConn)
-	auth := NewLogAuth(username, password)
+	auth := newLogAuth(username, password)
 	for i := 0; i < MaxPoolConn; i++ {
-		api, err := NewAPIConnection(hostname, port, apiVersion, tenant, timeout, headers, secure, auth)
+		api, err := newAPIConnection(hostname, port, apiVersion, tenant, timeout, headers, secure, auth)
 		if err != nil {
 			return nil, err
 		}
@@ -68,15 +67,15 @@ func NewConnPool(hostname, port, username, password, apiVersion, tenant, timeout
 	return c, nil
 }
 
-func (c *ConnectionPool) GetConn() IAPIConnection {
+func (c *ConnectionPool) getConn() IAPIConnection {
 	return <-c.Conns
 }
 
-func (c *ConnectionPool) ReleaseConn(api IAPIConnection) {
+func (c *ConnectionPool) releaseConn(api IAPIConnection) {
 	c.Conns <- api
 }
 
-type APIConnection struct {
+type apiConnection struct {
 	Method     string
 	Endpoint   string
 	Headers    map[string]string
@@ -87,19 +86,19 @@ type APIConnection struct {
 	Secure     bool
 	Client     IHTTPClient
 	Tenant     string
-	Auth       *LogAuth
+	Auth       *logAuth
 }
 
 // Unrelated to Auth object in entity.go
-type LogAuth struct {
+type logAuth struct {
 	APIToken string
 	Username string
 	Password string
 	Mutex    *sync.Mutex
 }
 
-func NewLogAuth(username, password string) *LogAuth {
-	return &LogAuth{
+func newLogAuth(username, password string) *logAuth {
+	return &logAuth{
 		Username: username,
 		Password: password,
 		APIToken: "",
@@ -107,19 +106,19 @@ func NewLogAuth(username, password string) *LogAuth {
 	}
 }
 
-func (a *LogAuth) SetToken(t string) {
+func (a *logAuth) setToken(t string) {
 	a.Mutex.Lock()
 	defer a.Mutex.Unlock()
 	a.APIToken = t
 }
 
-func (a *LogAuth) GetToken() string {
+func (a *logAuth) getToken() string {
 	a.Mutex.Lock()
 	defer a.Mutex.Unlock()
 	return a.APIToken
 }
 
-type ReturnLogin struct {
+type returnLogin struct {
 	Key     string `json:"key"`
 	Version string `json:"version"`
 }
@@ -146,7 +145,7 @@ type ErrResponse21 struct {
 }
 
 // Changing tenant should require changing the API connection object maybe?
-func NewAPIConnection(hostname, port, apiVersion, tenant, timeout string, headers map[string]string, secure bool, auth *LogAuth) (IAPIConnection, error) {
+func newAPIConnection(hostname, port, apiVersion, tenant, timeout string, headers map[string]string, secure bool, auth *logAuth) (IAPIConnection, error) {
 	InitLog(true, "")
 	t, err := time.ParseDuration(timeout)
 	if err != nil {
@@ -156,7 +155,7 @@ func NewAPIConnection(hostname, port, apiVersion, tenant, timeout string, header
 	for p, v := range headers {
 		h[p] = v
 	}
-	c := APIConnection{
+	c := apiConnection{
 		Hostname:   hostname,
 		Port:       port,
 		Tenant:     tenant,
@@ -166,7 +165,7 @@ func NewAPIConnection(hostname, port, apiVersion, tenant, timeout string, header
 		Client:     &http.Client{Timeout: t},
 		Auth:       auth,
 	}
-	c.UpdateHeaders(fmt.Sprintf("tenant=%s", tenant))
+	c.updateHeaders(fmt.Sprintf("tenant=%s", tenant))
 	log.Debugf("New API connection: %#v", c)
 	return &c, nil
 }
@@ -208,7 +207,7 @@ func parseTemplate(fstring string, args ...interface{}) (string, error) {
 }
 
 // Headers: "header=value"
-func (r *APIConnection) UpdateHeaders(headers ...string) error {
+func (r *apiConnection) updateHeaders(headers ...string) error {
 	for _, h := range headers {
 		h := strings.Split(h, "=")
 		r.Headers[h[0]] = h[1]
@@ -216,7 +215,7 @@ func (r *APIConnection) UpdateHeaders(headers ...string) error {
 	return nil
 }
 
-func (r *APIConnection) prepConn() (string, error) {
+func (r *apiConnection) prepConn() (string, error) {
 	var fstring string
 	if r.Secure {
 		fstring = secConnTemplate
@@ -233,8 +232,8 @@ func (r *APIConnection) prepConn() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if r.Auth.GetToken() != USetToken {
-		r.UpdateHeaders(fmt.Sprintf("Auth-Token=%s", r.Auth.GetToken()))
+	if r.Auth.getToken() != USetToken {
+		r.updateHeaders(fmt.Sprintf("Auth-Token=%s", r.Auth.getToken()))
 	}
 	for i, p := range r.QParams {
 		r.QParams[i] = url.QueryEscape(p)
@@ -246,7 +245,7 @@ func (r *APIConnection) prepConn() (string, error) {
 	return conn, err
 }
 
-func (r *APIConnection) doRequest(method, endpoint string, body []byte, qparams []string, sensitive bool, retry bool) ([]byte, error) {
+func (r *apiConnection) doRequest(method, endpoint string, body []byte, qparams []string, sensitive bool, retry bool) ([]byte, error) {
 	// Handle method
 	var m string
 	switch strings.ToLower(method) {
@@ -337,14 +336,14 @@ func (r *APIConnection) doRequest(method, endpoint string, body []byte, qparams 
 	err = handleBadResponse(resp, rbody)
 	// Retry if we need to login, but only once
 	if err == Retry && !retry {
-		r.Auth.SetToken(USetToken)
-		r.Login()
+		r.Auth.setToken(USetToken)
+		r.login()
 		return r.doRequest(method, endpoint, body, qparams, sensitive, true)
 	}
 	return rbody, err
 }
 
-func (r *APIConnection) Get(endpoint string, qparams ...string) ([]byte, error) {
+func (r *apiConnection) get(endpoint string, qparams ...string) ([]byte, error) {
 	return r.doRequest("get", endpoint, nil, qparams, false, false)
 }
 
@@ -362,7 +361,7 @@ func (r *APIConnection) Get(endpoint string, qparams ...string) ([]byte, error) 
 // Function arguments are setup this way to provide an easy way to handle 90%
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
-func (r *APIConnection) Put(endpoint string, sensitive bool, bodyp ...interface{}) ([]byte, error) {
+func (r *apiConnection) put(endpoint string, sensitive bool, bodyp ...interface{}) ([]byte, error) {
 	var body []byte
 	var params map[string]interface{}
 	var p interface{}
@@ -396,7 +395,7 @@ func (r *APIConnection) Put(endpoint string, sensitive bool, bodyp ...interface{
 // Function arguments are setup this way to provide an easy way to handle 90%
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
-func (r *APIConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, error) {
+func (r *apiConnection) post(endpoint string, bodyp ...interface{}) ([]byte, error) {
 	var body []byte
 	var params map[string]interface{}
 	var p interface{}
@@ -430,7 +429,7 @@ func (r *APIConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, err
 // Function arguments are setup this way to provide an easy way to handle 90%
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
-func (r *APIConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, error) {
+func (r *apiConnection) delete(endpoint string, bodyp ...interface{}) ([]byte, error) {
 	var body []byte
 	var params map[string]interface{}
 	var p interface{}
@@ -450,15 +449,15 @@ func (r *APIConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, e
 	return r.doRequest("delete", endpoint, body, nil, false, false)
 }
 
-// After successful login the API token is saved in the APIConnection object
-func (r *APIConnection) Login() error {
+// After successful login the API token is saved in the apiConnection object
+func (r *apiConnection) login() error {
 	p1 := fmt.Sprintf("name=%s", r.Auth.Username)
 	p2 := fmt.Sprintf("password=%s", r.Auth.Password)
-	var l ReturnLogin
+	var l returnLogin
 	var e ErrResponse21
 	// Only login if we need to
-	if r.Auth.GetToken() == USetToken {
-		resp, err := r.Put("login", true, p1, p2)
+	if r.Auth.getToken() == USetToken {
+		resp, err := r.put("login", true, p1, p2)
 		if err != nil {
 			serr := json.Unmarshal(resp, &e)
 			if serr != nil {
@@ -473,7 +472,7 @@ func (r *APIConnection) Login() error {
 		if l.Key == "" {
 			return fmt.Errorf("No Api Token In Response: %s", resp)
 		}
-		r.Auth.SetToken(l.Key)
+		r.Auth.setToken(l.Key)
 	}
 	return nil
 }

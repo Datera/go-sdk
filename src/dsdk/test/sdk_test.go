@@ -4,7 +4,6 @@ import (
 	"dsdk"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"testing"
 )
 
@@ -18,62 +17,6 @@ const (
 	TIMEOUT  = "30s"
 	TOKEN    = "test1234"
 )
-
-// TODO (_alastor_) implement real unit tests using these mocked structures
-// currently all the following tests are "integration tests" since they require
-// being pointed at a working cluster via the above constants
-type mockHTTPClient struct {
-}
-
-func (c *mockHTTPClient) Do(req *http.Request) (*http.Response, error) {
-
-	return &http.Response{}, nil
-}
-
-type mockAPIConnection struct {
-	Method     string
-	Endpoint   string
-	Headers    map[string]string
-	QParams    []string
-	Hostname   string
-	APIVersion string
-	Port       string
-	Secure     bool
-	Client     *mockHTTPClient
-	Tenant     string
-	Auth       *dsdk.LogAuth
-}
-
-func (r mockAPIConnection) UpdateHeaders(h ...string) error {
-	fmt.Println("Headers:", h)
-	return nil
-}
-
-func (r mockAPIConnection) Login() error {
-	fmt.Println("Login")
-	r.Auth.SetToken(TOKEN)
-	return nil
-}
-
-func (r mockAPIConnection) Get(endpoint string, qparams ...string) ([]byte, error) {
-	fmt.Println(endpoint, qparams)
-	return []byte(""), nil
-}
-
-func (r mockAPIConnection) Put(endpoint string, sensitive bool, bodyp ...interface{}) ([]byte, error) {
-	fmt.Println(endpoint, sensitive, bodyp)
-	return []byte(""), nil
-}
-
-func (r mockAPIConnection) Post(endpoint string, bodyp ...interface{}) ([]byte, error) {
-	fmt.Println(endpoint, bodyp)
-	return []byte(""), nil
-}
-
-func (r mockAPIConnection) Delete(endpoint string, bodyp ...interface{}) ([]byte, error) {
-	fmt.Println(endpoint, bodyp)
-	return []byte(""), nil
-}
 
 func getClient(t *testing.T) *dsdk.Client {
 	headers := make(map[string]string)
@@ -89,29 +32,6 @@ func getClient(t *testing.T) *dsdk.Client {
 	// 	dsdk.Cpool.Conns <- &mockAPIConnection{Auth: auth}
 	// }
 	return client
-}
-
-func TestApiBasic(t *testing.T) {
-
-}
-
-func TestConnection(t *testing.T) {
-	headers := make(map[string]string)
-	auth := dsdk.NewLogAuth("admin", "password")
-	conn, err := dsdk.NewAPIConnection("172.19.1.41", "7717", "2.1", "/root", "30s", headers, false, auth)
-	if err != nil {
-		t.Fatalf("%s", err)
-	}
-	conn.UpdateHeaders("Content-Type=application/json")
-	err = conn.Login()
-	if err != nil {
-		t.Fatalf("%s", err)
-	}
-	_, err = conn.Get("users")
-	if err != nil {
-		t.Fatalf("%s", err)
-	}
-
 }
 
 func TestEndpoint(t *testing.T) {
@@ -160,8 +80,8 @@ func TestCreate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	if myai.GetA()["name"] != name {
-		t.Fatalf("Ai name %s did not match actual name %s", name, myai.GetA()["name"])
+	if myai.GetM()["name"] != name {
+		t.Fatalf("Ai name %s did not match actual name %s", name, myai.GetM()["name"])
 	}
 
 	ai, err = ai.Set("admin_state=offline")

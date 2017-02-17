@@ -19,3 +19,6 @@ test:
 
 fmt:
 	env GOPATH=${GOPATH} go fmt dsdk
+
+doc:
+	env GOPATH=${GOPATH} godoc -html dsdk
