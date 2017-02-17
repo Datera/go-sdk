@@ -34,7 +34,7 @@ generate types/Classes for other languages.
 Getting Started
 ---------------
 
-::
+.. code:: go
 
     import (
         "fmt"
@@ -114,8 +114,8 @@ Getting Started
         if err != nil {
             t.Fatalf("%s", err)
         }
-        mySi := (*myAi.StorageInstances)[0]
-        myVol := (*mySi.Volumes)[0]
+        mySi := (\*myAi.StorageInstances)[0]
+        myVol := (\*mySi.Volumes)[0]
         fmt.Printf("AI Path: %s\nSI Path: %s\nVol Path: %s\n", myAi.Path, mySi.Path, myVol.Path)
 
         // Get the storage_instance endpoint, send "admin_state=online" and update our struct
@@ -131,7 +131,7 @@ Getting Started
 Handy Functions
 ---------------
 
-::
+.. code:: go
 
     // Use this function with caution.  Currently it will clean everything
     // under the configured Tenant.  This may change in the future to include
