@@ -12,6 +12,12 @@ type AccessNetworkIpPool struct {
 	Path         string      `json:"path,omitempty"`
 }
 
+func NewAccessNetworkIpPool(arg []byte) (AccessNetworkIpPool, error) {
+	var tmp AccessNetworkIpPool
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *AccessNetworkIpPool) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -31,6 +37,12 @@ type AclPolicy struct {
 	InitiatorGroups *[]InitiatorGroup `json:"initiator_groups,omitempty"`
 	Initiators      *[]Initiator      `json:"initiators,omitempty"`
 	Path            string            `json:"path,omitempty"`
+}
+
+func NewAclPolicy(arg []byte) (AclPolicy, error) {
+	var tmp AclPolicy
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *AclPolicy) Unpack(arg map[string]interface{}) error {
@@ -68,6 +80,12 @@ type AppInstance struct {
 	Uuid              string             `json:"uuid,omitempty"`
 }
 
+func NewAppInstance(arg []byte) (AppInstance, error) {
+	var tmp AppInstance
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *AppInstance) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -90,6 +108,12 @@ type AppTemplate struct {
 	Path             string             `json:"path,omitempty"`
 	SnapshotPolicies *[]SnapshotPolicy  `json:"snapshot_policies,omitempty"`
 	StorageTemplates *[]StorageTemplate `json:"storage_templates,omitempty"`
+}
+
+func NewAppTemplate(arg []byte) (AppTemplate, error) {
+	var tmp AppTemplate
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *AppTemplate) Unpack(arg map[string]interface{}) error {
@@ -122,6 +146,12 @@ type AuditLog struct {
 	Version     string `json:"version,omitempty"`
 }
 
+func NewAuditLog(arg []byte) (AuditLog, error) {
+	var tmp AuditLog
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *AuditLog) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -144,6 +174,12 @@ type Auth struct {
 	TargetPswd        string `json:"target_pswd,omitempty"`
 	TargetUserName    string `json:"target_user_name,omitempty"`
 	Type              string `json:"type,omitempty"`
+}
+
+func NewAuth(arg []byte) (Auth, error) {
+	var tmp Auth
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *Auth) Unpack(arg map[string]interface{}) error {
@@ -171,6 +207,12 @@ type BootDrive struct {
 	SlotLabel string        `json:"slot_label,omitempty"`
 }
 
+func NewBootDrive(arg []byte) (BootDrive, error) {
+	var tmp BootDrive
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *BootDrive) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -189,6 +231,12 @@ func (en *BootDrive) UnpackB(arg []byte) error {
 type Dns struct {
 	Domain string `json:"domain,omitempty"`
 	Path   string `json:"path,omitempty"`
+}
+
+func NewDns(arg []byte) (Dns, error) {
+	var tmp Dns
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *Dns) Unpack(arg map[string]interface{}) error {
@@ -212,6 +260,12 @@ type DnsSearchDomain struct {
 	Path   string `json:"path,omitempty"`
 }
 
+func NewDnsSearchDomain(arg []byte) (DnsSearchDomain, error) {
+	var tmp DnsSearchDomain
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *DnsSearchDomain) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -231,6 +285,12 @@ type DnsServer struct {
 	Ip    string `json:"ip,omitempty"`
 	Order int    `json:"order,omitempty"`
 	Path  string `json:"path,omitempty"`
+}
+
+func NewDnsServer(arg []byte) (DnsServer, error) {
+	var tmp DnsServer
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *DnsServer) Unpack(arg map[string]interface{}) error {
@@ -262,6 +322,12 @@ type EventLog struct {
 	Severity     string `json:"severity,omitempty"`
 	Timestamp    string `json:"timestamp,omitempty"`
 	Type         string `json:"type,omitempty"`
+}
+
+func NewEventLog(arg []byte) (EventLog, error) {
+	var tmp EventLog
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *EventLog) Unpack(arg map[string]interface{}) error {
@@ -300,6 +366,12 @@ type FaultLog struct {
 	Type            string `json:"type,omitempty"`
 }
 
+func NewFaultLog(arg []byte) (FaultLog, error) {
+	var tmp FaultLog
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *FaultLog) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -323,6 +395,12 @@ type Hdd struct {
 	Path      string        `json:"path,omitempty"`
 	Size      int           `json:"size,omitempty"`
 	SlotLabel string        `json:"slot_label,omitempty"`
+}
+
+func NewHdd(arg []byte) (Hdd, error) {
+	var tmp Hdd
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *Hdd) Unpack(arg map[string]interface{}) error {
@@ -349,6 +427,12 @@ type HttpProxy struct {
 	User     *User  `json:"user,omitempty"`
 }
 
+func NewHttpProxy(arg []byte) (HttpProxy, error) {
+	var tmp HttpProxy
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *HttpProxy) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -370,6 +454,12 @@ type Initiator struct {
 	Path string `json:"path,omitempty"`
 }
 
+func NewInitiator(arg []byte) (Initiator, error) {
+	var tmp Initiator
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *Initiator) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -389,6 +479,12 @@ type InitiatorGroup struct {
 	Members []interface{} `json:"members,omitempty"`
 	Name    string        `json:"name,omitempty"`
 	Path    string        `json:"path,omitempty"`
+}
+
+func NewInitiatorGroup(arg []byte) (InitiatorGroup, error) {
+	var tmp InitiatorGroup
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *InitiatorGroup) Unpack(arg map[string]interface{}) error {
@@ -417,6 +513,12 @@ type InternalIpBlock struct {
 	Vlan    int    `json:"vlan,omitempty"`
 }
 
+func NewInternalIpBlock(arg []byte) (InternalIpBlock, error) {
+	var tmp InternalIpBlock
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *InternalIpBlock) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -440,6 +542,12 @@ type IpAddress struct {
 	Netmask int    `json:"netmask,omitempty"`
 	Path    string `json:"path,omitempty"`
 	Vlan    int    `json:"vlan,omitempty"`
+}
+
+func NewIpAddress(arg []byte) (IpAddress, error) {
+	var tmp IpAddress
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *IpAddress) Unpack(arg map[string]interface{}) error {
@@ -468,6 +576,12 @@ type IpBlock struct {
 	Vlan    int    `json:"vlan,omitempty"`
 }
 
+func NewIpBlock(arg []byte) (IpBlock, error) {
+	var tmp IpBlock
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *IpBlock) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -488,6 +602,12 @@ type IpPool struct {
 	Name         string      `json:"name,omitempty"`
 	NetworkPaths interface{} `json:"network_paths,omitempty"`
 	Path         string      `json:"path,omitempty"`
+}
+
+func NewIpPool(arg []byte) (IpPool, error) {
+	var tmp IpPool
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *IpPool) Unpack(arg map[string]interface{}) error {
@@ -516,6 +636,12 @@ type MonitoringDestination struct {
 	Type      string `json:"type,omitempty"`
 }
 
+func NewMonitoringDestination(arg []byte) (MonitoringDestination, error) {
+	var tmp MonitoringDestination
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *MonitoringDestination) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -536,6 +662,12 @@ type MonitoringPolicy struct {
 	Enabled      bool          `json:"enabled,omitempty"`
 	Name         string        `json:"name,omitempty"`
 	Path         string        `json:"path,omitempty"`
+}
+
+func NewMonitoringPolicy(arg []byte) (MonitoringPolicy, error) {
+	var tmp MonitoringPolicy
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *MonitoringPolicy) Unpack(arg map[string]interface{}) error {
@@ -560,6 +692,12 @@ type Network struct {
 	Mapping         interface{}   `json:"mapping,omitempty"`
 	MgmtVip         interface{}   `json:"mgmt_vip,omitempty"`
 	Path            string        `json:"path,omitempty"`
+}
+
+func NewNetwork(arg []byte) (Network, error) {
+	var tmp Network
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *Network) Unpack(arg map[string]interface{}) error {
@@ -587,6 +725,12 @@ type NetworkMapping struct {
 	Path      string `json:"path,omitempty"`
 }
 
+func NewNetworkMapping(arg []byte) (NetworkMapping, error) {
+	var tmp NetworkMapping
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *NetworkMapping) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -611,6 +755,12 @@ type Nic struct {
 	SlotLabel string        `json:"slot_label,omitempty"`
 }
 
+func NewNic(arg []byte) (Nic, error) {
+	var tmp Nic
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *Nic) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -630,6 +780,12 @@ type NtpServer struct {
 	Ip    string `json:"ip,omitempty"`
 	Order int    `json:"order,omitempty"`
 	Path  string `json:"path,omitempty"`
+}
+
+func NewNtpServer(arg []byte) (NtpServer, error) {
+	var tmp NtpServer
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *NtpServer) Unpack(arg map[string]interface{}) error {
@@ -657,6 +813,12 @@ type NvmFlashDevice struct {
 	SlotLabel string        `json:"slot_label,omitempty"`
 }
 
+func NewNvmFlashDevice(arg []byte) (NvmFlashDevice, error) {
+	var tmp NvmFlashDevice
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *NvmFlashDevice) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -682,6 +844,12 @@ type PerformancePolicy struct {
 	WriteIopsMax      int    `json:"write_iops_max,omitempty"`
 }
 
+func NewPerformancePolicy(arg []byte) (PerformancePolicy, error) {
+	var tmp PerformancePolicy
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *PerformancePolicy) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -701,6 +869,12 @@ type Role struct {
 	Path       string        `json:"path,omitempty"`
 	Privileges []interface{} `json:"privileges,omitempty"`
 	RoleId     string        `json:"role_id,omitempty"`
+}
+
+func NewRole(arg []byte) (Role, error) {
+	var tmp Role
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *Role) Unpack(arg map[string]interface{}) error {
@@ -726,6 +900,12 @@ type Snapshot struct {
 	Uuid      string `json:"uuid,omitempty"`
 }
 
+func NewSnapshot(arg []byte) (Snapshot, error) {
+	var tmp Snapshot
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *Snapshot) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -749,6 +929,12 @@ type SnapshotPolicy struct {
 	StartTime      string `json:"start_time,omitempty"`
 }
 
+func NewSnapshotPolicy(arg []byte) (SnapshotPolicy, error) {
+	var tmp SnapshotPolicy
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *SnapshotPolicy) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -770,6 +956,12 @@ type SnmpPolicy struct {
 	Location string  `json:"location,omitempty"`
 	Path     string  `json:"path,omitempty"`
 	Users    *[]User `json:"users,omitempty"`
+}
+
+func NewSnmpPolicy(arg []byte) (SnmpPolicy, error) {
+	var tmp SnmpPolicy
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *SnmpPolicy) Unpack(arg map[string]interface{}) error {
@@ -797,6 +989,12 @@ type SnmpUser struct {
 	UserId        string `json:"user_id,omitempty"`
 	Version       string `json:"version,omitempty"`
 	View          string `json:"view,omitempty"`
+}
+
+func NewSnmpUser(arg []byte) (SnmpUser, error) {
+	var tmp SnmpUser
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *SnmpUser) Unpack(arg map[string]interface{}) error {
@@ -830,6 +1028,12 @@ type StorageInstance struct {
 	Path               string        `json:"path,omitempty"`
 	Uuid               string        `json:"uuid,omitempty"`
 	Volumes            *[]Volume     `json:"volumes,omitempty"`
+}
+
+func NewStorageInstance(arg []byte) (StorageInstance, error) {
+	var tmp StorageInstance
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *StorageInstance) Unpack(arg map[string]interface{}) error {
@@ -891,6 +1095,12 @@ type StorageNode struct {
 	Volumes             *[]Volume          `json:"volumes,omitempty"`
 }
 
+func NewStorageNode(arg []byte) (StorageNode, error) {
+	var tmp StorageNode
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *StorageNode) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -912,6 +1122,12 @@ type StorageTemplate struct {
 	Name            string            `json:"name,omitempty"`
 	Path            string            `json:"path,omitempty"`
 	VolumeTemplates *[]VolumeTemplate `json:"volume_templates,omitempty"`
+}
+
+func NewStorageTemplate(arg []byte) (StorageTemplate, error) {
+	var tmp StorageTemplate
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *StorageTemplate) Unpack(arg map[string]interface{}) error {
@@ -938,6 +1154,12 @@ type Subsystem struct {
 	Power       string        `json:"power,omitempty"`
 	Temperature string        `json:"temperature,omitempty"`
 	Voltage     string        `json:"voltage,omitempty"`
+}
+
+func NewSubsystem(arg []byte) (Subsystem, error) {
+	var tmp Subsystem
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *Subsystem) Unpack(arg map[string]interface{}) error {
@@ -983,6 +1205,12 @@ type System struct {
 	Uuid                        string        `json:"uuid,omitempty"`
 }
 
+func NewSystem(arg []byte) (System, error) {
+	var tmp System
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *System) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -1004,6 +1232,12 @@ type Tenant struct {
 	ParentPath string      `json:"parent_path,omitempty"`
 	Path       string      `json:"path,omitempty"`
 	Subtenants interface{} `json:"subtenants,omitempty"`
+}
+
+func NewTenant(arg []byte) (Tenant, error) {
+	var tmp Tenant
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *Tenant) Unpack(arg map[string]interface{}) error {
@@ -1033,6 +1267,12 @@ type User struct {
 	Version  string    `json:"version,omitempty"`
 }
 
+func NewUser(arg []byte) (User, error) {
+	var tmp User
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *User) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -1052,6 +1292,12 @@ type Vip struct {
 	Name         string      `json:"name,omitempty"`
 	NetworkPaths interface{} `json:"network_paths,omitempty"`
 	Path         string      `json:"path,omitempty"`
+}
+
+func NewVip(arg []byte) (Vip, error) {
+	var tmp Vip
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *Vip) Unpack(arg map[string]interface{}) error {
@@ -1086,6 +1332,12 @@ type Volume struct {
 	Uuid               string        `json:"uuid,omitempty"`
 }
 
+func NewVolume(arg []byte) (Volume, error) {
+	var tmp Volume
+	err := tmp.UnpackB(arg)
+	return tmp, err
+}
+
 func (en *Volume) Unpack(arg map[string]interface{}) error {
 	tmp, err := json.Marshal(arg)
 	if err != nil {
@@ -1107,6 +1359,12 @@ type VolumeTemplate struct {
 	PlacementMode string `json:"placement_mode,omitempty"`
 	ReplicaCount  int    `json:"replica_count,omitempty"`
 	Size          int    `json:"size,omitempty"`
+}
+
+func NewVolumeTemplate(arg []byte) (VolumeTemplate, error) {
+	var tmp VolumeTemplate
+	err := tmp.UnpackB(arg)
+	return tmp, err
 }
 
 func (en *VolumeTemplate) Unpack(arg map[string]interface{}) error {

@@ -84,6 +84,12 @@ class GoApiWriter(ApiWriter):
 type {en_name} struct {{
 {struct_attrs}\n}}
 
+func New{en_name}(arg []byte) ({en_name}, error){{
+    var tmp {en_name}
+    err := tmp.UnpackB(arg)
+    return tmp, err
+}}
+
 func (en *{en_name}) Unpack(arg map[string]interface{{}}) error {{
     tmp, err := json.Marshal(arg)
     if err != nil {{
