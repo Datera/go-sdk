@@ -5,7 +5,6 @@ from __future__ import unicode_literals, print_function, division
 import argparse
 import abc
 import json
-# import re
 import sys
 
 try:
@@ -26,8 +25,6 @@ go_types = {"string": "string",
             "boolean": "bool",
             "null": "nil",
             "enum": "string",
-            # "entity": "map[string]interface{}",
-            # "entity": "entity",
             "object": "map[string]string",
             "array": "[]interface{}"}
 
@@ -86,6 +83,18 @@ class GoApiWriter(ApiWriter):
 // to an Endpoint
 type {en_name} struct {{
 {struct_attrs}\n}}
+
+func (en *{en_name}) Unpack(arg map[string]interface{{}}) error {{
+    tmp, err := json.Marshal(arg)
+    if err != nil {{
+        return err
+    }}
+    return json.Unmarshal(tmp, &en)
+}}
+
+func (en *{en_name}) UnpackB(arg []byte) error {{
+    return json.Unmarshal(arg, &en)
+}}
 """
 
     def __init__(self):
@@ -93,7 +102,7 @@ type {en_name} struct {{
 
     def module_header(self):
         return (
-            """package dsdk\n""")
+            """package dsdk\nimport "encoding/json"\n""")
 
     def entity_header(self):
         pass

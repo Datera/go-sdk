@@ -1,5 +1,7 @@
 package dsdk
 
+import "encoding/json"
+
 // AccessNetworkIpPool Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -10,6 +12,18 @@ type AccessNetworkIpPool struct {
 	Path         string      `json:"path,omitempty"`
 }
 
+func (en *AccessNetworkIpPool) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *AccessNetworkIpPool) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // AclPolicy Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -17,6 +31,18 @@ type AclPolicy struct {
 	InitiatorGroups *[]InitiatorGroup `json:"initiator_groups,omitempty"`
 	Initiators      *[]Initiator      `json:"initiators,omitempty"`
 	Path            string            `json:"path,omitempty"`
+}
+
+func (en *AclPolicy) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *AclPolicy) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // AppInstance Entity Type for use when unpacking IEntity objects
@@ -42,6 +68,18 @@ type AppInstance struct {
 	Uuid              string             `json:"uuid,omitempty"`
 }
 
+func (en *AppInstance) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *AppInstance) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // AppTemplate Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -52,6 +90,18 @@ type AppTemplate struct {
 	Path             string             `json:"path,omitempty"`
 	SnapshotPolicies *[]SnapshotPolicy  `json:"snapshot_policies,omitempty"`
 	StorageTemplates *[]StorageTemplate `json:"storage_templates,omitempty"`
+}
+
+func (en *AppTemplate) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *AppTemplate) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // AuditLog Entity Type for use when unpacking IEntity objects
@@ -72,6 +122,18 @@ type AuditLog struct {
 	Version     string `json:"version,omitempty"`
 }
 
+func (en *AuditLog) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *AuditLog) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // Auth Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -82,6 +144,18 @@ type Auth struct {
 	TargetPswd        string `json:"target_pswd,omitempty"`
 	TargetUserName    string `json:"target_user_name,omitempty"`
 	Type              string `json:"type,omitempty"`
+}
+
+func (en *Auth) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Auth) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // BootDrive Entity Type for use when unpacking IEntity objects
@@ -97,12 +171,36 @@ type BootDrive struct {
 	SlotLabel string        `json:"slot_label,omitempty"`
 }
 
+func (en *BootDrive) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *BootDrive) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // Dns Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Dns struct {
 	Domain string `json:"domain,omitempty"`
 	Path   string `json:"path,omitempty"`
+}
+
+func (en *Dns) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Dns) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // DnsSearchDomain Entity Type for use when unpacking IEntity objects
@@ -114,6 +212,18 @@ type DnsSearchDomain struct {
 	Path   string `json:"path,omitempty"`
 }
 
+func (en *DnsSearchDomain) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *DnsSearchDomain) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // DnsServer Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -121,6 +231,18 @@ type DnsServer struct {
 	Ip    string `json:"ip,omitempty"`
 	Order int    `json:"order,omitempty"`
 	Path  string `json:"path,omitempty"`
+}
+
+func (en *DnsServer) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *DnsServer) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // EventLog Entity Type for use when unpacking IEntity objects
@@ -140,6 +262,18 @@ type EventLog struct {
 	Severity     string `json:"severity,omitempty"`
 	Timestamp    string `json:"timestamp,omitempty"`
 	Type         string `json:"type,omitempty"`
+}
+
+func (en *EventLog) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *EventLog) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // FaultLog Entity Type for use when unpacking IEntity objects
@@ -166,6 +300,18 @@ type FaultLog struct {
 	Type            string `json:"type,omitempty"`
 }
 
+func (en *FaultLog) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *FaultLog) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // Hdd Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -177,6 +323,18 @@ type Hdd struct {
 	Path      string        `json:"path,omitempty"`
 	Size      int           `json:"size,omitempty"`
 	SlotLabel string        `json:"slot_label,omitempty"`
+}
+
+func (en *Hdd) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Hdd) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // HttpProxy Entity Type for use when unpacking IEntity objects
@@ -191,6 +349,18 @@ type HttpProxy struct {
 	User     *User  `json:"user,omitempty"`
 }
 
+func (en *HttpProxy) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *HttpProxy) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // Initiator Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -200,6 +370,18 @@ type Initiator struct {
 	Path string `json:"path,omitempty"`
 }
 
+func (en *Initiator) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Initiator) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // InitiatorGroup Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -207,6 +389,18 @@ type InitiatorGroup struct {
 	Members []interface{} `json:"members,omitempty"`
 	Name    string        `json:"name,omitempty"`
 	Path    string        `json:"path,omitempty"`
+}
+
+func (en *InitiatorGroup) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *InitiatorGroup) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // InternalIpBlock Entity Type for use when unpacking IEntity objects
@@ -223,6 +417,18 @@ type InternalIpBlock struct {
 	Vlan    int    `json:"vlan,omitempty"`
 }
 
+func (en *InternalIpBlock) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *InternalIpBlock) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // IpAddress Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -234,6 +440,18 @@ type IpAddress struct {
 	Netmask int    `json:"netmask,omitempty"`
 	Path    string `json:"path,omitempty"`
 	Vlan    int    `json:"vlan,omitempty"`
+}
+
+func (en *IpAddress) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *IpAddress) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // IpBlock Entity Type for use when unpacking IEntity objects
@@ -250,6 +468,18 @@ type IpBlock struct {
 	Vlan    int    `json:"vlan,omitempty"`
 }
 
+func (en *IpBlock) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *IpBlock) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // IpPool Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -258,6 +488,18 @@ type IpPool struct {
 	Name         string      `json:"name,omitempty"`
 	NetworkPaths interface{} `json:"network_paths,omitempty"`
 	Path         string      `json:"path,omitempty"`
+}
+
+func (en *IpPool) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *IpPool) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // MonitoringDestination Entity Type for use when unpacking IEntity objects
@@ -274,6 +516,18 @@ type MonitoringDestination struct {
 	Type      string `json:"type,omitempty"`
 }
 
+func (en *MonitoringDestination) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *MonitoringDestination) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // MonitoringPolicy Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -282,6 +536,18 @@ type MonitoringPolicy struct {
 	Enabled      bool          `json:"enabled,omitempty"`
 	Name         string        `json:"name,omitempty"`
 	Path         string        `json:"path,omitempty"`
+}
+
+func (en *MonitoringPolicy) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *MonitoringPolicy) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // Network Entity Type for use when unpacking IEntity objects
@@ -294,6 +560,18 @@ type Network struct {
 	Mapping         interface{}   `json:"mapping,omitempty"`
 	MgmtVip         interface{}   `json:"mgmt_vip,omitempty"`
 	Path            string        `json:"path,omitempty"`
+}
+
+func (en *Network) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Network) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // NetworkMapping Entity Type for use when unpacking IEntity objects
@@ -309,6 +587,18 @@ type NetworkMapping struct {
 	Path      string `json:"path,omitempty"`
 }
 
+func (en *NetworkMapping) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *NetworkMapping) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // Nic Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -321,6 +611,18 @@ type Nic struct {
 	SlotLabel string        `json:"slot_label,omitempty"`
 }
 
+func (en *Nic) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Nic) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // NtpServer Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -328,6 +630,18 @@ type NtpServer struct {
 	Ip    string `json:"ip,omitempty"`
 	Order int    `json:"order,omitempty"`
 	Path  string `json:"path,omitempty"`
+}
+
+func (en *NtpServer) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *NtpServer) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // NvmFlashDevice Entity Type for use when unpacking IEntity objects
@@ -343,6 +657,18 @@ type NvmFlashDevice struct {
 	SlotLabel string        `json:"slot_label,omitempty"`
 }
 
+func (en *NvmFlashDevice) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *NvmFlashDevice) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // PerformancePolicy Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -356,6 +682,18 @@ type PerformancePolicy struct {
 	WriteIopsMax      int    `json:"write_iops_max,omitempty"`
 }
 
+func (en *PerformancePolicy) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *PerformancePolicy) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // Role Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -363,6 +701,18 @@ type Role struct {
 	Path       string        `json:"path,omitempty"`
 	Privileges []interface{} `json:"privileges,omitempty"`
 	RoleId     string        `json:"role_id,omitempty"`
+}
+
+func (en *Role) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Role) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // Snapshot Entity Type for use when unpacking IEntity objects
@@ -376,6 +726,18 @@ type Snapshot struct {
 	Uuid      string `json:"uuid,omitempty"`
 }
 
+func (en *Snapshot) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Snapshot) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // SnapshotPolicy Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -387,6 +749,18 @@ type SnapshotPolicy struct {
 	StartTime      string `json:"start_time,omitempty"`
 }
 
+func (en *SnapshotPolicy) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *SnapshotPolicy) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // SnmpPolicy Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -396,6 +770,18 @@ type SnmpPolicy struct {
 	Location string  `json:"location,omitempty"`
 	Path     string  `json:"path,omitempty"`
 	Users    *[]User `json:"users,omitempty"`
+}
+
+func (en *SnmpPolicy) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *SnmpPolicy) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // SnmpUser Entity Type for use when unpacking IEntity objects
@@ -411,6 +797,18 @@ type SnmpUser struct {
 	UserId        string `json:"user_id,omitempty"`
 	Version       string `json:"version,omitempty"`
 	View          string `json:"view,omitempty"`
+}
+
+func (en *SnmpUser) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *SnmpUser) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // StorageInstance Entity Type for use when unpacking IEntity objects
@@ -432,6 +830,18 @@ type StorageInstance struct {
 	Path               string        `json:"path,omitempty"`
 	Uuid               string        `json:"uuid,omitempty"`
 	Volumes            *[]Volume     `json:"volumes,omitempty"`
+}
+
+func (en *StorageInstance) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *StorageInstance) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // StorageNode Entity Type for use when unpacking IEntity objects
@@ -481,6 +891,18 @@ type StorageNode struct {
 	Volumes             *[]Volume          `json:"volumes,omitempty"`
 }
 
+func (en *StorageNode) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *StorageNode) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // StorageTemplate Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -490,6 +912,18 @@ type StorageTemplate struct {
 	Name            string            `json:"name,omitempty"`
 	Path            string            `json:"path,omitempty"`
 	VolumeTemplates *[]VolumeTemplate `json:"volume_templates,omitempty"`
+}
+
+func (en *StorageTemplate) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *StorageTemplate) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // Subsystem Entity Type for use when unpacking IEntity objects
@@ -504,6 +938,18 @@ type Subsystem struct {
 	Power       string        `json:"power,omitempty"`
 	Temperature string        `json:"temperature,omitempty"`
 	Voltage     string        `json:"voltage,omitempty"`
+}
+
+func (en *Subsystem) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Subsystem) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // System Entity Type for use when unpacking IEntity objects
@@ -537,6 +983,18 @@ type System struct {
 	Uuid                        string        `json:"uuid,omitempty"`
 }
 
+func (en *System) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *System) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // Tenant Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -546,6 +1004,18 @@ type Tenant struct {
 	ParentPath string      `json:"parent_path,omitempty"`
 	Path       string      `json:"path,omitempty"`
 	Subtenants interface{} `json:"subtenants,omitempty"`
+}
+
+func (en *Tenant) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Tenant) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // User Entity Type for use when unpacking IEntity objects
@@ -563,6 +1033,18 @@ type User struct {
 	Version  string    `json:"version,omitempty"`
 }
 
+func (en *User) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *User) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // Vip Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -570,6 +1052,18 @@ type Vip struct {
 	Name         string      `json:"name,omitempty"`
 	NetworkPaths interface{} `json:"network_paths,omitempty"`
 	Path         string      `json:"path,omitempty"`
+}
+
+func (en *Vip) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Vip) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }
 
 // Volume Entity Type for use when unpacking IEntity objects
@@ -592,6 +1086,18 @@ type Volume struct {
 	Uuid               string        `json:"uuid,omitempty"`
 }
 
+func (en *Volume) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *Volume) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
+}
+
 // VolumeTemplate Entity Type for use when unpacking IEntity objects
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
@@ -601,4 +1107,16 @@ type VolumeTemplate struct {
 	PlacementMode string `json:"placement_mode,omitempty"`
 	ReplicaCount  int    `json:"replica_count,omitempty"`
 	Size          int    `json:"size,omitempty"`
+}
+
+func (en *VolumeTemplate) Unpack(arg map[string]interface{}) error {
+	tmp, err := json.Marshal(arg)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(tmp, &en)
+}
+
+func (en *VolumeTemplate) UnpackB(arg []byte) error {
+	return json.Unmarshal(arg, &en)
 }

@@ -232,7 +232,7 @@ func (en Entity) GetPath() string {
 //		si = ai.GetEn("storage_instances")[0]
 //      // Optionally you could unpack the IEntity object into a struct
 //      var unpackedSI StorageInstance
-//      json.Unmarshal(ai.GetB(), &unpackedSI)
+//      unpackedSi.UnpackB(ai.GetB())
 //      fmt.Println("SI Name", unpackedSI.Name)
 func (en Entity) GetEn(enKey string) []IEntity {
 	ens := []IEntity{}
