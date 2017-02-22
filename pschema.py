@@ -136,7 +136,8 @@ func (en *{en_name}) UnpackB(arg []byte) error {{
                     "*[]",
                     singularize(snake_to_cap_camel(attr['name']))))
             if not attr_type:
-                attr_type = go_types.get(attr['type'], "interface{}")
+                attr_type = go_types.get(
+                    attr['type'], "map[string]interface{}")
             attr_json = json_template.format(attr['name'])
             attrib = attr_template.format(
                 name=attr_name, type=attr_type, json=attr_json)

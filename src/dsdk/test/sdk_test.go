@@ -311,7 +311,7 @@ func TestReadme(t *testing.T) {
 	si.Set("admin_state=online")
 	si, _ = si.Reload()
 	mySi, _ = dsdk.NewStorageInstance(si.GetB())
-	fmt.Printf("Access: %s", mySi.Access.(map[string]interface{}))
+	fmt.Printf("Access: %s", mySi.Access)
 }
 
 func TestClean(t *testing.T) {
