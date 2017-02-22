@@ -17,12 +17,18 @@ import (
 	"time"
 )
 
+type apiError string
+
 const (
 	connTemplate    = "http://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
 	secConnTemplate = "https://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
-	permDeniedError = "PermissionDeniedError"
 	USetToken       = ""
 	MaxPoolConn     = 5
+)
+
+const (
+	permDeniedError apiError = "PermissionDeniedError"
+	authFailedError          = "AuthFailedError"
 )
 
 var (
@@ -497,7 +503,8 @@ func handleBadResponse(resp *http.Response, rbody []byte) error {
 			log.Errorf("Bad Response: %#v", resp)
 			panic(err)
 		}
-		if e.Name == permDeniedError {
+		apierr := apiError(e.Name)
+		if apierr == permDeniedError || apierr == authFailedError {
 			return Retry
 		}
 	}
