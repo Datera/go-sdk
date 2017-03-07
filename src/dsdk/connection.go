@@ -38,7 +38,7 @@ var (
 		422: true,
 		500: true}
 
-	Retry = fmt.Errorf("Retry")
+	retryError = fmt.Errorf("Retry")
 )
 
 type IAPIConnection interface {
@@ -93,6 +93,7 @@ type apiConnection struct {
 	Client     IHTTPClient
 	Tenant     string
 	Auth       *logAuth
+	id         string
 }
 
 // Unrelated to Auth object in entity.go
@@ -161,6 +162,7 @@ func newAPIConnection(hostname, port, apiVersion, tenant, timeout string, header
 	for p, v := range headers {
 		h[p] = v
 	}
+	apiUUID, err := NewUUID()
 	c := apiConnection{
 		Hostname:   hostname,
 		Port:       port,
@@ -170,6 +172,7 @@ func newAPIConnection(hostname, port, apiVersion, tenant, timeout string, header
 		Secure:     secure,
 		Client:     &http.Client{Timeout: t},
 		Auth:       auth,
+		id:         apiUUID,
 	}
 	c.updateHeaders(fmt.Sprintf("tenant=%s", tenant))
 	log.Debugf("New API connection: %#v", c)
@@ -301,13 +304,13 @@ func (r *apiConnection) doRequest(method, endpoint string, body []byte, qparams 
 		logb = b
 	}
 	log.Debugf(strings.Join([]string{
-		"\nDatera Trace ID: %s",
+		"\nDatera Connector ID: %s",
 		"Datera Request ID: %s",
 		"Datera Request URL: %s",
 		"Datera Request Method: %s",
 		"Datera Request Payload: %s",
 		"Datera Request Headers: %s"}, "\n"),
-		nil,
+		r.id,
 		reqUUID,
 		conn,
 		r.Method,
@@ -327,12 +330,12 @@ func (r *apiConnection) doRequest(method, endpoint string, body []byte, qparams 
 		return []byte(""), err
 	}
 	log.Debugf(strings.Join([]string{
-		// "\nDatera Trace ID: %s",
+		"\nDatera Connector ID: %s",
 		"Datera Response ID: %s",
 		"Datera Response Status: %s",
 		"Datera Response Payload: %s",
 		"Datera Response Headers: %s"}, "\n"),
-		// nil,
+		r.id,
 		reqUUID,
 		resp.Status,
 		rbody,
@@ -341,8 +344,9 @@ func (r *apiConnection) doRequest(method, endpoint string, body []byte, qparams 
 	log.Debugf("\nRequest %s Duration Read: %.2fs", reqUUID, dur2)
 	err = handleBadResponse(resp, rbody)
 	// Retry if we need to login, but only once
-	if err == Retry && !retry {
+	if err == retryError && !retry {
 		r.Auth.setToken(USetToken)
+		r.Headers["Auth-Token"] = USetToken
 		r.login()
 		return r.doRequest(method, endpoint, body, qparams, sensitive, true)
 	}
@@ -505,7 +509,7 @@ func handleBadResponse(resp *http.Response, rbody []byte) error {
 		}
 		apierr := apiError(e.Name)
 		if apierr == permDeniedError || apierr == authFailedError {
-			return Retry
+			return retryError
 		}
 	}
 	if ok {
