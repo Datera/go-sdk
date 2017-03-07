@@ -25,6 +25,7 @@ go_types = {"string": "string",
             "boolean": "bool",
             "null": "nil",
             "enum": "string",
+            "number": "float64",
             "object": "map[string]string",
             "array": "[]interface{}"}
 

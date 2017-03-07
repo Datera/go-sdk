@@ -1317,7 +1317,7 @@ func (en *Vip) UnpackB(arg []byte) error {
 // to an Endpoint
 type Volume struct {
 	ActiveStorageNodes []interface{} `json:"active_storage_nodes,omitempty"`
-	CapacityInUse      int           `json:"capacity_in_use,omitempty"`
+	CapacityInUse      float64       `json:"capacity_in_use,omitempty"`
 	Causes             []interface{} `json:"causes,omitempty"`
 	Health             string        `json:"health,omitempty"`
 	Name               string        `json:"name,omitempty"`
@@ -1327,7 +1327,7 @@ type Volume struct {
 	PlacementMode      string        `json:"placement_mode,omitempty"`
 	ReplicaCount       int           `json:"replica_count,omitempty"`
 	RestorePoint       string        `json:"restore_point,omitempty"`
-	Size               int           `json:"size,omitempty"`
+	Size               float64       `json:"size,omitempty"`
 	Snapshots          *[]Snapshot   `json:"snapshots,omitempty"`
 	Uuid               string        `json:"uuid,omitempty"`
 }
