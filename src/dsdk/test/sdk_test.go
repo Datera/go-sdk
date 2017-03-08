@@ -8,7 +8,6 @@ import (
 
 const (
 	ADDR     = "172.19.1.41"
-	PORT     = "7717"
 	APIVER   = "2.1"
 	USERNAME = "admin"
 	PASSWORD = "password"
@@ -20,16 +19,10 @@ const (
 func getSDK(t *testing.T) *dsdk.SDK {
 	headers := make(map[string]string)
 	sdk, err := dsdk.NewSDK(
-		ADDR, PORT, USERNAME, PASSWORD, APIVER, TENANT, TIMEOUT, headers, false)
+		ADDR, USERNAME, PASSWORD, APIVER, TENANT, TIMEOUT, headers, true)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	// Mock the connection pool sdks
-	// auth := dsdk.NewAuth("test", "pass")
-	// for i := 0; i <= dsdk.MaxPoolConn; i++ {
-	// 	<-dsdk.Cpool.Conns
-	// 	dsdk.Cpool.Conns <- &mockAPIConnection{Auth: auth}
-	// }
 	return sdk
 }
 

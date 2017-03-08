@@ -2,6 +2,7 @@ package dsdk
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
@@ -20,10 +21,9 @@ import (
 type apiError string
 
 const (
-	connTemplate    = "http://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
-	secConnTemplate = "https://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
-	USetToken       = ""
-	MaxPoolConn     = 5
+	connTemplate = "{{.schema}}://{{.hostname}}:{{.port}}/v{{.version}}/{{.endpoint}}"
+	USetToken    = ""
+	MaxPoolConn  = 5
 )
 
 const (
@@ -59,12 +59,12 @@ type connectionPool struct {
 	Conns chan IAPIConnection
 }
 
-func newConnPool(hostname, port, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*connectionPool, error) {
+func newConnPool(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*connectionPool, error) {
 	c := &connectionPool{}
 	c.Conns = make(chan IAPIConnection, MaxPoolConn)
 	auth := newLogAuth(username, password)
 	for i := 0; i < MaxPoolConn; i++ {
-		api, err := newAPIConnection(hostname, port, apiVersion, tenant, timeout, headers, secure, auth)
+		api, err := newAPIConnection(hostname, apiVersion, tenant, timeout, headers, secure, auth)
 		if err != nil {
 			return nil, err
 		}
@@ -93,6 +93,7 @@ type apiConnection struct {
 	Client     IHTTPClient
 	Tenant     string
 	Auth       *logAuth
+	Schema     string
 	id         string
 }
 
@@ -152,7 +153,7 @@ type ErrResponse21 struct {
 }
 
 // Changing tenant should require changing the API connection object maybe?
-func newAPIConnection(hostname, port, apiVersion, tenant, timeout string, headers map[string]string, secure bool, auth *logAuth) (IAPIConnection, error) {
+func newAPIConnection(hostname, apiVersion, tenant, timeout string, headers map[string]string, secure bool, auth *logAuth) (IAPIConnection, error) {
 	InitLog(true, "")
 	t, err := time.ParseDuration(timeout)
 	if err != nil {
@@ -162,6 +163,18 @@ func newAPIConnection(hostname, port, apiVersion, tenant, timeout string, header
 	for p, v := range headers {
 		h[p] = v
 	}
+	port := "7717"
+	schema := "http"
+	client := &http.Client{Timeout: t}
+	if secure {
+		port = "7718"
+		schema = "https"
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		client = &http.Client{Transport: tr}
+
+	}
 	apiUUID, err := NewUUID()
 	c := apiConnection{
 		Hostname:   hostname,
@@ -170,8 +183,9 @@ func newAPIConnection(hostname, port, apiVersion, tenant, timeout string, header
 		Headers:    h,
 		APIVersion: apiVersion,
 		Secure:     secure,
-		Client:     &http.Client{Timeout: t},
+		Client:     client,
 		Auth:       auth,
+		Schema:     schema,
 		id:         apiUUID,
 	}
 	c.updateHeaders(fmt.Sprintf("tenant=%s", tenant))
@@ -225,19 +239,14 @@ func (r *apiConnection) updateHeaders(headers ...string) error {
 }
 
 func (r *apiConnection) prepConn() (string, error) {
-	var fstring string
-	if r.Secure {
-		fstring = secConnTemplate
-	} else {
-		fstring = connTemplate
-	}
 	m := map[string]string{
 		"hostname": r.Hostname,
 		"port":     r.Port,
 		"endpoint": r.Endpoint,
 		"version":  r.APIVersion,
+		"schema":   r.Schema,
 	}
-	conn, err := parseTemplate(fstring, m)
+	conn, err := parseTemplate(connTemplate, m)
 	if err != nil {
 		return "", err
 	}
