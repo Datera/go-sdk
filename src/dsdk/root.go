@@ -16,10 +16,10 @@ var (
 type SDK struct {
 }
 
-func NewSDK(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*SDK, error) {
+func NewSDK(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool, logfile string, stdout bool) (*SDK, error) {
 	var err error
 	//Initialize global connection object
-	Cpool, err = newConnPool(hostname, username, password, apiVersion, tenant, timeout, headers, secure)
+	Cpool, err = newConnPool(hostname, username, password, apiVersion, tenant, timeout, headers, secure, logfile, stdout)
 	if err != nil {
 		return nil, err
 	}

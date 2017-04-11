@@ -19,7 +19,7 @@ const (
 func getSDK(t *testing.T) *dsdk.SDK {
 	headers := make(map[string]string)
 	sdk, err := dsdk.NewSDK(
-		ADDR, USERNAME, PASSWORD, APIVER, TENANT, TIMEOUT, headers, true)
+		ADDR, USERNAME, PASSWORD, APIVER, TENANT, TIMEOUT, headers, true, "test_dsdk.log", false)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}

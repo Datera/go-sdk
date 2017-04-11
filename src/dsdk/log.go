@@ -10,7 +10,7 @@ const (
 	LogFile = "dsdk.log"
 )
 
-func InitLog(debug bool, output string) error {
+func InitLog(debug bool, output string, stdout bool) error {
 
 	customFormatter := new(log.TextFormatter)
 	customFormatter.FullTimestamp = true
@@ -43,6 +43,10 @@ func InitLog(debug bool, output string) error {
 		}
 	}
 
-	log.SetOutput(f)
+	if stdout {
+		log.SetOutput(io.MultiWriter(f, os.Stdout))
+	} else {
+		log.SetOutput(f)
+	}
 	return nil
 }

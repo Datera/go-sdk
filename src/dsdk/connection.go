@@ -59,12 +59,12 @@ type connectionPool struct {
 	Conns chan IAPIConnection
 }
 
-func newConnPool(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool) (*connectionPool, error) {
+func newConnPool(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool, logfile string, stdout bool) (*connectionPool, error) {
 	c := &connectionPool{}
 	c.Conns = make(chan IAPIConnection, MaxPoolConn)
 	auth := newLogAuth(username, password)
 	for i := 0; i < MaxPoolConn; i++ {
-		api, err := newAPIConnection(hostname, apiVersion, tenant, timeout, headers, secure, auth)
+		api, err := newAPIConnection(hostname, apiVersion, tenant, timeout, headers, secure, auth, logfile, stdout)
 		if err != nil {
 			return nil, err
 		}
@@ -153,8 +153,8 @@ type ErrResponse21 struct {
 }
 
 // Changing tenant should require changing the API connection object maybe?
-func newAPIConnection(hostname, apiVersion, tenant, timeout string, headers map[string]string, secure bool, auth *logAuth) (IAPIConnection, error) {
-	InitLog(true, "")
+func newAPIConnection(hostname, apiVersion, tenant, timeout string, headers map[string]string, secure bool, auth *logAuth, logfile string, stdout bool) (IAPIConnection, error) {
+	InitLog(true, logfile, stdout)
 	t, err := time.ParseDuration(timeout)
 	if err != nil {
 		return nil, err
