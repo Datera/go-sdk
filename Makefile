@@ -11,6 +11,8 @@ clean:
 	rm -rf -- pkg
 	rm -rf -- src/github.com
 	rm -rf -- src/golang.com
+	rm -rf -- src/golang.org
+	rm -rf -- src/gopkg.in
 
 test:
 	env GOPATH=${GOPATH} go get dsdk
