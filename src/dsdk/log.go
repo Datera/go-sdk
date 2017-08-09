@@ -12,9 +12,7 @@ const (
 
 func InitLog(debug bool, output string, stdout bool) error {
 
-	customFormatter := new(log.TextFormatter)
-	customFormatter.FullTimestamp = true
-	log.SetFormatter(customFormatter)
+	log.SetFormatter(&log.JSONFormatter{})
 	var o string
 	switch output {
 	default:
