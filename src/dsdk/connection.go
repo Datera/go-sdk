@@ -59,11 +59,20 @@ type connectionPool struct {
 	Conns chan IAPIConnection
 }
 
-func newConnPool(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool, logfile string, stdout bool) (*connectionPool, error) {
+func newConnPool(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool, logfile string, stdout, nopool bool) (*connectionPool, error) {
 	c := &connectionPool{}
-	c.Conns = make(chan IAPIConnection, MaxPoolConn)
 	auth := newLogAuth(username, password)
-	for i := 0; i < MaxPoolConn; i++ {
+	if !nopool {
+		c.Conns = make(chan IAPIConnection, MaxPoolConn)
+		for i := 0; i < MaxPoolConn; i++ {
+			api, err := newAPIConnection(hostname, apiVersion, tenant, timeout, headers, secure, auth, logfile, stdout)
+			if err != nil {
+				return nil, err
+			}
+			c.Conns <- api
+		}
+	} else {
+		c.Conns = make(chan IAPIConnection, 1)
 		api, err := newAPIConnection(hostname, apiVersion, tenant, timeout, headers, secure, auth, logfile, stdout)
 		if err != nil {
 			return nil, err

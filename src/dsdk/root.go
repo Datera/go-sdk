@@ -19,7 +19,7 @@ type SDK struct {
 func NewPoolSDK(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool, logfile string, stdout bool) (*SDK, error) {
 	var err error
 	//Initialize global connection object
-	Cpool, err = newConnPool(hostname, username, password, apiVersion, tenant, timeout, headers, secure, logfile, stdout)
+	Cpool, err = newConnPool(hostname, username, password, apiVersion, tenant, timeout, headers, secure, logfile, stdout, false)
 	if err != nil {
 		return nil, err
 	}
@@ -29,12 +29,14 @@ func NewPoolSDK(hostname, username, password, apiVersion, tenant, timeout string
 }
 
 func NewSDK(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool, logfile string, stdout bool) (*SDK, error) {
-	auth := newLogAuth(username, password)
-	conn, err := newAPIConnection(hostname, apiVersion, tenant, timeout, headers, secure, auth, logfile, stdout)
+	var err error
+	Cpool, err = newConnPool(hostname, username, password, apiVersion, tenant, timeout, headers, secure, logfile, stdout, true)
 	if err != nil {
 		return nil, err
 	}
-	return conn, nil
+	conn := Cpool.getConn()
+	defer Cpool.releaseConn(conn)
+	return &SDK{}, nil
 }
 
 func (c SDK) GetEp(path string) IEndpoint {
