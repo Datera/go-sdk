@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	VERSION = "1.0.3"
+	VERSION = "1.0.4"
 )
 
 var (
@@ -16,7 +16,7 @@ var (
 type SDK struct {
 }
 
-func NewSDK(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool, logfile string, stdout bool) (*SDK, error) {
+func NewPoolSDK(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool, logfile string, stdout bool) (*SDK, error) {
 	var err error
 	//Initialize global connection object
 	Cpool, err = newConnPool(hostname, username, password, apiVersion, tenant, timeout, headers, secure, logfile, stdout)
@@ -26,6 +26,15 @@ func NewSDK(hostname, username, password, apiVersion, tenant, timeout string, he
 	conn := Cpool.getConn()
 	defer Cpool.releaseConn(conn)
 	return &SDK{}, nil
+}
+
+func NewSDK(hostname, username, password, apiVersion, tenant, timeout string, headers map[string]string, secure bool, logfile string, stdout bool) (*SDK, error) {
+	auth := newLogAuth(username, password)
+	conn, err := newAPIConnection(hostname, apiVersion, tenant, timeout, headers, secure, auth, logfile, stdout)
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
 }
 
 func (c SDK) GetEp(path string) IEndpoint {
