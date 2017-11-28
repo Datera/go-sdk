@@ -236,7 +236,7 @@ def parse_schema(schema):
     entity_dict = {}
     for endpoint in results:
         for op in endpoint["ops"]:
-            if op["entity"] not in entity_dict and op["entity"]:
+            if op["entity"] and op["entity"] not in entity_dict:
                 entity_dict[op["entity"]] = op["return"]
             elif not op["entity"]:
                 endpoint["type"] = "entity_endpoint"

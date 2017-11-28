@@ -67,11 +67,12 @@ type AppInstance struct {
 	Causes            []interface{}      `json:"causes,omitempty"`
 	CloneSrc          map[string]string  `json:"clone_src,omitempty"`
 	CreateMode        string             `json:"create_mode,omitempty"`
+	DeploymentState   string             `json:"deployment_state,omitempty"`
 	Descr             string             `json:"descr,omitempty"`
 	Health            string             `json:"health,omitempty"`
 	Id                string             `json:"id,omitempty"`
 	Name              string             `json:"name,omitempty"`
-	OpStatus          string             `json:"op_status,omitempty"`
+	OpState           string             `json:"op_state,omitempty"`
 	Path              string             `json:"path,omitempty"`
 	RestorePoint      string             `json:"restore_point,omitempty"`
 	SnapshotPolicies  *[]SnapshotPolicy  `json:"snapshot_policies,omitempty"`
@@ -896,11 +897,8 @@ type Snapshot struct {
 	OpState   string `json:"op_state,omitempty"`
 	Path      string `json:"path,omitempty"`
 	Timestamp string `json:"timestamp,omitempty"`
-	// TODO(_alastor_) This should be an int, but it's being incorrectly
-	// returned as a string.  We're going to manually make it a string
-	// for now until the bug is fixed
-	UtcTs string `json:"utc_ts,omitempty"`
-	Uuid  string `json:"uuid,omitempty"`
+	UtcTs     int    `json:"utc_ts,omitempty"`
+	Uuid      string `json:"uuid,omitempty"`
 }
 
 func NewSnapshot(arg []byte) (Snapshot, error) {
@@ -1024,6 +1022,7 @@ type StorageInstance struct {
 	AdminState         string                 `json:"admin_state,omitempty"`
 	Auth               *Auth                  `json:"auth,omitempty"`
 	Causes             []interface{}          `json:"causes,omitempty"`
+	DeploymentState    string                 `json:"deployment_state,omitempty"`
 	Health             string                 `json:"health,omitempty"`
 	IpPool             *IpPool                `json:"ip_pool,omitempty"`
 	Name               string                 `json:"name,omitempty"`
@@ -1061,6 +1060,8 @@ type StorageNode struct {
 	BootDrives          map[string]interface{} `json:"boot_drives,omitempty"`
 	BuildVersion        string                 `json:"build_version,omitempty"`
 	Causes              []interface{}          `json:"causes,omitempty"`
+	CompressionEnabled  bool                   `json:"compression_enabled,omitempty"`
+	CompressionRatio    string                 `json:"compression_ratio,omitempty"`
 	Disconnected        bool                   `json:"disconnected,omitempty"`
 	FlashDevices        map[string]interface{} `json:"flash_devices,omitempty"`
 	Hdds                *[]Hdd                 `json:"hdds,omitempty"`
@@ -1181,6 +1182,7 @@ func (en *Subsystem) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type System struct {
+	AccessInterfaceAggrType     string                 `json:"access_interface_aggr_type,omitempty"`
 	AllFlashAvailableCapacity   int                    `json:"all_flash_available_capacity,omitempty"`
 	AllFlashProvisionedCapacity int                    `json:"all_flash_provisioned_capacity,omitempty"`
 	AllFlashTotalCapacity       int                    `json:"all_flash_total_capacity,omitempty"`
@@ -1188,15 +1190,21 @@ type System struct {
 	BuildVersion                string                 `json:"build_version,omitempty"`
 	CallhomeEnabled             bool                   `json:"callhome_enabled,omitempty"`
 	Causes                      []interface{}          `json:"causes,omitempty"`
+	CompressionEnabled          bool                   `json:"compression_enabled,omitempty"`
+	CompressionRatio            string                 `json:"compression_ratio,omitempty"`
 	Dns                         *Dns                   `json:"dns,omitempty"`
 	Health                      string                 `json:"health,omitempty"`
 	HttpProxy                   *HttpProxy             `json:"http_proxy,omitempty"`
 	HybridAvailableCapacity     int                    `json:"hybrid_available_capacity,omitempty"`
 	HybridProvisionedCapacity   int                    `json:"hybrid_provisioned_capacity,omitempty"`
 	HybridTotalCapacity         int                    `json:"hybrid_total_capacity,omitempty"`
+	InterfaceAggregationMode    string                 `json:"interface_aggregation_mode,omitempty"`
+	InternalInterfaceAggrType   string                 `json:"internal_interface_aggr_type,omitempty"`
+	L3Enabled                   bool                   `json:"l3_enabled,omitempty"`
 	LastRebootTimestamp         string                 `json:"last_reboot_timestamp,omitempty"`
 	Name                        string                 `json:"name,omitempty"`
 	Network                     *Network               `json:"network,omitempty"`
+	NetworkDevices              map[string]interface{} `json:"network_devices,omitempty"`
 	NtpServers                  *[]NtpServer           `json:"ntp_servers,omitempty"`
 	OpState                     string                 `json:"op_state,omitempty"`
 	Path                        string                 `json:"path,omitempty"`
@@ -1320,18 +1328,22 @@ func (en *Vip) UnpackB(arg []byte) error {
 // to an Endpoint
 type Volume struct {
 	ActiveStorageNodes []interface{} `json:"active_storage_nodes,omitempty"`
+	AvailabilityState  string        `json:"availability_state,omitempty"`
 	CapacityInUse      float64       `json:"capacity_in_use,omitempty"`
 	Causes             []interface{} `json:"causes,omitempty"`
+	DeploymentState    string        `json:"deployment_state,omitempty"`
 	Health             string        `json:"health,omitempty"`
 	Name               string        `json:"name,omitempty"`
 	OpState            string        `json:"op_state,omitempty"`
 	OpStatus           string        `json:"op_status,omitempty"`
 	Path               string        `json:"path,omitempty"`
 	PlacementMode      string        `json:"placement_mode,omitempty"`
+	RecoveryState      string        `json:"recovery_state,omitempty"`
 	ReplicaCount       int           `json:"replica_count,omitempty"`
 	RestorePoint       string        `json:"restore_point,omitempty"`
 	Size               float64       `json:"size,omitempty"`
 	Snapshots          *[]Snapshot   `json:"snapshots,omitempty"`
+	StorageState       string        `json:"storage_state,omitempty"`
 	Uuid               string        `json:"uuid,omitempty"`
 }
 
