@@ -6,20 +6,9 @@ import (
 	"os"
 )
 
-const (
-	LogFile = "dsdk.log"
-)
-
 func InitLog(debug bool, output string, stdout bool) error {
 
 	log.SetFormatter(&log.JSONFormatter{})
-	var o string
-	switch output {
-	default:
-		o = output
-	case "":
-		o = LogFile
-	}
 
 	switch debug {
 	default:
@@ -29,21 +18,23 @@ func InitLog(debug bool, output string, stdout bool) error {
 	}
 
 	var f io.Writer
-	if _, err := os.Stat(o); os.IsNotExist(err) {
-		f, err = os.Create(o)
+	if _, err := os.Stat(output); output != "" && os.IsNotExist(err) {
+		f, err = os.Create(output)
 		if err != nil {
 			return err
 		}
-	} else {
-		f, err = os.OpenFile(o, os.O_APPEND|os.O_WRONLY, 0666)
+	} else if output != "" {
+		f, err = os.OpenFile(output, os.O_APPEND|os.O_WRONLY, 0666)
 		if err != nil {
 			return err
 		}
 	}
 
-	if stdout {
+	if stdout && output != "" {
 		log.SetOutput(io.MultiWriter(f, os.Stdout))
-	} else {
+	} else if stdout {
+		log.SetOutput(os.Stdout)
+	} else if output != "" {
 		log.SetOutput(f)
 	}
 	return nil
