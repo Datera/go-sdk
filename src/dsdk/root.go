@@ -1,6 +1,7 @@
 package dsdk
 
 import (
+	"context"
 	"strings"
 	"time"
 )
@@ -46,13 +47,14 @@ func (c SDK) GetEp(path string) IEndpoint {
 // Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under
 // the currently configured tenant
 func (c SDK) ForceClean() {
+	ctxt := context.TODO()
 	f := func(lc chan int, en IEntity) {
 		if strings.Contains(en.GetPath(), "app_instances") {
-			en.Set("admin_state=offline", "force=true")
+			en.Set(ctxt, "admin_state=offline", "force=true")
 		}
 		if strings.Contains(en.GetPath(), "app_templates") {
 			for {
-				err := en.Delete("force=true")
+				err := en.Delete(ctxt, "force=true")
 				if err != nil {
 					if strings.Contains(err.Error(), "read-only") {
 						break
@@ -64,14 +66,14 @@ func (c SDK) ForceClean() {
 				}
 			}
 		}
-		en.Delete("force=true")
+		en.Delete(ctxt, "force=true")
 		lc <- 1
 	}
 
 	var dones []chan int
 	chi := 0
 	for _, epStr := range []string{"app_instances", "app_templates", "initiators", "initiator_groups"} {
-		items, _ := c.GetEp(epStr).List()
+		items, _ := c.GetEp(epStr).List(ctxt)
 		numItems := len(items)
 		for i := 0; i < numItems; i++ {
 			dones = append(dones, make(chan int))

@@ -2,6 +2,7 @@ package dsdk
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -42,11 +43,11 @@ var (
 )
 
 type IAPIConnection interface {
-	post(string, ...interface{}) ([]byte, error)
-	get(string, ...string) ([]byte, error)
-	put(string, bool, ...interface{}) ([]byte, error)
-	delete(string, ...interface{}) ([]byte, error)
-	login() error
+	post(context.Context, string, ...interface{}) ([]byte, error)
+	get(context.Context, string, ...string) ([]byte, error)
+	put(context.Context, string, bool, ...interface{}) ([]byte, error)
+	delete(context.Context, string, ...interface{}) ([]byte, error)
+	login(context.Context) error
 	updateHeaders(...string) error
 }
 
@@ -103,6 +104,8 @@ type apiConnection struct {
 	Tenant     string
 	Auth       *logAuth
 	Schema     string
+	Tid        string
+	ReqName    string
 	id         string
 }
 
@@ -272,7 +275,7 @@ func (r *apiConnection) prepConn() (string, error) {
 	return conn, err
 }
 
-func (r *apiConnection) doRequest(method, endpoint string, body []byte, qparams []string, sensitive bool, retry bool) ([]byte, error) {
+func (r *apiConnection) doRequest(ctxt context.Context, method, endpoint string, body []byte, qparams []string, sensitive bool, retry bool) ([]byte, error) {
 	// Handle method
 	var m string
 	switch strings.ToLower(method) {
@@ -321,14 +324,21 @@ func (r *apiConnection) doRequest(method, endpoint string, body []byte, qparams 
 	} else {
 		logb = b
 	}
-	log.Debugf(strings.Join([]string{
-		"\nDatera Connector ID: %s",
+
+	tid := ctxt.Value("tid").(string)
+	reqName := ctxt.Value("req").(string)
+
+	log.WithFields(log.Fields{
+		"tid": tid,
+		"req": reqName,
+	}).Debugf(strings.Join([]string{
+		"\nDatera Trace ID: %s",
 		"Datera Request ID: %s",
 		"Datera Request URL: %s",
 		"Datera Request Method: %s",
 		"Datera Request Payload: %s",
 		"Datera Request Headers: %s"}, "\n"),
-		r.id,
+		tid,
 		reqUUID,
 		conn,
 		r.Method,
@@ -347,13 +357,16 @@ func (r *apiConnection) doRequest(method, endpoint string, body []byte, qparams 
 	if err != nil {
 		return []byte(""), err
 	}
-	log.Debugf(strings.Join([]string{
-		"\nDatera Connector ID: %s",
+	log.WithFields(log.Fields{
+		"tid": tid,
+		"req": reqName,
+	}).Debugf(strings.Join([]string{
+		"\nDatera Trace ID: %s",
 		"Datera Response ID: %s",
 		"Datera Response Status: %s",
 		"Datera Response Payload: %s",
 		"Datera Response Headers: %s"}, "\n"),
-		r.id,
+		tid,
 		reqUUID,
 		resp.Status,
 		rbody,
@@ -365,14 +378,14 @@ func (r *apiConnection) doRequest(method, endpoint string, body []byte, qparams 
 	if err == retryError && !retry {
 		r.Auth.setToken(USetToken)
 		r.Headers["Auth-Token"] = USetToken
-		r.login()
-		return r.doRequest(method, endpoint, body, qparams, sensitive, true)
+		r.login(ctxt)
+		return r.doRequest(ctxt, method, endpoint, body, qparams, sensitive, true)
 	}
 	return rbody, err
 }
 
-func (r *apiConnection) get(endpoint string, qparams ...string) ([]byte, error) {
-	return r.doRequest("get", endpoint, nil, qparams, false, false)
+func (r *apiConnection) get(ctxt context.Context, endpoint string, qparams ...string) ([]byte, error) {
+	return r.doRequest(ctxt, "get", endpoint, nil, qparams, false, false)
 }
 
 // bodyp arguments can be in one of two forms
@@ -389,7 +402,7 @@ func (r *apiConnection) get(endpoint string, qparams ...string) ([]byte, error) 
 // Function arguments are setup this way to provide an easy way to handle 90%
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
-func (r *apiConnection) put(endpoint string, sensitive bool, bodyp ...interface{}) ([]byte, error) {
+func (r *apiConnection) put(ctxt context.Context, endpoint string, sensitive bool, bodyp ...interface{}) ([]byte, error) {
 	var body []byte
 	var params map[string]interface{}
 	var p interface{}
@@ -406,7 +419,7 @@ func (r *apiConnection) put(endpoint string, sensitive bool, bodyp ...interface{
 			}
 		}
 	}
-	return r.doRequest("put", endpoint, body, nil, sensitive, false)
+	return r.doRequest(ctxt, "put", endpoint, body, nil, sensitive, false)
 }
 
 // bodyp arguments can be in one of two forms
@@ -423,7 +436,7 @@ func (r *apiConnection) put(endpoint string, sensitive bool, bodyp ...interface{
 // Function arguments are setup this way to provide an easy way to handle 90%
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
-func (r *apiConnection) post(endpoint string, bodyp ...interface{}) ([]byte, error) {
+func (r *apiConnection) post(ctxt context.Context, endpoint string, bodyp ...interface{}) ([]byte, error) {
 	var body []byte
 	var params map[string]interface{}
 	var p interface{}
@@ -440,7 +453,7 @@ func (r *apiConnection) post(endpoint string, bodyp ...interface{}) ([]byte, err
 			}
 		}
 	}
-	return r.doRequest("post", endpoint, body, nil, false, false)
+	return r.doRequest(ctxt, "post", endpoint, body, nil, false, false)
 }
 
 // bodyp arguments can be in one of two forms
@@ -457,7 +470,7 @@ func (r *apiConnection) post(endpoint string, bodyp ...interface{}) ([]byte, err
 // Function arguments are setup this way to provide an easy way to handle 90%
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
-func (r *apiConnection) delete(endpoint string, bodyp ...interface{}) ([]byte, error) {
+func (r *apiConnection) delete(ctxt context.Context, endpoint string, bodyp ...interface{}) ([]byte, error) {
 	var body []byte
 	var params map[string]interface{}
 	var p interface{}
@@ -474,18 +487,18 @@ func (r *apiConnection) delete(endpoint string, bodyp ...interface{}) ([]byte, e
 			}
 		}
 	}
-	return r.doRequest("delete", endpoint, body, nil, false, false)
+	return r.doRequest(ctxt, "delete", endpoint, body, nil, false, false)
 }
 
 // After successful login the API token is saved in the apiConnection object
-func (r *apiConnection) login() error {
+func (r *apiConnection) login(ctxt context.Context) error {
 	p1 := fmt.Sprintf("name=%s", r.Auth.Username)
 	p2 := fmt.Sprintf("password=%s", r.Auth.Password)
 	var l returnLogin
 	var e ErrResponse21
 	// Only login if we need to
 	if r.Auth.getToken() == USetToken {
-		resp, err := r.put("login", true, p1, p2)
+		resp, err := r.put(ctxt, "login", true, p1, p2)
 		if err != nil {
 			serr := json.Unmarshal(resp, &e)
 			if serr != nil {

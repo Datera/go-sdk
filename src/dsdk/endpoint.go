@@ -1,6 +1,7 @@
 package dsdk
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"strings"
@@ -8,10 +9,10 @@ import (
 
 type IEndpoint interface {
 	GetEp(string) IEndpoint
-	Create(bodyp ...interface{}) (IEntity, error)
-	List(queryp ...string) ([]IEntity, error)
-	Set(bodyp ...interface{}) (IEntity, error)
-	Get(queryp ...string) (IEntity, error)
+	Create(context.Context, ...interface{}) (IEntity, error)
+	List(context.Context, ...string) ([]IEntity, error)
+	Set(context.Context, ...interface{}) (IEntity, error)
+	Get(context.Context, ...string) (IEntity, error)
 	GetPath() string
 }
 
@@ -26,9 +27,9 @@ type IEntity interface {
 	GetEn(string) []IEntity
 	GetEp(string) IEndpoint
 	GetPath() string
-	Reload() (IEntity, error)
-	Set(bodyp ...interface{}) (IEntity, error)
-	Delete(bodyp ...interface{}) error
+	Reload(context.Context) (IEntity, error)
+	Set(context.Context, ...interface{}) (IEntity, error)
+	Delete(context.Context, ...interface{}) error
 }
 
 type Entity struct {
@@ -74,13 +75,13 @@ func (ep Endpoint) GetPath() string {
 // Function arguments are setup this way to provide an easy way to handle 90%
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
-func (ep Endpoint) Create(bodyp ...interface{}) (IEntity, error) {
+func (ep Endpoint) Create(ctxt context.Context, bodyp ...interface{}) (IEntity, error) {
 	// We actually create a concrete entity to return in failure conditions
 	// so it can be deleted without nul pointer panics
 	en := Entity{}
 	conn := Cpool.getConn()
 	defer Cpool.releaseConn(conn)
-	r, _ := conn.post(ep.Path, bodyp...)
+	r, _ := conn.post(ctxt, ep.Path, bodyp...)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -100,11 +101,11 @@ func (ep Endpoint) Create(bodyp ...interface{}) (IEntity, error) {
 
 // List the Entities hosted on this Endpoint.  The IEntity objects can be unmarshalled
 // into the matching Entity from the entity.go file
-func (ep Endpoint) List(queryp ...string) ([]IEntity, error) {
+func (ep Endpoint) List(ctxt context.Context, queryp ...string) ([]IEntity, error) {
 	ens := []IEntity{}
 	conn := Cpool.getConn()
 	defer Cpool.releaseConn(conn)
-	r, _ := conn.get(ep.Path, queryp...)
+	r, _ := conn.get(ctxt, ep.Path, queryp...)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return ens, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -128,13 +129,13 @@ func (ep Endpoint) List(queryp ...string) ([]IEntity, error) {
 
 // Get the Entity hosted on this Endpoint.  The IEntity object can be unmarshalled
 // into the matching Entity from the entity.go file
-func (ep Endpoint) Get(queryp ...string) (IEntity, error) {
+func (ep Endpoint) Get(ctxt context.Context, queryp ...string) (IEntity, error) {
 	// We actually create a concrete entity to return in failure conditions
 	// so it can be deleted without nul pointer panics
 	en := Entity{}
 	conn := Cpool.getConn()
 	defer Cpool.releaseConn(conn)
-	r, _ := conn.get(ep.Path, queryp...)
+	r, _ := conn.get(ctxt, ep.Path, queryp...)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -168,13 +169,13 @@ func (ep Endpoint) Get(queryp ...string) (IEntity, error) {
 // Function arguments are setup this way to provide an easy way to handle 90%
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
-func (ep Endpoint) Set(bodyp ...interface{}) (IEntity, error) {
+func (ep Endpoint) Set(ctxt context.Context, bodyp ...interface{}) (IEntity, error) {
 	// We actually create a concrete entity to return in failure conditions
 	// so it can be deleted without nul pointer panics
 	en := Entity{}
 	conn := Cpool.getConn()
 	defer Cpool.releaseConn(conn)
-	r, _ := conn.put(ep.Path, false, bodyp...)
+	r, _ := conn.put(ctxt, ep.Path, false, bodyp...)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return en, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -248,13 +249,13 @@ func (en Entity) GetEn(enKey string) []IEntity {
 
 // Pull all the attributes of this Entity.  Useful if it has been changed at
 // some point and a newly updated version of the Entity is needed
-func (en Entity) Reload() (IEntity, error) {
+func (en Entity) Reload(ctxt context.Context) (IEntity, error) {
 	// We actually create a concrete entity to return in failure conditions
 	// so it can be deleted without nul pointer panics
 	n := Entity{}
 	conn := Cpool.getConn()
 	defer Cpool.releaseConn(conn)
-	r, _ := conn.get(en.Path)
+	r, _ := conn.get(ctxt, en.Path)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -288,13 +289,13 @@ func (en Entity) Reload() (IEntity, error) {
 // Function arguments are setup this way to provide an easy way to handle 90%
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
-func (en Entity) Set(bodyp ...interface{}) (IEntity, error) {
+func (en Entity) Set(ctxt context.Context, bodyp ...interface{}) (IEntity, error) {
 	// We actually create a concrete entity to return in failure conditions
 	// so it can be deleted without nul pointer panics
 	n := Entity{}
 	conn := Cpool.getConn()
 	defer Cpool.releaseConn(conn)
-	r, _ := conn.put(en.Path, false, bodyp...)
+	r, _ := conn.put(ctxt, en.Path, false, bodyp...)
 	d, _, e, err := getData(r)
 	if e.Message != "" {
 		return n, errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
@@ -327,10 +328,10 @@ func (en Entity) Set(bodyp ...interface{}) (IEntity, error) {
 // Function arguments are setup this way to provide an easy way to handle 90%
 // of the use cases (where we're just passing key, value string pairs) but that
 // remaining 10% we need to pass something more complex
-func (en Entity) Delete(bodyp ...interface{}) error {
+func (en Entity) Delete(ctxt context.Context, bodyp ...interface{}) error {
 	conn := Cpool.getConn()
 	defer Cpool.releaseConn(conn)
-	r, _ := conn.delete(en.Path, bodyp...)
+	r, _ := conn.delete(ctxt, en.Path, bodyp...)
 	_, _, e, err := getData(r)
 	if e.Message != "" {
 		return errors.New(strings.Join(append([]string{e.Message}, e.Errors...), ":"))
