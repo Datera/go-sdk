@@ -150,9 +150,12 @@ func (ep Endpoint) Get(ctxt context.Context, queryp ...string) (IEntity, error) 
 	}
 	k := i["path"]
 	// Have to do this check for the /metadata endpoint
+	// TODO: Remove when DAT-16041 is fixed
 	if k != nil {
 		p := k.(string)
 		en = newEntity(p, i).(Entity)
+	} else {
+		en = newEntity("metadata", i).(Entity)
 	}
 	return en, nil
 }
@@ -194,9 +197,12 @@ func (ep Endpoint) Set(ctxt context.Context, bodyp ...interface{}) (IEntity, err
 	}
 	k := i["path"]
 	// Have to do this check for the /metadata endpoint
+	// TODO: Remove when DAT-16041 is fixed
 	if k != nil {
 		p := k.(string)
 		en = newEntity(p, i).(Entity)
+	} else {
+		en = newEntity("metadata", i).(Entity)
 	}
 	return en, nil
 }
