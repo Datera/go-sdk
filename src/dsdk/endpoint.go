@@ -148,8 +148,12 @@ func (ep Endpoint) Get(ctxt context.Context, queryp ...string) (IEntity, error) 
 	if err != nil {
 		return en, err
 	}
-	p := i["path"].(string)
-	en = newEntity(p, i).(Entity)
+	k := i["path"]
+	// Have to do this check for the /metadata endpoint
+	if k != nil {
+		p := k.(string)
+		en = newEntity(p, i).(Entity)
+	}
 	return en, nil
 }
 
@@ -188,8 +192,12 @@ func (ep Endpoint) Set(ctxt context.Context, bodyp ...interface{}) (IEntity, err
 	if err != nil {
 		return en, err
 	}
-	p := i["path"].(string)
-	en = newEntity(p, i).(Entity)
+	k := i["path"]
+	// Have to do this check for the /metadata endpoint
+	if k != nil {
+		p := k.(string)
+		en = newEntity(p, i).(Entity)
+	}
 	return en, nil
 }
 
