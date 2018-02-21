@@ -897,7 +897,7 @@ type Snapshot struct {
 	OpState   string `json:"op_state,omitempty"`
 	Path      string `json:"path,omitempty"`
 	Timestamp string `json:"timestamp,omitempty"`
-	UtcTs     int    `json:"utc_ts,omitempty"`
+	UtcTs     string `json:"utc_ts,omitempty"`
 	Uuid      string `json:"uuid,omitempty"`
 }
 
