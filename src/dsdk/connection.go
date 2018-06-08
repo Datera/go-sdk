@@ -278,6 +278,8 @@ func (r *apiConnection) prepConn() (string, error) {
 func (r *apiConnection) doRequest(ctxt context.Context, method, endpoint string, body []byte, qparams []string, sensitive bool, retry bool) ([]byte, error) {
 	// Handle method
 	var m string
+	tid := ctxt.Value("tid").(string)
+	reqName := ctxt.Value("req").(string)
 	switch strings.ToLower(method) {
 	default:
 		panic(fmt.Sprintf("Did not understand method request %s", method))
@@ -311,10 +313,18 @@ func (r *apiConnection) doRequest(ctxt context.Context, method, endpoint string,
 		req.Header.Set(h, v)
 	}
 	if err != nil {
+		log.WithFields(log.Fields{
+			"tid": tid,
+			"req": reqName,
+		}).Debugf("%s", err)
 		return []byte(""), err
 	}
 	reqUUID, err := NewUUID()
 	if err != nil {
+		log.WithFields(log.Fields{
+			"tid": tid,
+			"req": reqName,
+		}).Debugf("%s", err)
 		return []byte(""), err
 	}
 	// Obscure sensitive information
@@ -324,9 +334,6 @@ func (r *apiConnection) doRequest(ctxt context.Context, method, endpoint string,
 	} else {
 		logb = b
 	}
-
-	tid := ctxt.Value("tid").(string)
-	reqName := ctxt.Value("req").(string)
 
 	log.WithFields(log.Fields{
 		"tid": tid,
