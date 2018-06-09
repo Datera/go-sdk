@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -201,6 +202,7 @@ func newAPIConnection(hostname, apiVersion, tenant, timeout string, headers map[
 		id:         apiUUID,
 	}
 	c.updateHeaders(fmt.Sprintf("tenant=%s", tenant))
+	c.testConnection()
 	log.Debugf("New API connection: %#v", c)
 	return &c, nil
 }
@@ -495,6 +497,15 @@ func (r *apiConnection) delete(ctxt context.Context, endpoint string, bodyp ...i
 		}
 	}
 	return r.doRequest(ctxt, "delete", endpoint, body, nil, false, false)
+}
+
+func (r *apiConnection) testConnection() error {
+	log.Debugf("Testing connection to %s", r.Hostname)
+	if _, err := exec.Command("ping", "-c", "1", "-W", "1", r.Hostname).CombinedOutput(); err != nil {
+		log.Errorf("Could not reach host: %s", err)
+		return err
+	}
+	return nil
 }
 
 // After successful login the API token is saved in the apiConnection object
