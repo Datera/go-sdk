@@ -280,8 +280,14 @@ func (r *apiConnection) prepConn() (string, error) {
 func (r *apiConnection) doRequest(ctxt context.Context, method, endpoint string, body []byte, qparams []string, sensitive bool, retry bool) ([]byte, error) {
 	// Handle method
 	var m string
-	tid := ctxt.Value("tid").(string)
-	reqName := ctxt.Value("req").(string)
+	tid, ok := ctxt.Value("tid").(string)
+	if !ok {
+		tid = "None"
+	}
+	reqName, ok := ctxt.Value("req").(string)
+	if !ok {
+		reqName = "None"
+	}
 	switch strings.ToLower(method) {
 	default:
 		panic(fmt.Sprintf("Did not understand method request %s", method))

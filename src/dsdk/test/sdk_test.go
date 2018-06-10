@@ -1,6 +1,7 @@
 package dsdk_test
 
 import (
+	"context"
 	"dsdk"
 	"fmt"
 	"testing"
@@ -16,6 +17,10 @@ const (
 	TOKEN    = "test1234"
 )
 
+var (
+	ctxt = context.Background()
+)
+
 func getSDK(t *testing.T) *dsdk.SDK {
 	headers := make(map[string]string)
 	sdk, err := dsdk.NewSDK(
@@ -28,7 +33,7 @@ func getSDK(t *testing.T) *dsdk.SDK {
 
 func TestEndpoint(t *testing.T) {
 	sdk := getSDK(t)
-	_, err := sdk.GetEp("app_instances").List()
+	_, err := sdk.GetEp("app_instances").List(ctxt)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -38,17 +43,17 @@ func TestSubendpoint(t *testing.T) {
 	sdk := getSDK(t)
 	name, _ := dsdk.NewUUID()
 	ai, err := sdk.GetEp("app_instances").Create(
-		fmt.Sprintf("name=%s", name))
-	ai.GetEp("storage_instances").Create()
-	ais, err := sdk.GetEp("app_instances").List()
+		ctxt, fmt.Sprintf("name=%s", name))
+	ai.GetEp("storage_instances").Create(ctxt)
+	ais, err := sdk.GetEp("app_instances").List(ctxt)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 	ai = ais[0]
-	ai.GetEp("storage_instances").Create("name=storage-1")
-	ai, _ = ai.Reload()
+	ai.GetEp("storage_instances").Create(ctxt, "name=storage-1")
+	ai, _ = ai.Reload(ctxt)
 	si := ai.GetEn("storage_instances")[0]
-	si, err = si.Reload()
+	si, err = si.Reload(ctxt)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -58,17 +63,17 @@ func TestCreate(t *testing.T) {
 	sdk := getSDK(t)
 	name, _ := dsdk.NewUUID()
 	ai, err := sdk.GetEp("app_instances").Create(
-		fmt.Sprintf("name=%s", name))
+		ctxt, fmt.Sprintf("name=%s", name))
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	ai, err = ai.Reload()
+	ai, err = ai.Reload(ctxt)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 
 	// Test getting this ai directly
-	myai, err := sdk.GetEp("app_instances").GetEp(name).Get()
+	myai, err := sdk.GetEp("app_instances").GetEp(name).Get(ctxt)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -76,11 +81,11 @@ func TestCreate(t *testing.T) {
 		t.Fatalf("Ai name %s did not match actual name %s", name, myai.GetM()["name"])
 	}
 
-	ai, err = ai.Set("admin_state=offline")
+	ai, err = ai.Set(ctxt, "admin_state=offline")
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	err = ai.Delete("force=true")
+	err = ai.Delete(ctxt, "force=true")
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -103,7 +108,7 @@ func TestCreateWithTemplate(t *testing.T) {
 		Name:             "basic_small_single",
 		StorageTemplates: &[]dsdk.StorageTemplate{st},
 	}
-	_, err := sdk.GetEp("app_templates").Create(apptc)
+	_, err := sdk.GetEp("app_templates").Create(ctxt, apptc)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -115,12 +120,12 @@ func TestCreateWithTemplate(t *testing.T) {
 		Name:        name,
 		AppTemplate: &appt,
 	}
-	ai, err := sdk.GetEp("app_instances").Create(aie)
+	ai, err := sdk.GetEp("app_instances").Create(ctxt, aie)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 
-	ai, err = ai.Reload()
+	ai, err = ai.Reload(ctxt)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -141,13 +146,14 @@ func TestACL(t *testing.T) {
 	sdk := getSDK(t)
 	name, _ := dsdk.NewUUID()
 	ai, err := sdk.GetEp("app_instances").Create(
-		fmt.Sprintf("name=%s", name))
+		ctxt, fmt.Sprintf("name=%s", name))
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	si, _ := ai.GetEp("storage_instances").Create("name=storage-1")
+	si, _ := ai.GetEp("storage_instances").Create(ctxt, "name=storage-1")
 	initep := sdk.GetEp("initiators")
 	_, err = initep.Create(
+		ctxt,
 		"name=test-initiator",
 		"id=iqn.1993-08.org.debian:01:71be38c985a")
 	if err != nil {
@@ -158,7 +164,7 @@ func TestACL(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	_, err = aclep.Set(aclp)
+	_, err = aclep.Set(ctxt, aclp)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -167,9 +173,9 @@ func TestACL(t *testing.T) {
 func TestFailDelete(t *testing.T) {
 	sdk := getSDK(t)
 	name, _ := dsdk.NewUUID()
-	ai, err := sdk.GetEp("app_instances").GetEp(name).Get()
+	ai, err := sdk.GetEp("app_instances").GetEp(name).Get(ctxt)
 	if err != nil {
-		ai.Delete()
+		ai.Delete(ctxt)
 	} else {
 		t.Fatalf("Get request for non-existent app_instance succeeded.  AI: %s", ai)
 	}
@@ -183,7 +189,7 @@ func TestConcurrency(t *testing.T) {
 		dones = append(dones, make(chan int))
 	}
 	f := func(lc chan int) {
-		sdk.GetEp("app_instances").List()
+		sdk.GetEp("app_instances").List(ctxt)
 		lc <- 1
 	}
 	for _, c := range dones {
@@ -200,11 +206,11 @@ func TestAutoGenEntities(t *testing.T) {
 	name, _ := dsdk.NewUUID()
 	siname := "storage-1"
 	ai, _ := sdk.GetEp("app_instances").Create(
-		fmt.Sprintf("name=%s", name))
+		ctxt, fmt.Sprintf("name=%s", name))
 	ai.GetEp("storage_instances").Create(
-		fmt.Sprintf("name=%s", siname))
+		ctxt, fmt.Sprintf("name=%s", siname))
 
-	ai, err := ai.Reload()
+	ai, err := ai.Reload(ctxt)
 
 	enai, err := dsdk.NewAppInstance(ai.GetB())
 	if err != nil {
@@ -237,7 +243,7 @@ func TestReadme(t *testing.T) {
 	sdk := getSDK(t)
 	// Now that we have the sdk, lets create an AppInstance
 	// Each call to a SubEndpoint is done via the "GetEp" function
-	ai, err := sdk.GetEp("app_instances").Create("name=my-app")
+	ai, err := sdk.GetEp("app_instances").Create(ctxt, "name=my-app")
 	if err != nil {
 		panic(err)
 	}
@@ -257,16 +263,16 @@ func TestReadme(t *testing.T) {
 	// You can pass two types of arguments to Create/Set/Delete functions
 
 	// 1. "key=value" strings, both arguments MUST be strings when this form is used
-	ai.Set("descr=my test label")
-	ai, _ = ai.Reload()
+	ai.Set(ctxt, "descr=my test label")
+	ai, _ = ai.Reload(ctxt)
 	myai, err = dsdk.NewAppInstance(ai.GetB())
 	fmt.Printf("Description: %s\n", myai.Descr)
 
 	// 2. Give a single struct or map[string]interface{}
 	var sendAi dsdk.AppInstance
 	sendAi.Descr = "golden ticket"
-	ai.Set(sendAi)
-	ai, _ = ai.Reload()
+	ai.Set(ctxt, sendAi)
+	ai, _ = ai.Reload(ctxt)
 	myai, _ = dsdk.NewAppInstance(ai.GetB())
 	fmt.Printf("Description2: %s\n", myai.Descr)
 
@@ -285,8 +291,8 @@ func TestReadme(t *testing.T) {
 		Name:             "my-ai",
 		StorageInstances: &[]dsdk.StorageInstance{testSi},
 	}
-	ai, err = sdk.GetEp("app_instances").Create(testAi)
-	ai, err = ai.Reload()
+	ai, err = sdk.GetEp("app_instances").Create(ctxt, testAi)
+	ai, err = ai.Reload(ctxt)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -299,10 +305,10 @@ func TestReadme(t *testing.T) {
 	fmt.Printf("AI Path: %s\nSI Path: %s\nVol Path: %s\n", myAi.Path, mySi.Path, myVol.Path)
 
 	// Get the storage_instance endpoint, send "admin_state=online" and update our struct
-	sis, _ := ai.GetEp("storage_instances").List()
+	sis, _ := ai.GetEp("storage_instances").List(ctxt)
 	si := sis[0]
-	si.Set("admin_state=online")
-	si, _ = si.Reload()
+	si.Set(ctxt, "admin_state=online")
+	si, _ = si.Reload(ctxt)
 	mySi, _ = dsdk.NewStorageInstance(si.GetB())
 	fmt.Printf("Access: %s", mySi.Access)
 }
