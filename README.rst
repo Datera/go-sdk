@@ -55,7 +55,7 @@ Getting Started
 
         // Now that we have the sdk, lets create an AppInstance
         // Each call to a SubEndpoint is done via the "GetEp" function
-        ai, err := sdk.GetEp("app_instances").Create("name=my-app")
+        ai, err := sdk.GetEp("app_instances").Create(ctxt, "name=my-app")
         if err != nil {
             panic(err)
         }
@@ -75,16 +75,16 @@ Getting Started
         // You can pass two types of arguments to Create/Set/Delete functions
 
         // 1. "key=value" strings, both arguments MUST be strings when this form is used
-        ai.Set("descr=my test label")
-        ai, _ = ai.Reload()
+        ai.Set(ctxt, "descr=my test label")
+        ai, _ = ai.Reload(ctxt)
         myai, err = dsdk.NewAppInstance(ai.GetB())
         fmt.Printf("Description: %s\n", myai.Descr)
 
         // 2. Give a single struct or map[string]interface{}
         var sendAi dsdk.AppInstance
         sendAi.Descr = "golden ticket"
-        ai.Set(sendAi)
-        ai, _ = ai.Reload()
+        ai.Set(ctxt, sendAi)
+        ai, _ = ai.Reload(ctxt)
         myai, _ = dsdk.NewAppInstance(ai.GetB())
         fmt.Printf("Description2: %s\n", myai.Descr)
 
@@ -103,8 +103,8 @@ Getting Started
             Name:             "my-ai",
             StorageInstances: &[]dsdk.StorageInstance{testSi},
         }
-        ai, err = sdk.GetEp("app_instances").Create(testAi)
-        ai, err = ai.Reload()
+        ai, err = sdk.GetEp("app_instances").Create(ctxt, testAi)
+        ai, err = ai.Reload(ctxt)
         if err != nil {
             t.Fatalf("%s", err)
         }
@@ -112,18 +112,17 @@ Getting Started
         if err != nil {
             t.Fatalf("%s", err)
         }
-        mySi := (\*myAi.StorageInstances)[0]
-        myVol := (\*mySi.Volumes)[0]
+        mySi := (*myAi.StorageInstances)[0]
+        myVol := (*mySi.Volumes)[0]
         fmt.Printf("AI Path: %s\nSI Path: %s\nVol Path: %s\n", myAi.Path, mySi.Path, myVol.Path)
 
         // Get the storage_instance endpoint, send "admin_state=online" and update our struct
-        sis, _ := ai.GetEp("storage_instances").List()
+        sis, _ := ai.GetEp("storage_instances").List(ctxt)
         si := sis[0]
-        si.Set("admin_state=online")
-        si, _ = si.Reload()
+        si.Set(ctxt, "admin_state=online")
+        si, _ = si.Reload(ctxt)
         mySi, _ = dsdk.NewStorageInstance(si.GetB())
         fmt.Printf("Access: %s", mySi.Access)
-
     }
 
 Handy Functions

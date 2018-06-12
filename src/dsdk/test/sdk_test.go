@@ -223,22 +223,6 @@ func TestAutoGenEntities(t *testing.T) {
 	}
 }
 
-func TestSystem(t *testing.T) {
-	// sdk := getSDK(t)
-
-	// svs, err := sdk.GetEp("system").GetEp("ntp_servers").List()
-	// if err != nil {
-	// 	t.Fatalf("%s", err)
-	// }
-	// var mysv dsdk.NtpServer
-	// err = json.Unmarshal(svs[0].GetB(), &mysv)
-	// if err != nil {
-	// 	t.Fatalf("%s", err)
-	// }
-
-	// fmt.Println(mysv)
-}
-
 func TestReadme(t *testing.T) {
 	sdk := getSDK(t)
 	// Now that we have the sdk, lets create an AppInstance
