@@ -37,6 +37,7 @@ Getting Started
 .. code:: go
 
     import (
+        "context"
         "fmt"
 
         // This is the sdk package
@@ -46,6 +47,7 @@ Getting Started
     func main() {
 
         // First we'll get the sdk setup
+        ctxt = context.Background()
         headers = make(map[string]string)
         sdk, err := dsdk.NewSDK(
             "172.19.1.41", "7717", "admin", "password", "2.1", "/root", "30s", headers, false)
