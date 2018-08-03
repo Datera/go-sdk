@@ -9,7 +9,7 @@ import (
 	"time"
 
 	mapstructure "github.com/mitchellh/mapstructure"
-	// log "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -219,4 +219,19 @@ func RandString(n int) string {
 
 func FillStruct(m map[string]interface{}, s interface{}) error {
 	return mapstructure.Decode(m, s)
+}
+
+type LogFormatter struct {
+}
+
+func (f *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
+	msg := entry.Message
+	level := entry.Level
+	t := entry.Time
+	return []byte(fmt.Sprintf("%s %s %s", t.Format(time.RFC3339), strings.ToUpper(level.String()), string(msg))), nil
+}
+
+func init() {
+	log.SetFormatter(&LogFormatter{})
+	log.SetLevel(log.DebugLevel)
 }

@@ -2,10 +2,18 @@ package dsdk
 
 import (
 	"context"
+	"path"
 
 	greq "github.com/levigross/grequests"
-	// log "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
+
+type Initiator struct {
+	Path string `json:"path,omitempty"`
+	Id   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	conn *ApiConnection
+}
 
 type Initiators struct {
 	Path string
@@ -14,23 +22,24 @@ type Initiators struct {
 }
 
 type InitiatorsCreateRequest struct {
-	Id    string `json:"id"`
-	Name  string `json:"name"`
-	Force bool   `json:"force"`
+	Id    string `json:"id,omitempty"`
+	Name  string `json:"name,omitempty"`
+	Force bool   `json:"force,omitempty"`
 }
 
 type InitiatorsCreateResponse Initiator
 
 type InitiatorsListRequest struct {
-	Filter string `json:"filter"`
-	Limit  string `json:"limit"`
-	Sort   string `json:"sort"`
-	Offset string `json:"offset"`
+	Params map[string]string
 }
 
 type InitiatorsListResponse []Initiator
 
-type InitiatorGetResponse Initiator
+type InitiatorsGetRequest struct {
+	Id string
+}
+
+type InitiatorsGetResponse Initiator
 
 func newInitiators(ctxt context.Context, conn *ApiConnection) *Initiators {
 	return &Initiators{
@@ -55,36 +64,69 @@ func (e *Initiators) Create(ro *InitiatorsCreateRequest) (*InitiatorsCreateRespo
 }
 
 func (e *Initiators) List(ro *InitiatorsListRequest) (*InitiatorsListResponse, error) {
-	return &InitiatorsListResponse{}, nil
+	gro := &greq.RequestOptions{
+		JSON:   ro,
+		Params: ro.Params}
+	rs, err := e.conn.GetList(e.Path, gro)
+	if err != nil {
+		return nil, err
+	}
+	resp := InitiatorsListResponse{}
+	for _, data := range rs.Data {
+		elem := &Initiator{}
+		adata := data.(map[string]interface{})
+		if err = FillStruct(adata, elem); err != nil {
+			return nil, err
+		}
+		resp = append(resp, *elem)
+	}
+	for _, init := range resp {
+		init.conn = e.conn
+	}
+	log.Debugf("INITIATORS---: %#v", resp)
+	return &resp, nil
 }
 
-// func (e *Initiators) Get(ro *InitiatorsGetRequest) (*InitiatorsGetResponse, error) {
-// 	return &InitiatorsGetResponse{}, nil
-// }
-
-type Initiator struct {
-	Path string `json:"path"`
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	conn *ApiConnection
+func (e *Initiators) Get(ro *InitiatorsGetRequest) (*InitiatorsGetResponse, error) {
+	gro := &greq.RequestOptions{JSON: ro}
+	rs, err := e.conn.Get(path.Join(e.Path, ro.Id), gro)
+	if err != nil {
+		return nil, err
+	}
+	resp := &InitiatorsGetResponse{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, err
+	}
+	resp.conn = e.conn
+	return resp, nil
 }
 
 type InitiatorSetRequest struct {
-	Name string `json:"id"`
+	Name string `json:"name,omitempty"`
 }
 
-type InititatorSetResponse Initiator
+type InitiatorSetResponse Initiator
 
 type InitiatorDeleteRequest struct {
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 }
 
 type InitiatorDeleteResponse Initiator
 
-// func (e *Initiator) Set(ro *InitiatorSetRequest) (*InitiatorSetResponse, error) {
-// 	return &InitiatorSetResponse{}, nil
+func (e *Initiator) Set(ro *InitiatorSetRequest) (*InitiatorSetResponse, error) {
+	gro := &greq.RequestOptions{JSON: ro}
+	rs, err := e.conn.Put(e.Path, gro)
+	if err != nil {
+		return nil, err
+	}
+	resp := &InitiatorSetResponse{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, err
+	}
+	resp.conn = e.conn
+	return resp, nil
 
-// }
+}
 
 func (e *Initiator) Delete(ro *InitiatorDeleteRequest) (*InitiatorDeleteResponse, error) {
 	rs, err := e.conn.Delete(e.Path, nil)
