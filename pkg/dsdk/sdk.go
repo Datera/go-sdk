@@ -15,9 +15,11 @@ const (
 )
 
 type SDK struct {
-	conf *udc.UDC
-	conn *ApiConnection
-	ctxt context.Context
+	conf         *udc.UDC
+	conn         *ApiConnection
+	ctxt         context.Context
+	AppInstances *AppInstances
+	Initiators   *Initiators
 }
 
 func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
@@ -30,10 +32,13 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 		}
 	}
 	ctxt := context.Background()
+	conn := NewApiConnection(ctxt, c, secure)
 	return &SDK{
-		conf: c,
-		ctxt: ctxt,
-		conn: NewApiConnection(ctxt, c, secure),
+		conf:         c,
+		ctxt:         ctxt,
+		conn:         conn,
+		AppInstances: newAppInstances(ctxt, conn, "/"),
+		Initiators:   newInitiators(ctxt, conn, "/"),
 	}, nil
 }
 

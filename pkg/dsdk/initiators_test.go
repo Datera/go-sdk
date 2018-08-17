@@ -27,7 +27,7 @@ func TestInitiatorsCreateDelete(t *testing.T) {
 		t.Errorf("%s", err)
 	}
 	init := Initiator(*resp)
-	if init.Name == "" || init.Id == "" || init.conn == nil {
+	if init.Name == "" || init.Id == "" || init.conn == nil || init.ctxt == nil {
 		t.Errorf("InitiatorsCreateResponse object not populated: %#v", init)
 	}
 	if _, err := init.Delete(nil); err != nil {

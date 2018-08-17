@@ -7,43 +7,43 @@ import (
 	greq "github.com/levigross/grequests"
 )
 
-type Initiator struct {
-	Path string `json:"path,omitempty"`
-	Id   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-	ctxt context.Context
-	conn *ApiConnection
+type InitiatorGroup struct {
+	Path    string      `json:"path,omitempty"`
+	Name    string      `json:"name,omitempty"`
+	Members []Initiator `json:"members,omitempty"`
+	ctxt    context.Context
+	conn    *ApiConnection
 }
 
-type Initiators struct {
+type InitiatorGroups struct {
 	Path string
 	ctxt context.Context
 	conn *ApiConnection
 }
 
-type InitiatorsCreateRequest struct {
+type InitiatorGroupsCreateRequest struct {
 	Id    string `json:"id,omitempty"`
 	Name  string `json:"name,omitempty"`
 	Force bool   `json:"force,omitempty"`
 }
 
-type InitiatorsCreateResponse Initiator
+type InitiatorGroupsCreateResponse InitiatorGroup
 
-func newInitiators(ctxt context.Context, conn *ApiConnection, path string) *Initiators {
-	return &Initiators{
-		Path: _path.Join(path, "initiators"),
+func newInitiatorGroups(ctxt context.Context, conn *ApiConnection, path string) *InitiatorGroups {
+	return &InitiatorGroups{
+		Path: _path.Join(path, "initiator_groups"),
 		ctxt: ctxt,
 		conn: conn,
 	}
 }
 
-func (e *Initiators) Create(ro *InitiatorsCreateRequest) (*InitiatorsCreateResponse, error) {
+func (e *InitiatorGroups) Create(ro *InitiatorGroupsCreateRequest) (*InitiatorGroupsCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := e.conn.Post(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &InitiatorsCreateResponse{}
+	resp := &InitiatorGroupsCreateResponse{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -52,13 +52,13 @@ func (e *Initiators) Create(ro *InitiatorsCreateRequest) (*InitiatorsCreateRespo
 	return resp, nil
 }
 
-type InitiatorsListRequest struct {
+type InitiatorGroupsListRequest struct {
 	Params map[string]string
 }
 
-type InitiatorsListResponse []Initiator
+type InitiatorGroupsListResponse []InitiatorGroup
 
-func (e *Initiators) List(ro *InitiatorsListRequest) (*InitiatorsListResponse, error) {
+func (e *InitiatorGroups) List(ro *InitiatorGroupsListRequest) (*InitiatorGroupsListResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -66,9 +66,9 @@ func (e *Initiators) List(ro *InitiatorsListRequest) (*InitiatorsListResponse, e
 	if err != nil {
 		return nil, err
 	}
-	resp := InitiatorsListResponse{}
+	resp := InitiatorGroupsListResponse{}
 	for _, data := range rs.Data {
-		elem := &Initiator{}
+		elem := &InitiatorGroup{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
@@ -82,19 +82,19 @@ func (e *Initiators) List(ro *InitiatorsListRequest) (*InitiatorsListResponse, e
 	return &resp, nil
 }
 
-type InitiatorsGetRequest struct {
+type InitiatorGroupsGetRequest struct {
 	Id string
 }
 
-type InitiatorsGetResponse Initiator
+type InitiatorGroupsGetResponse InitiatorGroup
 
-func (e *Initiators) Get(ro *InitiatorsGetRequest) (*InitiatorsGetResponse, error) {
+func (e *InitiatorGroups) Get(ro *InitiatorGroupsGetRequest) (*InitiatorGroupsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := e.conn.Get(_path.Join(e.Path, ro.Id), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &InitiatorsGetResponse{}
+	resp := &InitiatorGroupsGetResponse{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -103,19 +103,19 @@ func (e *Initiators) Get(ro *InitiatorsGetRequest) (*InitiatorsGetResponse, erro
 	return resp, nil
 }
 
-type InitiatorSetRequest struct {
-	Name string `json:"name,omitempty"`
+type InitiatorGroupSetRequest struct {
+	Members []Initiator `json:"members,omitempty"`
 }
 
-type InitiatorSetResponse Initiator
+type InitiatorGroupSetResponse InitiatorGroup
 
-func (e *Initiator) Set(ro *InitiatorSetRequest) (*InitiatorSetResponse, error) {
+func (e *InitiatorGroup) Set(ro *InitiatorGroupSetRequest) (*InitiatorGroupSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := e.conn.Put(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &InitiatorSetResponse{}
+	resp := &InitiatorGroupSetResponse{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -125,18 +125,18 @@ func (e *Initiator) Set(ro *InitiatorSetRequest) (*InitiatorSetResponse, error) 
 
 }
 
-type InitiatorDeleteRequest struct {
+type InitiatorGroupDeleteRequest struct {
 	Id string `json:"id,omitempty"`
 }
 
-type InitiatorDeleteResponse Initiator
+type InitiatorGroupDeleteResponse InitiatorGroup
 
-func (e *Initiator) Delete(ro *InitiatorDeleteRequest) (*InitiatorDeleteResponse, error) {
+func (e *InitiatorGroup) Delete(ro *InitiatorGroupDeleteRequest) (*InitiatorGroupDeleteResponse, error) {
 	rs, err := e.conn.Delete(e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &InitiatorDeleteResponse{}
+	resp := &InitiatorGroupDeleteResponse{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
