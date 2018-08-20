@@ -8,23 +8,23 @@ import (
 )
 
 type StorageInstance struct {
-	Path                 string        `json:"path,omitempty"`
-	Access               Access        `json:"access,omitempty"`
-	AccessControlMode    string        `json:"access_control_mode,omitempty"`
-	AclPolicy            AclPolicy     `json:"acl_policy,omitempty"`
-	ActiveInitiators     []Initiator   `json:"active_initiators,omitempty"`
-	ActiveStorageNodes   []StorageNode `json:"active_storage_nodes,omitempty"`
-	AdminState           string        `json:"admin_state,omitempty"`
-	Auth                 Auth          `json:"auth,omitempty"`
-	Causes               string        `json:"causes,omitempty"`
-	DeploymentState      string        `json:"deployment_state,omitempty"`
-	Health               string        `json:"health,omitempty"`
-	IpPool               IpPool        `json:"ip_pool,omitempty"`
-	Name                 string        `json:"name,omitempty"`
-	OpState              string        `json:"op_state,omitempty"`
-	ServiceConfiguration string        `json:"service_configuration,omitempty"`
-	Uuid                 string        `json:"uuid,omitempty"`
-	Volumes              []Volume      `json:"volumes,omitempty"`
+	Path                 string              `json:"path,omitempty"`
+	Access               Access              `json:"access,omitempty"`
+	AccessControlMode    string              `json:"access_control_mode,omitempty"`
+	AclPolicy            AclPolicy           `json:"acl_policy,omitempty"`
+	ActiveInitiators     []Initiator         `json:"active_initiators,omitempty"`
+	ActiveStorageNodes   []StorageNode       `json:"active_storage_nodes,omitempty"`
+	AdminState           string              `json:"admin_state,omitempty"`
+	Auth                 Auth                `json:"auth,omitempty"`
+	Causes               string              `json:"causes,omitempty"`
+	DeploymentState      string              `json:"deployment_state,omitempty"`
+	Health               string              `json:"health,omitempty"`
+	IpPool               AccessNetworkIpPool `json:"ip_pool,omitempty"`
+	Name                 string              `json:"name,omitempty"`
+	OpState              string              `json:"op_state,omitempty"`
+	ServiceConfiguration string              `json:"service_configuration,omitempty"`
+	Uuid                 string              `json:"uuid,omitempty"`
+	Volumes              []Volume            `json:"volumes,omitempty"`
 	VolumesEp            *Volumes
 	ctxt                 context.Context
 	conn                 *ApiConnection
@@ -125,13 +125,13 @@ func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstance
 }
 
 type StorageInstanceSetRequest struct {
-	AccessControlMode string    `json:"access_control_mode,omitempty"`
-	AclPolicy         AclPolicy `json:"acl_policy,omitempty"`
-	AdminState        string    `json:"admin_state,omitempty"`
-	Auth              Auth      `json:"auth,omitempty"`
-	Force             bool      `json:"force,omitempty"`
-	IpPool            IpPool    `json:"ip_pool,omitempty"`
-	Volumes           []Volume  `json:"volumes,omitempty"`
+	AccessControlMode string              `json:"access_control_mode,omitempty"`
+	AclPolicy         AclPolicy           `json:"acl_policy,omitempty"`
+	AdminState        string              `json:"admin_state,omitempty"`
+	Auth              Auth                `json:"auth,omitempty"`
+	Force             bool                `json:"force,omitempty"`
+	IpPool            AccessNetworkIpPool `json:"ip_pool,omitempty"`
+	Volumes           []Volume            `json:"volumes,omitempty"`
 }
 
 type StorageInstanceSetResponse StorageInstance

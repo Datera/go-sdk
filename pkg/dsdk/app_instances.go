@@ -8,26 +8,32 @@ import (
 )
 
 type AppInstance struct {
-	Path                 string        `json:"path,omitempty"`
-	Access               Access        `json:"access,omitempty"`
-	AccessControlMode    string        `json:"access_control_mode,omitempty"`
-	AclPolicy            AclPolicy     `json:"acl_policy,omitempty"`
-	ActiveInitiators     []Initiator   `json:"active_initiators,omitempty"`
-	ActiveStorageNodes   []StorageNode `json:"active_storage_nodes,omitempty"`
-	AdminState           string        `json:"admin_state,omitempty"`
-	Auth                 Auth          `json:"auth,omitempty"`
-	Causes               string        `json:"causes,omitempty"`
-	DeploymentState      string        `json:"deployment_state,omitempty"`
-	Health               string        `json:"health,omitempty"`
-	IpPool               IpPool        `json:"ip_pool,omitempty"`
-	Name                 string        `json:"name,omitempty"`
-	OpState              string        `json:"op_state,omitempty"`
-	ServiceConfiguration string        `json:"service_configuration,omitempty"`
-	Uuid                 string        `json:"uuid,omitempty"`
-	Volumes              []Volume      `json:"volumes,omitempty"`
-	VolumesEp            *Volumes
-	ctxt                 context.Context
-	conn                 *ApiConnection
+	AccessControlMode       string            `json:"access_control_mode,omitempty"`
+	AdminState              string            `json:"admin_state,omitempty"`
+	AppTemplate             string            `json:"app_template,omitempty"`
+	Causes                  string            `json:"causes,omitempty"`
+	CloneSrc                map[string]string `json:"clone_src,omitempty"`
+	CreateMode              string            `json:"create_mode,omitempty"`
+	DeploymentState         string            `json:"deployment_state,omitempty"`
+	Descr                   string            `json:"descr,omitempty"`
+	Health                  string            `json:"health,omitempty"`
+	Id                      string            `json:"id,omitempty"`
+	Name                    string            `json:"name,omitempty"`
+	OpState                 string            `json:"op_state,omitempty"`
+	Path                    string            `json:"path,omitempty"`
+	RemoteRestorePercentage int               `json:"remote_restore_percentage,omitempty"`
+	RemoteRestoreProgress   string            `json:"remote_restore_progress,omitempty"`
+	RepairPriority          string            `json:"repair_priority,omitempty"`
+	RestorePoint            string            `json:"restore_point,omitempty"`
+	RestoreProgress         string            `json:"restore_progress,omitempty"`
+	SnapshotPolicies        []SnapshotPolicy  `json:"snapshot_policies,omitempty"`
+	Snapshots               []Snapshot        `json:"snapshots,omitempty"`
+	StorageInstances        []StorageInstance `json:"storage_instances,omitempty"`
+	StoragePool             []StoragePool     `json:"storage_pool,omitempty"`
+	Uuid                    string            `json:"uuid,omitempty"`
+	StorageInstancesEp      *StorageInstances
+	ctxt                    context.Context
+	conn                    *ApiConnection
 }
 
 type AppInstances struct {
@@ -67,7 +73,7 @@ func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstancesCreat
 	}
 	resp.conn = e.conn
 	resp.ctxt = e.ctxt
-	resp.VolumesEp = newVolumes(e.ctxt, e.conn, e.Path)
+	resp.StorageInstancesEp = newStorageInstances(e.ctxt, e.conn, e.Path)
 	return resp, nil
 }
 
@@ -97,7 +103,7 @@ func (e *AppInstances) List(ro *AppInstancesListRequest) (*AppInstancesListRespo
 	for _, r := range resp {
 		r.conn = e.conn
 		r.ctxt = e.ctxt
-		r.VolumesEp = newVolumes(e.ctxt, e.conn, e.Path)
+		r.StorageInstancesEp = newStorageInstances(e.ctxt, e.conn, e.Path)
 	}
 	return &resp, nil
 }
@@ -120,18 +126,23 @@ func (e *AppInstances) Get(ro *AppInstancesGetRequest) (*AppInstancesGetResponse
 	}
 	resp.conn = e.conn
 	resp.ctxt = e.ctxt
-	resp.VolumesEp = newVolumes(e.ctxt, e.conn, e.Path)
+	resp.StorageInstancesEp = newStorageInstances(e.ctxt, e.conn, e.Path)
 	return resp, nil
 }
 
 type AppInstanceSetRequest struct {
-	AccessControlMode string    `json:"access_control_mode,omitempty"`
-	AclPolicy         AclPolicy `json:"acl_policy,omitempty"`
-	AdminState        string    `json:"admin_state,omitempty"`
-	Auth              Auth      `json:"auth,omitempty"`
-	Force             bool      `json:"force,omitempty"`
-	IpPool            IpPool    `json:"ip_pool,omitempty"`
-	Volumes           []Volume  `json:"volumes,omitempty"`
+	AdminState         string            `json:"admin_state,omitempty"`
+	Descr              string            `json:"descr,omitempty"`
+	Force              bool              `json:"force,omitempty"`
+	Name               string            `json:"name,omitempty"`
+	Provisioned        string            `json:"provisioned,omitempty"`
+	RemoteProvider     string            `json:"remote_provider,omitempty"`
+	RemoteRestorePoint string            `json:"remote_restore_point,omitempty"`
+	RepairPriority     string            `json:"repair_priority,omitempty"`
+	RestorePoint       string            `json:"restore_point,omitempty"`
+	SnapshotPolicies   []SnapshotPolicy  `json:"snapshot_policies,omitempty"`
+	StorageInstances   []StorageInstance `json:"storage_instances,omitempty"`
+	StoragePool        []StoragePool     `json:"storage_pool,omitempty"`
 }
 
 type AppInstanceSetResponse AppInstance
@@ -148,7 +159,7 @@ func (e *AppInstance) Set(ro *AppInstanceSetRequest) (*AppInstanceSetResponse, e
 	}
 	resp.conn = e.conn
 	resp.ctxt = e.ctxt
-	resp.VolumesEp = newVolumes(e.ctxt, e.conn, e.Path)
+	resp.StorageInstancesEp = newStorageInstances(e.ctxt, e.conn, e.Path)
 	return resp, nil
 
 }
@@ -170,6 +181,6 @@ func (e *AppInstance) Delete(ro *AppInstanceDeleteRequest) (*AppInstanceDeleteRe
 	}
 	resp.conn = e.conn
 	resp.ctxt = e.ctxt
-	resp.VolumesEp = newVolumes(e.ctxt, e.conn, e.Path)
+	resp.StorageInstancesEp = newStorageInstances(e.ctxt, e.conn, e.Path)
 	return resp, nil
 }
