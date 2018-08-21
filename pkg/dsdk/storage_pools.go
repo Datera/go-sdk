@@ -30,7 +30,7 @@ type StoragePoolsCreateResponse StoragePool
 
 func newStoragePools(ctxt context.Context, conn *ApiConnection, path string) *StoragePools {
 	return &StoragePools{
-		Path: _path.Join(path, "storage_pool"),
+		Path: _path.Join(path, "storage_pools"),
 		ctxt: ctxt,
 		conn: conn,
 	}

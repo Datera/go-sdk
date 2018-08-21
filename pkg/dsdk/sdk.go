@@ -15,14 +15,15 @@ const (
 )
 
 type SDK struct {
-	conf            *udc.UDC
-	conn            *ApiConnection
-	ctxt            context.Context
-	AppInstances    *AppInstances
-	Initiators      *Initiators
-	InitiatorGroups *InitiatorGroups
-	StorageNodes    *StorageNodes
-	StoragePools    *StoragePools
+	conf                 *udc.UDC
+	conn                 *ApiConnection
+	ctxt                 context.Context
+	AppInstances         *AppInstances
+	Initiators           *Initiators
+	InitiatorGroups      *InitiatorGroups
+	StorageNodes         *StorageNodes
+	StoragePools         *StoragePools
+	AccessNetworkIpPools *AccessNetworkIpPools
 }
 
 func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
@@ -37,11 +38,15 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 	ctxt := context.Background()
 	conn := NewApiConnection(ctxt, c, secure)
 	return &SDK{
-		conf:         c,
-		ctxt:         ctxt,
-		conn:         conn,
-		AppInstances: newAppInstances(ctxt, conn, "/"),
-		Initiators:   newInitiators(ctxt, conn, "/"),
+		conf:                 c,
+		ctxt:                 ctxt,
+		conn:                 conn,
+		AppInstances:         newAppInstances(ctxt, conn, "/"),
+		Initiators:           newInitiators(ctxt, conn, "/"),
+		InitiatorGroups:      newInitiatorGroups(ctxt, conn, "/"),
+		StorageNodes:         newStorageNodes(ctxt, conn, "/"),
+		StoragePools:         newStoragePools(ctxt, conn, "/"),
+		AccessNetworkIpPools: newAccessNetworkIpPools(ctxt, conn, "/"),
 	}, nil
 }
 
