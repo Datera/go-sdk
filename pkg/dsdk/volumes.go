@@ -110,14 +110,14 @@ func (e *Volumes) List(ro *VolumesListRequest) (*VolumesListResponse, error) {
 }
 
 type VolumesGetRequest struct {
-	Id string
+	Name string
 }
 
 type VolumesGetResponse Volume
 
 func (e *Volumes) Get(ro *VolumesGetRequest) (*VolumesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Id), gro)
+	rs, err := e.conn.Get(_path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}

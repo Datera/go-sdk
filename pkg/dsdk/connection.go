@@ -55,7 +55,7 @@ type ErrorResponse struct {
 		ClientId     string            `json:"client_id"`
 		ClientType   string            `json:"client_type"`
 		Id           string            `json:"api_req_id"`
-		TenancyClass string            `json"tenancy_class"`
+		TenancyClass string            `json:"tenancy_class"`
 	}
 }
 

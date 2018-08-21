@@ -11,7 +11,7 @@ type AppInstance struct {
 	AccessControlMode       string            `json:"access_control_mode,omitempty"`
 	AdminState              string            `json:"admin_state,omitempty"`
 	AppTemplate             string            `json:"app_template,omitempty"`
-	Causes                  string            `json:"causes,omitempty"`
+	Causes                  []string          `json:"causes,omitempty"`
 	CloneSrc                map[string]string `json:"clone_src,omitempty"`
 	CreateMode              string            `json:"create_mode,omitempty"`
 	DeploymentState         string            `json:"deployment_state,omitempty"`

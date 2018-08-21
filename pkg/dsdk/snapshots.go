@@ -94,14 +94,14 @@ func (e *Snapshots) List(ro *SnapshotsListRequest) (*SnapshotsListResponse, erro
 }
 
 type SnapshotsGetRequest struct {
-	Id string
+	Timestamp string
 }
 
 type SnapshotsGetResponse Snapshot
 
 func (e *Snapshots) Get(ro *SnapshotsGetRequest) (*SnapshotsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Id), gro)
+	rs, err := e.conn.Get(_path.Join(e.Path, ro.Timestamp), gro)
 	if err != nil {
 		return nil, err
 	}

@@ -83,14 +83,14 @@ func (e *InitiatorGroups) List(ro *InitiatorGroupsListRequest) (*InitiatorGroups
 }
 
 type InitiatorGroupsGetRequest struct {
-	Id string
+	Name string
 }
 
 type InitiatorGroupsGetResponse InitiatorGroup
 
 func (e *InitiatorGroups) Get(ro *InitiatorGroupsGetRequest) (*InitiatorGroupsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Id), gro)
+	rs, err := e.conn.Get(_path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}

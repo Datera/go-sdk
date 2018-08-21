@@ -10,7 +10,7 @@ import (
 type SnapshotPolicy struct {
 	Path           string `json:"path,omitempty"`
 	Name           string `json:"name,omitempty"`
-	Interval       string `json:"name,omitempty"`
+	Interval       string `json:"interval,omitempty"`
 	RetentionCount int    `json:"retention_count,omitempty"`
 	StartTime      string `json:"start_time,omitempty"`
 	ctxt           context.Context
@@ -25,7 +25,7 @@ type SnapshotPolicies struct {
 
 type SnapshotPoliciesCreateRequest struct {
 	Name           string `json:"name,omitempty"`
-	Interval       string `json:"name,omitempty"`
+	Interval       string `json:"interval,omitempty"`
 	RetentionCount string `json:"retention_count,omitempty"`
 	StartTime      string `json:"start_time,omitempty"`
 }
@@ -86,14 +86,14 @@ func (e *SnapshotPolicies) List(ro *SnapshotPoliciesListRequest) (*SnapshotPolic
 }
 
 type SnapshotPoliciesGetRequest struct {
-	Id string
+	Name string
 }
 
 type SnapshotPoliciesGetResponse SnapshotPolicy
 
 func (e *SnapshotPolicies) Get(ro *SnapshotPoliciesGetRequest) (*SnapshotPoliciesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Id), gro)
+	rs, err := e.conn.Get(_path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}

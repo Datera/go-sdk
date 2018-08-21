@@ -16,7 +16,7 @@ type StorageInstance struct {
 	ActiveStorageNodes   []StorageNode       `json:"active_storage_nodes,omitempty"`
 	AdminState           string              `json:"admin_state,omitempty"`
 	Auth                 Auth                `json:"auth,omitempty"`
-	Causes               string              `json:"causes,omitempty"`
+	Causes               []string            `json:"causes,omitempty"`
 	DeploymentState      string              `json:"deployment_state,omitempty"`
 	Health               string              `json:"health,omitempty"`
 	IpPool               AccessNetworkIpPool `json:"ip_pool,omitempty"`
@@ -103,14 +103,14 @@ func (e *StorageInstances) List(ro *StorageInstancesListRequest) (*StorageInstan
 }
 
 type StorageInstancesGetRequest struct {
-	Id string
+	Name string
 }
 
 type StorageInstancesGetResponse StorageInstance
 
 func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstancesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Id), gro)
+	rs, err := e.conn.Get(_path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}

@@ -15,11 +15,14 @@ const (
 )
 
 type SDK struct {
-	conf         *udc.UDC
-	conn         *ApiConnection
-	ctxt         context.Context
-	AppInstances *AppInstances
-	Initiators   *Initiators
+	conf            *udc.UDC
+	conn            *ApiConnection
+	ctxt            context.Context
+	AppInstances    *AppInstances
+	Initiators      *Initiators
+	InitiatorGroups *InitiatorGroups
+	StorageNodes    *StorageNodes
+	StoragePools    *StoragePools
 }
 
 func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {

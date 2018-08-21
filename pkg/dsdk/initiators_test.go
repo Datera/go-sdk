@@ -17,7 +17,7 @@ func TestInitiatorsCreateDelete(t *testing.T) {
 	}
 	ctxt := context.Background()
 	conn := NewApiConnection(ctxt, conf, true)
-	initEp := newInitiators(ctxt, conn)
+	initEp := newInitiators(ctxt, conn, "/")
 	ro := &InitiatorsCreateRequest{
 		Id:   fmt.Sprintf("iqn.1993-08.org.debian:01:%s", RandString(12)),
 		Name: RandString(12),
@@ -45,7 +45,7 @@ func TestInitiatorsList(t *testing.T) {
 
 	// Create Initiators
 	inits := []Initiator{}
-	initEp := newInitiators(ctxt, conn)
+	initEp := newInitiators(ctxt, conn, "/")
 	for i := 0; i < 2; i++ {
 		ro := &InitiatorsCreateRequest{
 			Id:   fmt.Sprintf("iqn.1993-08.org.debian:01:%s", RandString(12)),
@@ -83,7 +83,7 @@ func TestInitiatorsGet(t *testing.T) {
 	}
 	ctxt := context.Background()
 	conn := NewApiConnection(ctxt, conf, true)
-	initEp := newInitiators(ctxt, conn)
+	initEp := newInitiators(ctxt, conn, "/")
 
 	// Create initiator
 	ro := &InitiatorsCreateRequest{
@@ -119,7 +119,7 @@ func TestInitiatorsSet(t *testing.T) {
 	}
 	ctxt := context.Background()
 	conn := NewApiConnection(ctxt, conf, true)
-	initEp := newInitiators(ctxt, conn)
+	initEp := newInitiators(ctxt, conn, "/")
 
 	// Create initiator
 	ro := &InitiatorsCreateRequest{
