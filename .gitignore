@@ -1,5 +1,4 @@
 bin/*
-pkg/*
 src/github.com/*
 src/golang.com/*
 src/gopkg.in/*

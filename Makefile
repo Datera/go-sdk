@@ -1,26 +1,17 @@
-GOPATH=$(shell pwd)
+VERSION ?= v0.1.0
+NAME=dsdk
 
-all:
-	env GOPATH=${GOPATH} go get dsdk
-	env GOPATH=${GOPATH} go build dsdk
-	env GOPATH=${GOPATH} go vet dsdk
+compile:
+	@echo "==> Building the Datera Golang SDK"
+	@env go get -d ./...
+	@env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${NAME} main.go
+	@env go vet ./...
+
+compile-local:
+	@echo "==> Building the Datera Golang SDK locally"
+	@env CGO_ENABLED=0 GOARCH=amd64 go build -o ${NAME} main.go
+	@env go vet ./...
 
 clean:
-	rm -f -- datera_api.log
-	rm -rf -- bin
-	rm -rf -- pkg
-	rm -rf -- src/github.com
-	rm -rf -- src/golang.com
-	rm -rf -- src/golang.org
-	rm -rf -- src/gopkg.in
-
-test:
-	env GOPATH=${GOPATH} go get dsdk
-	env GOPATH=${GOPATH} go build dsdk
-	env GOPATH=${GOPATH} go test -v dsdk/test
-
-fmt:
-	env GOPATH=${GOPATH} go fmt dsdk
-
-doc:
-	env GOPATH=${GOPATH} godoc -html dsdk
+	@echo "==> Cleaning artifacts"
+	@GOOS=linux go clean -i -x ./...
