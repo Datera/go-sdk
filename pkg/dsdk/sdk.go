@@ -54,5 +54,15 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 
 // Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under
 // the currently configured tenant
-func (c SDK) ForceClean() {
+func (c SDK) HealthCheck() error {
+	resp, err := c.StorageNodes.List(&StorageNodesListRequest{})
+	if err != nil {
+		return err
+	}
+	log.Debugf("Connected to cluster: %s with tenant %s.\n", c.conf.MgmtIp, c.conf.Tenant)
+	for _, r := range *resp {
+		sn := StorageNode(r)
+		log.Debugf("Found Storage Node: %s\n", sn.Uuid)
+	}
+	return nil
 }
