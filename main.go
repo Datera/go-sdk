@@ -67,6 +67,18 @@ func testInitiatorGroups(sdk *dsdk.SDK) error {
 	return nil
 }
 
+func testTenants(sdk *dsdk.SDK) error {
+	resp, err := sdk.Tenants.List(&dsdk.TenantsListRequest{})
+	if err != nil {
+		return err
+	}
+	for _, r := range *resp {
+		sn := dsdk.Tenant(r)
+		fmt.Printf("Tenant: %s\n", sn.Name)
+	}
+	return nil
+}
+
 func main() {
 	fmt.Println("Running Datera Golang SDK smoketests")
 
@@ -89,6 +101,9 @@ func main() {
 	}
 	if err = testInitiatorGroups(sdk); err != nil {
 		fmt.Printf("\nInitiatorGroups ERROR: %s\n", err)
+	}
+	if err = testTenants(sdk); err != nil {
+		fmt.Printf("\nTenants ERROR: %s\n", err)
 	}
 
 }
