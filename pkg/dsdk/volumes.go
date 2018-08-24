@@ -8,33 +8,34 @@ import (
 )
 
 type Volume struct {
-	Path               string        `json:"path,omitempty"`
-	ActiveStorageNodes []StorageNode `json:"active_storage_nodes,omitempty"`
-	AvailabilityState  string        `json:"availability_state,omitempty"`
-	CapacityInUse      int           `json:"capacity_in_use,omitempty"`
-	Causes             []string      `json:"causes,omitempty"`
-	DeploymentState    string        `json:"deployment_state,omitempty"`
-	EffectiveSize      int           `json:"effective_size,omitempty"`
-	ExclusiveSize      int           `json:"exclusive_size,omitempty"`
-	Health             string        `json:"health,omitempty"`
-	LogicalSize        int           `json:"logical_size,omitempty"`
-	Name               string        `json:"name,omitempty"`
-	OpState            string        `json:"op_state,omitempty"`
-	OpStatus           string        `json:"op_status,omitempty"`
-	PhysicalSize       int           `json:"physical_size,omitempty"`
-	PlacementMode      string        `json:"placement_mode,omitempty"`
-	PlacementPolicy    string        `json:"placement_policy,omitempty"`
-	RecoveryState      string        `json:"recovery_state,omitempty"`
-	ReplicaCount       int           `json:"replica_count,omitempty"`
-	RestorePoint       string        `json:"restore_point,omitempty"`
-	Size               int           `json:"size,omitempty"`
-	Snapshots          []Snapshot    `json:"snapshots,omitempty"`
-	StoragePool        []StoragePool `json:"storage_pool,omitempty"`
-	StorageState       string        `json:"storage_state,omitempty"`
-	Uuid               string        `json:"uuid,omitempty"`
-	SnapshotsEp        *Snapshots
-	ctxt               context.Context
-	conn               *ApiConnection
+	Path                string        `json:"path,omitempty"`
+	ActiveStorageNodes  []StorageNode `json:"active_storage_nodes,omitempty"`
+	AvailabilityState   string        `json:"availability_state,omitempty"`
+	CapacityInUse       int           `json:"capacity_in_use,omitempty"`
+	Causes              []string      `json:"causes,omitempty"`
+	DeploymentState     string        `json:"deployment_state,omitempty"`
+	EffectiveSize       int           `json:"effective_size,omitempty"`
+	ExclusiveSize       int           `json:"exclusive_size,omitempty"`
+	Health              string        `json:"health,omitempty"`
+	LogicalSize         int           `json:"logical_size,omitempty"`
+	Name                string        `json:"name,omitempty"`
+	OpState             string        `json:"op_state,omitempty"`
+	OpStatus            string        `json:"op_status,omitempty"`
+	PhysicalSize        int           `json:"physical_size,omitempty"`
+	PlacementMode       string        `json:"placement_mode,omitempty"`
+	PlacementPolicy     string        `json:"placement_policy,omitempty"`
+	RecoveryState       string        `json:"recovery_state,omitempty"`
+	ReplicaCount        int           `json:"replica_count,omitempty"`
+	RestorePoint        string        `json:"restore_point,omitempty"`
+	Size                int           `json:"size,omitempty"`
+	Snapshots           []Snapshot    `json:"snapshots,omitempty"`
+	StoragePool         []StoragePool `json:"storage_pool,omitempty"`
+	StorageState        string        `json:"storage_state,omitempty"`
+	Uuid                string        `json:"uuid,omitempty"`
+	SnapshotsEp         *Snapshots
+	PerformancePolicyEp *PerformancePolicy
+	ctxt                context.Context
+	conn                *ApiConnection
 }
 
 type Volumes struct {

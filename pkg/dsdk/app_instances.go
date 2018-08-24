@@ -10,9 +10,9 @@ import (
 type AppInstance struct {
 	AccessControlMode       string            `json:"access_control_mode,omitempty"`
 	AdminState              string            `json:"admin_state,omitempty"`
-	AppTemplate             string            `json:"app_template,omitempty"`
+	AppTemplate             AppTemplate       `json:"app_template,omitempty"`
 	Causes                  []string          `json:"causes,omitempty"`
-	CloneSrc                map[string]string `json:"clone_src,omitempty"`
+	CloneSrc                *AppInstance      `json:"clone_src,omitempty"`
 	CreateMode              string            `json:"create_mode,omitempty"`
 	DeploymentState         string            `json:"deployment_state,omitempty"`
 	Descr                   string            `json:"descr,omitempty"`
@@ -43,12 +43,18 @@ type AppInstances struct {
 }
 
 type AppInstancesCreateRequest struct {
-	Name            string `json:"name,omitempty"`
-	ReplicaCount    int    `json:"replica_count,omitempty"`
-	Size            int    `json:"size,omitempty"`
-	PlacementMode   string `json:"placement_mode,omitempty"`
-	PlacementPolicy string `json:"placement_policy,omitempty"`
-	Force           bool   `json:"force,omitempty"`
+	AppTemplate      AppTemplate            `json:"app_template,omitempty"`
+	CloneSnapshotSrc Snapshot               `json:"clone_snapshot_src,omitempty"`
+	CloneVolumeSrc   Volume                 `json:"clone_volume_src,omitempty"`
+	CloneSrc         AppInstance            `json:"clone_src,omitempty"`
+	CreateMode       string                 `json:"create_mode,omitempty"`
+	Descr            string                 `json:"descr,omitempty"`
+	Name             string                 `json:"name,omitempty"`
+	RepairPriority   string                 `json:"repair_priority,omitempty"`
+	SnapshotPolicies []SnapshotPolicy       `json:"snapshot_policies,omitempty"`
+	StorageInstances []StorageInstance      `json:"storage_instances,omitempty"`
+	StoragePool      []StoragePool          `json:"storage_pool,omitempty"`
+	TemplateOverride map[string]interface{} `json:"template_override,omitempty"`
 }
 
 type AppInstancesCreateResponse AppInstance
