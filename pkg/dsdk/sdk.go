@@ -20,6 +20,7 @@ type SDK struct {
 	ctxt                 context.Context
 	AccessNetworkIpPools *AccessNetworkIpPools
 	AppInstances         *AppInstances
+	AppTemplates         *AppTemplates
 	Initiators           *Initiators
 	InitiatorGroups      *InitiatorGroups
 	StorageNodes         *StorageNodes
@@ -44,6 +45,7 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 		conn:                 conn,
 		AccessNetworkIpPools: newAccessNetworkIpPools(ctxt, conn, "/"),
 		AppInstances:         newAppInstances(ctxt, conn, "/"),
+		AppTemplates:         newAppTemplates(ctxt, conn, "/"),
 		Initiators:           newInitiators(ctxt, conn, "/"),
 		InitiatorGroups:      newInitiatorGroups(ctxt, conn, "/"),
 		StorageNodes:         newStorageNodes(ctxt, conn, "/"),
