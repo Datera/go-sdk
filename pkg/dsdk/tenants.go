@@ -8,15 +8,15 @@ import (
 )
 
 type Tenant struct {
-	Path             string      `json:"path,omitempty"`
-	Descr            string      `json:"descr,omitempty"`
-	InitiatorListSrc string      `json:"initiator_list_src,omitempty"`
-	MgmtIps          []string    `json:"mgmt_ips,omitempty"`
-	Name             string      `json:"name,omitempty"`
-	ParentPath       string      `json:"parent_path,omitempty"`
-	Quota            Quota       `json:"quota,omitempty"`
-	QuotaStatus      QuotaStatus `json:"quota_status,omitempty"`
-	Subtenants       []Tenant    `json:"subtenants,omitempty"`
+	Path             string            `json:"path,omitempty" mapstructure:"path"`
+	Descr            string            `json:"descr,omitempty" mapstructure:"descr"`
+	InitiatorListSrc string            `json:"initiator_list_src,omitempty" mapstructure:"initiator_list_src"`
+	MgmtIps          map[string]string `json:"mgmt_ips,omitempty" mapstructure:"mgmt_ips"`
+	Name             string            `json:"name,omitempty" mapstructure:"name"`
+	ParentPath       string            `json:"parent_path,omitempty" mapstructure:"parent_path"`
+	Quota            Quota             `json:"quota,omitempty" mapstructure:"quota"`
+	QuotaStatus      QuotaStatus       `json:"quota_status,omitempty" mapstructure:"quota_status"`
+	Subtenants       []Tenant          `json:"subtenants,omitempty" mapstructure:"subtenants"`
 	ctxt             context.Context
 	conn             *ApiConnection
 }
@@ -28,9 +28,9 @@ type Tenants struct {
 }
 
 type TenantsCreateRequest struct {
-	Id    string `json:"id,omitempty"`
-	Name  string `json:"name,omitempty"`
-	Force bool   `json:"force,omitempty"`
+	Id    string `json:"id,omitempty" mapstructure:"id"`
+	Name  string `json:"name,omitempty" mapstructure:"name"`
+	Force bool   `json:"force,omitempty" mapstructure:"force"`
 }
 
 type TenantsCreateResponse Tenant
@@ -110,15 +110,15 @@ func (e *Tenants) Get(ro *TenantsGetRequest) (*TenantsGetResponse, error) {
 }
 
 type TenantSetRequest struct {
-	Path             string      `json:"path,omitempty"`
-	Descr            string      `json:"descr,omitempty"`
-	InitiatorListSrc string      `json:"initiator_list_src,omitempty"`
-	MgmtIps          []string    `json:"mgmt_ips,omitempty"`
-	Name             string      `json:"name,omitempty"`
-	ParentPath       string      `json:"parent_path,omitempty"`
-	Quota            Quota       `json:"quota,omitempty"`
-	QuotaStatus      QuotaStatus `json:"quota_status,omitempty"`
-	Subtenants       []Tenant    `json:"subtenants,omitempty"`
+	Path             string      `json:"path,omitempty" mapstructure:"path"`
+	Descr            string      `json:"descr,omitempty" mapstructure:"descr"`
+	InitiatorListSrc string      `json:"initiator_list_src,omitempty" mapstructure:"initiator_list_src"`
+	MgmtIps          []string    `json:"mgmt_ips,omitempty" mapstructure:"mgmt_ips"`
+	Name             string      `json:"name,omitempty" mapstructure:"name"`
+	ParentPath       string      `json:"parent_path,omitempty" mapstructure:"parent_path"`
+	Quota            Quota       `json:"quota,omitempty" mapstructure:"quota"`
+	QuotaStatus      QuotaStatus `json:"quota_status,omitempty" mapstructure:"quota_status"`
+	Subtenants       []Tenant    `json:"subtenants,omitempty" mapstructure:"subtenants"`
 }
 
 type TenantSetResponse Tenant

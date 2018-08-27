@@ -8,13 +8,13 @@ import (
 )
 
 type StorageTemplate struct {
-	Path                 string              `json:"path,omitempty"`
-	Auth                 Auth                `json:"auth,omitempty"`
-	Name                 string              `json:"name,omitempty"`
-	IpPool               AccessNetworkIpPool `json:"ip_pool,omitempty"`
-	ServiceConfiguration string              `json:"service_configuration,omitempty"`
-	VolumeTemplates      []VolumeTemplates   `json:"volume_templates,omitempty"`
-	VolumeTemplatesEp    *VolumeTemplates
+	Path                 string               `json:"path,omitempty" mapstructure:"path"`
+	Auth                 *Auth                `json:"auth,omitempty" mapstructure:"auth"`
+	Name                 string               `json:"name,omitempty" mapstructure:"name"`
+	IpPool               *AccessNetworkIpPool `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
+	ServiceConfiguration string               `json:"service_configuration,omitempty" mapstructure:"service_configuration"`
+	VolumeTemplates      []VolumeTemplates    `json:"volume_templates,omitempty" mapstructure:"volume_templates"`
+	VolumeTemplatesEp    *VolumeTemplates     `json:"-"`
 	ctxt                 context.Context
 	conn                 *ApiConnection
 }
@@ -26,12 +26,12 @@ type StorageTemplates struct {
 }
 
 type StorageTemplatesCreateRequest struct {
-	Name            string `json:"name,omitempty"`
-	ReplicaCount    int    `json:"replica_count,omitempty"`
-	Size            int    `json:"size,omitempty"`
-	PlacementMode   string `json:"placement_mode,omitempty"`
-	PlacementPolicy string `json:"placement_policy,omitempty"`
-	Force           bool   `json:"force,omitempty"`
+	Name            string `json:"name,omitempty" mapstructure:"name"`
+	ReplicaCount    int    `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int    `json:"size,omitempty" mapstructure:"size"`
+	PlacementMode   string `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy string `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	Force           bool   `json:"force,omitempty" mapstructure:"force"`
 }
 
 type StorageTemplatesCreateResponse StorageTemplate
@@ -114,9 +114,9 @@ func (e *StorageTemplates) Get(ro *StorageTemplatesGetRequest) (*StorageTemplate
 }
 
 type StorageTemplateSetRequest struct {
-	Auth            Auth                `json:"auth,omitempty"`
-	IpPool          AccessNetworkIpPool `json:"ip_pool,omitempty"`
-	VolumeTemplates []VolumeTemplates   `json:"volume_templates,omitempty"`
+	Auth            Auth                `json:"auth,omitempty" mapstructure:"auth"`
+	IpPool          AccessNetworkIpPool `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
+	VolumeTemplates []VolumeTemplates   `json:"volume_templates,omitempty" mapstructure:"volume_templates"`
 }
 
 type StorageTemplateSetResponse StorageTemplate
@@ -139,7 +139,7 @@ func (e *StorageTemplate) Set(ro *StorageTemplateSetRequest) (*StorageTemplateSe
 }
 
 type StorageTemplateDeleteRequest struct {
-	Force bool `json:"force,omitempty"`
+	Force bool `json:"force,omitempty" mapstructure:"force"`
 }
 
 type StorageTemplateDeleteResponse StorageTemplate

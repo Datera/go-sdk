@@ -8,9 +8,9 @@ import (
 )
 
 type FailureDomain struct {
-	Path         string        `json:"path,omitempty"`
-	Name         string        `json:"name,omitempty"`
-	StorageNodes []StorageNode `json:"storage_nodes,omitempty"`
+	Path         string        `json:"path,omitempty" mapstructure:"path"`
+	Name         string        `json:"name,omitempty" mapstructure:"name"`
+	StorageNodes []StorageNode `json:"storage_nodes,omitempty" mapstructure:"storage_nodes"`
 	ctxt         context.Context
 	conn         *ApiConnection
 }
@@ -22,8 +22,8 @@ type FailureDomains struct {
 }
 
 type FailureDomainsCreateRequest struct {
-	Name         string        `json:"name,omitempty"`
-	StorageNodes []StorageNode `json:"storage_nodes,omitempty"`
+	Name         string        `json:"name,omitempty" mapstructure:"name"`
+	StorageNodes []StorageNode `json:"storage_nodes,omitempty" mapstructure:"storage_nodes"`
 }
 
 type FailureDomainsCreateResponse FailureDomain
@@ -103,7 +103,7 @@ func (e *FailureDomains) Get(ro *FailureDomainsGetRequest) (*FailureDomainsGetRe
 }
 
 type FailureDomainSetRequest struct {
-	StorageNodes []StorageNode `json:"storage_nodes,omitempty"`
+	StorageNodes []StorageNode `json:"storage_nodes,omitempty" mapstructure:"storage_nodes"`
 }
 
 type FailureDomainSetResponse FailureDomain
@@ -125,7 +125,7 @@ func (e *FailureDomain) Set(ro *FailureDomainSetRequest) (*FailureDomainSetRespo
 }
 
 type FailureDomainDeleteRequest struct {
-	Name string `json:"id,omitempty"`
+	Name string `json:"id,omitempty" mapstructure:"id"`
 }
 
 type FailureDomainDeleteResponse FailureDomain

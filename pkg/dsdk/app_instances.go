@@ -8,30 +8,30 @@ import (
 )
 
 type AppInstance struct {
-	AccessControlMode       string            `json:"access_control_mode,omitempty"`
-	AdminState              string            `json:"admin_state,omitempty"`
-	AppTemplate             AppTemplate       `json:"app_template,omitempty"`
-	Causes                  []string          `json:"causes,omitempty"`
-	CloneSrc                *AppInstance      `json:"clone_src,omitempty"`
-	CreateMode              string            `json:"create_mode,omitempty"`
-	DeploymentState         string            `json:"deployment_state,omitempty"`
-	Descr                   string            `json:"descr,omitempty"`
-	Health                  string            `json:"health,omitempty"`
-	Id                      string            `json:"id,omitempty"`
-	Name                    string            `json:"name,omitempty"`
-	OpState                 string            `json:"op_state,omitempty"`
-	Path                    string            `json:"path,omitempty"`
-	RemoteRestorePercentage int               `json:"remote_restore_percentage,omitempty"`
-	RemoteRestoreProgress   string            `json:"remote_restore_progress,omitempty"`
-	RepairPriority          string            `json:"repair_priority,omitempty"`
-	RestorePoint            string            `json:"restore_point,omitempty"`
-	RestoreProgress         string            `json:"restore_progress,omitempty"`
-	SnapshotPolicies        []SnapshotPolicy  `json:"snapshot_policies,omitempty"`
-	Snapshots               []Snapshot        `json:"snapshots,omitempty"`
-	StorageInstances        []StorageInstance `json:"storage_instances,omitempty"`
-	StoragePool             []StoragePool     `json:"storage_pool,omitempty"`
-	Uuid                    string            `json:"uuid,omitempty"`
-	StorageInstancesEp      *StorageInstances
+	AccessControlMode       string             `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
+	AdminState              string             `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	AppTemplate             *AppTemplate       `json:"app_template,omitempty" mapstructure:"app_template"`
+	Causes                  []string           `json:"causes,omitempty" mapstructure:"causes"`
+	CloneSrc                *AppInstance       `json:"clone_src,omitempty" mapstructure:"clone_src"`
+	CreateMode              string             `json:"create_mode,omitempty" mapstructure:"create_mode"`
+	DeploymentState         string             `json:"deployment_state,omitempty" mapstructure:"deployment_state"`
+	Descr                   string             `json:"descr,omitempty" mapstructure:"descr"`
+	Health                  string             `json:"health,omitempty" mapstructure:"health"`
+	Id                      string             `json:"id,omitempty" mapstructure:"id"`
+	Name                    string             `json:"name,omitempty" mapstructure:"name"`
+	OpState                 string             `json:"op_state,omitempty" mapstructure:"op_state"`
+	Path                    string             `json:"path,omitempty" mapstructure:"path"`
+	RemoteRestorePercentage int                `json:"remote_restore_percentage,omitempty" mapstructure:"remote_restore_percentage"`
+	RemoteRestoreProgress   string             `json:"remote_restore_progress,omitempty" mapstructure:"remote_restore_progress"`
+	RepairPriority          string             `json:"repair_priority,omitempty" mapstructure:"repair_priority"`
+	RestorePoint            string             `json:"restore_point,omitempty" mapstructure:"restore_point"`
+	RestoreProgress         string             `json:"restore_progress,omitempty" mapstructure:"restore_progress"`
+	SnapshotPolicies        []*SnapshotPolicy  `json:"snapshot_policies,omitempty" mapstructure:"snapshot_policies"`
+	Snapshots               []*Snapshot        `json:"snapshots,omitempty" mapstructure:"snapshots"`
+	StorageInstances        []*StorageInstance `json:"storage_instances,omitempty" mapstructure:"storage_instances"`
+	StoragePool             []*StoragePool     `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
+	Uuid                    string             `json:"uuid,omitempty" mapstructure:"uuid"`
+	StorageInstancesEp      *StorageInstances  `json:"-"`
 	ctxt                    context.Context
 	conn                    *ApiConnection
 }
@@ -43,18 +43,18 @@ type AppInstances struct {
 }
 
 type AppInstancesCreateRequest struct {
-	AppTemplate      AppTemplate            `json:"app_template,omitempty"`
-	CloneSnapshotSrc Snapshot               `json:"clone_snapshot_src,omitempty"`
-	CloneVolumeSrc   Volume                 `json:"clone_volume_src,omitempty"`
-	CloneSrc         AppInstance            `json:"clone_src,omitempty"`
-	CreateMode       string                 `json:"create_mode,omitempty"`
-	Descr            string                 `json:"descr,omitempty"`
-	Name             string                 `json:"name,omitempty"`
-	RepairPriority   string                 `json:"repair_priority,omitempty"`
-	SnapshotPolicies []SnapshotPolicy       `json:"snapshot_policies,omitempty"`
-	StorageInstances []StorageInstance      `json:"storage_instances,omitempty"`
-	StoragePool      []StoragePool          `json:"storage_pool,omitempty"`
-	TemplateOverride map[string]interface{} `json:"template_override,omitempty"`
+	AppTemplate      *AppTemplate           `json:"app_template,omitempty" mapstructure:"app_template"`
+	CloneSnapshotSrc *Snapshot              `json:"clone_snapshot_src,omitempty" mapstructure:"clone_snapshot_src"`
+	CloneVolumeSrc   *Volume                `json:"clone_volume_src,omitempty" mapstructure:"clone_volume_src"`
+	CloneSrc         *AppInstance           `json:"clone_src,omitempty" mapstructure:"clone_src"`
+	CreateMode       string                 `json:"create_mode,omitempty" mapstructure:"create_mode"`
+	Descr            string                 `json:"descr,omitempty" mapstructure:"descr"`
+	Name             string                 `json:"name,omitempty" mapstructure:"name"`
+	RepairPriority   string                 `json:"repair_priority,omitempty" mapstructure:"repair_priority"`
+	SnapshotPolicies []*SnapshotPolicy      `json:"snapshot_policies,omitempty" mapstructure:"snapshot_policies"`
+	StorageInstances []*StorageInstance     `json:"storage_instances,omitempty" mapstructure:"storage_instances"`
+	StoragePool      []*StoragePool         `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
+	TemplateOverride map[string]interface{} `json:"template_override,omitempty" mapstructure:"template_override"`
 }
 
 type AppInstancesCreateResponse AppInstance
@@ -137,18 +137,18 @@ func (e *AppInstances) Get(ro *AppInstancesGetRequest) (*AppInstancesGetResponse
 }
 
 type AppInstanceSetRequest struct {
-	AdminState         string            `json:"admin_state,omitempty"`
-	Descr              string            `json:"descr,omitempty"`
-	Force              bool              `json:"force,omitempty"`
-	Name               string            `json:"name,omitempty"`
-	Provisioned        string            `json:"provisioned,omitempty"`
-	RemoteProvider     string            `json:"remote_provider,omitempty"`
-	RemoteRestorePoint string            `json:"remote_restore_point,omitempty"`
-	RepairPriority     string            `json:"repair_priority,omitempty"`
-	RestorePoint       string            `json:"restore_point,omitempty"`
-	SnapshotPolicies   []SnapshotPolicy  `json:"snapshot_policies,omitempty"`
-	StorageInstances   []StorageInstance `json:"storage_instances,omitempty"`
-	StoragePool        []StoragePool     `json:"storage_pool,omitempty"`
+	AdminState         string             `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	Descr              string             `json:"descr,omitempty" mapstructure:"descr"`
+	Force              bool               `json:"force,omitempty" mapstructure:"force"`
+	Name               string             `json:"name,omitempty" mapstructure:"name"`
+	Provisioned        string             `json:"provisioned,omitempty" mapstructure:"provisioned"`
+	RemoteProvider     string             `json:"remote_provider,omitempty" mapstructure:"remote_provider"`
+	RemoteRestorePoint string             `json:"remote_restore_point,omitempty" mapstructure:"remote_restore_point"`
+	RepairPriority     string             `json:"repair_priority,omitempty" mapstructure:"repair_priority"`
+	RestorePoint       string             `json:"restore_point,omitempty" mapstructure:"restore_point"`
+	SnapshotPolicies   []*SnapshotPolicy  `json:"snapshot_policies,omitempty" mapstructure:"snapshot_policies"`
+	StorageInstances   []*StorageInstance `json:"storage_instances,omitempty" mapstructure:"storage_instances"`
+	StoragePool        []*StoragePool     `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 }
 
 type AppInstanceSetResponse AppInstance
@@ -171,7 +171,7 @@ func (e *AppInstance) Set(ro *AppInstanceSetRequest) (*AppInstanceSetResponse, e
 }
 
 type AppInstanceDeleteRequest struct {
-	Force bool `json:"force,omitempty"`
+	Force bool `json:"force,omitempty" mapstructure:"force"`
 }
 
 type AppInstanceDeleteResponse AppInstance

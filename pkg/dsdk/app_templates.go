@@ -8,13 +8,13 @@ import (
 )
 
 type AppTemplate struct {
-	Path               string            `json:"path,omitempty"`
-	AppInstances       []AppInstance     `json:"app_instances,omitempty"`
-	Name               string            `json:"name,omitempty"`
-	Descr              string            `json:"descr,omitempty"`
-	SnapshotPolicies   []SnapshotPolicy  `json:"snapshot_policies,omitempty"`
-	StorageTemplates   []StorageTemplate `json:"storage_templates,omitempty"`
-	StorageTemplatesEp *StorageTemplates
+	Path               string             `json:"path,omitempty" mapstructure:"path"`
+	AppInstances       []*AppInstance     `json:"app_instances,omitempty" mapstructure:"app_instances"`
+	Name               string             `json:"name,omitempty" mapstructure:"name"`
+	Descr              string             `json:"descr,omitempty" mapstructure:"descr"`
+	SnapshotPolicies   []*SnapshotPolicy  `json:"snapshot_policies,omitempty" mapstructure:"snapshot_policies"`
+	StorageTemplates   []*StorageTemplate `json:"storage_templates,omitempty" mapstructure:"storage_templates"`
+	StorageTemplatesEp *StorageTemplates  `json:"-"`
 	ctxt               context.Context
 	conn               *ApiConnection
 }
@@ -26,11 +26,11 @@ type AppTemplates struct {
 }
 
 type AppTemplatesCreateRequest struct {
-	CopyFrom         AppTemplate       `json:"copy_from,omitempty"`
-	Name             string            `json:"name,omitempty"`
-	Descr            string            `json:"descr,omitempty"`
-	SnapshotPolicies []SnapshotPolicy  `json:"snapshot_policies,omitempty"`
-	StorageTemplates []StorageTemplate `json:"storage_templates,omitempty"`
+	CopyFrom         *AppTemplate       `json:"copy_from,omitempty" mapstructure:"copy_from"`
+	Name             string             `json:"name,omitempty" mapstructure:"name"`
+	Descr            string             `json:"descr,omitempty" mapstructure:"descr"`
+	SnapshotPolicies []*SnapshotPolicy  `json:"snapshot_policies,omitempty" mapstructure:"snapshot_policies"`
+	StorageTemplates []*StorageTemplate `json:"storage_templates,omitempty" mapstructure:"storage_templates"`
 }
 
 type AppTemplatesCreateResponse AppTemplate
@@ -113,9 +113,9 @@ func (e *AppTemplates) Get(ro *AppTemplatesGetRequest) (*AppTemplatesGetResponse
 }
 
 type AppTemplateSetRequest struct {
-	Descr            string            `json:"descr,omitempty"`
-	SnapshotPolicies []SnapshotPolicy  `json:"snapshot_policies,omitempty"`
-	StorageTemplates []StorageTemplate `json:"storage_templates,omitempty"`
+	Descr            string             `json:"descr,omitempty" mapstructure:"descr"`
+	SnapshotPolicies []*SnapshotPolicy  `json:"snapshot_policies,omitempty" mapstructure:"snapshot_policies"`
+	StorageTemplates []*StorageTemplate `json:"storage_templates,omitempty" mapstructure:"storage_templates"`
 }
 
 type AppTemplateSetResponse AppTemplate
@@ -138,7 +138,7 @@ func (e *AppTemplate) Set(ro *AppTemplateSetRequest) (*AppTemplateSetResponse, e
 }
 
 type AppTemplateDeleteRequest struct {
-	Force bool `json:"force,omitempty"`
+	Force bool `json:"force,omitempty" mapstructure:"force"`
 }
 
 type AppTemplateDeleteResponse AppTemplate

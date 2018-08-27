@@ -8,9 +8,9 @@ import (
 )
 
 type InitiatorGroup struct {
-	Path    string      `json:"path,omitempty"`
-	Name    string      `json:"name,omitempty"`
-	Members []Initiator `json:"members,omitempty"`
+	Path    string      `json:"path,omitempty" mapstructure:"path"`
+	Name    string      `json:"name,omitempty" mapstructure:"name"`
+	Members []Initiator `json:"members,omitempty" mapstructure:"members"`
 	ctxt    context.Context
 	conn    *ApiConnection
 }
@@ -22,9 +22,9 @@ type InitiatorGroups struct {
 }
 
 type InitiatorGroupsCreateRequest struct {
-	Id    string `json:"id,omitempty"`
-	Name  string `json:"name,omitempty"`
-	Force bool   `json:"force,omitempty"`
+	Id    string `json:"id,omitempty" mapstructure:"id"`
+	Name  string `json:"name,omitempty" mapstructure:"name"`
+	Force bool   `json:"force,omitempty" mapstructure:"force"`
 }
 
 type InitiatorGroupsCreateResponse InitiatorGroup
@@ -104,7 +104,7 @@ func (e *InitiatorGroups) Get(ro *InitiatorGroupsGetRequest) (*InitiatorGroupsGe
 }
 
 type InitiatorGroupSetRequest struct {
-	Members []Initiator `json:"members,omitempty"`
+	Members []Initiator `json:"members,omitempty" mapstructure:"members"`
 }
 
 type InitiatorGroupSetResponse InitiatorGroup
@@ -126,7 +126,7 @@ func (e *InitiatorGroup) Set(ro *InitiatorGroupSetRequest) (*InitiatorGroupSetRe
 }
 
 type InitiatorGroupDeleteRequest struct {
-	Id string `json:"id,omitempty"`
+	Id string `json:"id,omitempty" mapstructure:"id"`
 }
 
 type InitiatorGroupDeleteResponse InitiatorGroup

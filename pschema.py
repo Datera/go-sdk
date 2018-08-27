@@ -121,7 +121,7 @@ func (en *{en_name}) UnpackB(arg []byte) error {{
         pass
 
     def entity(self, name, attrs, entities):
-        json_template = """`json:"{},omitempty"`"""
+        json_template = """`json:"{},omitempty" mapstructure:"{}"`"""
         attr_template = "\t{name} {type} {json}"
         attr_list = []
         for attr in attrs:

@@ -8,14 +8,14 @@ import (
 )
 
 type Subsystem struct {
-	Path        string   `json:"path,omitempty"`
-	Causes      []string `json:"causes,omitempty"`
-	Fan         string   `json:"fan,omitempty"`
-	Health      string   `json:"health,omitempty"`
-	Network     string   `json:"network,omitempty"`
-	Power       string   `json:"power,omitempty"`
-	Temperature string   `json:"temperature,omitempty"`
-	Voltage     string   `json:"voltage,omitempty"`
+	Path        string   `json:"path,omitempty" mapstructure:"path"`
+	Causes      []string `json:"causes,omitempty" mapstructure:"causes"`
+	Fan         string   `json:"fan,omitempty" mapstructure:"fan"`
+	Health      string   `json:"health,omitempty" mapstructure:"health"`
+	Network     string   `json:"network,omitempty" mapstructure:"network"`
+	Power       string   `json:"power,omitempty" mapstructure:"power"`
+	Temperature string   `json:"temperature,omitempty" mapstructure:"temperature"`
+	Voltage     string   `json:"voltage,omitempty" mapstructure:"voltage"`
 	ctxt        context.Context
 	conn        *ApiConnection
 }

@@ -6,10 +6,10 @@ import "encoding/json"
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type AccessNetworkIpPool struct {
-	Descr        string                 `json:"descr,omitempty"`
-	Name         string                 `json:"name,omitempty"`
-	NetworkPaths map[string]interface{} `json:"network_paths,omitempty"`
-	Path         string                 `json:"path,omitempty"`
+	Descr        string                 `json:"descr,omitempty" mapstructure:"descr"`
+	Name         string                 `json:"name,omitempty" mapstructure:"name"`
+	NetworkPaths map[string]interface{} `json:"network_paths,omitempty" mapstructure:"network_paths"`
+	Path         string                 `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewAccessNetworkIpPool(arg []byte) (AccessNetworkIpPool, error) {
@@ -34,9 +34,9 @@ func (en *AccessNetworkIpPool) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type AclPolicy struct {
-	InitiatorGroups *[]InitiatorGroup `json:"initiator_groups,omitempty"`
-	Initiators      *[]Initiator      `json:"initiators,omitempty"`
-	Path            string            `json:"path,omitempty"`
+	InitiatorGroups *[]InitiatorGroup `json:"initiator_groups,omitempty" mapstructure:"initiator_groups"`
+	Initiators      *[]Initiator      `json:"initiators,omitempty" mapstructure:"initiators"`
+	Path            string            `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewAclPolicy(arg []byte) (AclPolicy, error) {
@@ -61,24 +61,24 @@ func (en *AclPolicy) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type AppInstance struct {
-	AccessControlMode string             `json:"access_control_mode,omitempty"`
-	AdminState        string             `json:"admin_state,omitempty"`
-	AppTemplate       *AppTemplate       `json:"app_template,omitempty"`
-	Causes            []interface{}      `json:"causes,omitempty"`
-	CloneSrc          map[string]string  `json:"clone_src,omitempty"`
-	CreateMode        string             `json:"create_mode,omitempty"`
-	DeploymentState   string             `json:"deployment_state,omitempty"`
-	Descr             string             `json:"descr,omitempty"`
-	Health            string             `json:"health,omitempty"`
-	Id                string             `json:"id,omitempty"`
-	Name              string             `json:"name,omitempty"`
-	OpState           string             `json:"op_state,omitempty"`
-	Path              string             `json:"path,omitempty"`
-	RestorePoint      string             `json:"restore_point,omitempty"`
-	SnapshotPolicies  *[]SnapshotPolicy  `json:"snapshot_policies,omitempty"`
-	Snapshots         *[]Snapshot        `json:"snapshots,omitempty"`
-	StorageInstances  *[]StorageInstance `json:"storage_instances,omitempty"`
-	Uuid              string             `json:"uuid,omitempty"`
+	AccessControlMode string             `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
+	AdminState        string             `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	AppTemplate       *AppTemplate       `json:"app_template,omitempty" mapstructure:"app_template"`
+	Causes            []interface{}      `json:"causes,omitempty" mapstructure:"causes"`
+	CloneSrc          map[string]string  `json:"clone_src,omitempty" mapstructure:"clone_src"`
+	CreateMode        string             `json:"create_mode,omitempty" mapstructure:"create_mode"`
+	DeploymentState   string             `json:"deployment_state,omitempty" mapstructure:"deployment_state"`
+	Descr             string             `json:"descr,omitempty" mapstructure:"descr"`
+	Health            string             `json:"health,omitempty" mapstructure:"health"`
+	Id                string             `json:"id,omitempty" mapstructure:"id"`
+	Name              string             `json:"name,omitempty" mapstructure:"name"`
+	OpState           string             `json:"op_state,omitempty" mapstructure:"op_state"`
+	Path              string             `json:"path,omitempty" mapstructure:"path"`
+	RestorePoint      string             `json:"restore_point,omitempty" mapstructure:"restore_point"`
+	SnapshotPolicies  *[]SnapshotPolicy  `json:"snapshot_policies,omitempty" mapstructure:"snapshot_policies"`
+	Snapshots         *[]Snapshot        `json:"snapshots,omitempty" mapstructure:"snapshots"`
+	StorageInstances  *[]StorageInstance `json:"storage_instances,omitempty" mapstructure:"storage_instances"`
+	Uuid              string             `json:"uuid,omitempty" mapstructure:"uuid"`
 }
 
 func NewAppInstance(arg []byte) (AppInstance, error) {
@@ -103,12 +103,12 @@ func (en *AppInstance) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type AppTemplate struct {
-	AppInstances     *[]AppInstance     `json:"app_instances,omitempty"`
-	Descr            string             `json:"descr,omitempty"`
-	Name             string             `json:"name,omitempty"`
-	Path             string             `json:"path,omitempty"`
-	SnapshotPolicies *[]SnapshotPolicy  `json:"snapshot_policies,omitempty"`
-	StorageTemplates *[]StorageTemplate `json:"storage_templates,omitempty"`
+	AppInstances     *[]AppInstance     `json:"app_instances,omitempty" mapstructure:"app_instances"`
+	Descr            string             `json:"descr,omitempty" mapstructure:"descr"`
+	Name             string             `json:"name,omitempty" mapstructure:"name"`
+	Path             string             `json:"path,omitempty" mapstructure:"path"`
+	SnapshotPolicies *[]SnapshotPolicy  `json:"snapshot_policies,omitempty" mapstructure:"snapshot_policies"`
+	StorageTemplates *[]StorageTemplate `json:"storage_templates,omitempty" mapstructure:"storage_templates"`
 }
 
 func NewAppTemplate(arg []byte) (AppTemplate, error) {
@@ -133,18 +133,18 @@ func (en *AppTemplate) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type AuditLog struct {
-	Description string `json:"description,omitempty"`
-	Id          string `json:"id,omitempty"`
-	ObjectName  string `json:"object_name,omitempty"`
-	ObjectType  string `json:"object_type,omitempty"`
-	ObjectUrl   string `json:"object_url,omitempty"`
-	Operation   string `json:"operation,omitempty"`
-	ParamInfo   string `json:"param_info,omitempty"`
-	Path        string `json:"path,omitempty"`
-	SessionInfo string `json:"session_info,omitempty"`
-	Timestamp   string `json:"timestamp,omitempty"`
-	User        *User  `json:"user,omitempty"`
-	Version     string `json:"version,omitempty"`
+	Description string `json:"description,omitempty" mapstructure:"description"`
+	Id          string `json:"id,omitempty" mapstructure:"id"`
+	ObjectName  string `json:"object_name,omitempty" mapstructure:"object_name"`
+	ObjectType  string `json:"object_type,omitempty" mapstructure:"object_type"`
+	ObjectUrl   string `json:"object_url,omitempty" mapstructure:"object_url"`
+	Operation   string `json:"operation,omitempty" mapstructure:"operation"`
+	ParamInfo   string `json:"param_info,omitempty" mapstructure:"param_info"`
+	Path        string `json:"path,omitempty" mapstructure:"path"`
+	SessionInfo string `json:"session_info,omitempty" mapstructure:"session_info"`
+	Timestamp   string `json:"timestamp,omitempty" mapstructure:"timestamp"`
+	User        *User  `json:"user,omitempty" mapstructure:"user"`
+	Version     string `json:"version,omitempty" mapstructure:"version"`
 }
 
 func NewAuditLog(arg []byte) (AuditLog, error) {
@@ -169,12 +169,12 @@ func (en *AuditLog) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Auth struct {
-	InitiatorPswd     string `json:"initiator_pswd,omitempty"`
-	InitiatorUserName string `json:"initiator_user_name,omitempty"`
-	Path              string `json:"path,omitempty"`
-	TargetPswd        string `json:"target_pswd,omitempty"`
-	TargetUserName    string `json:"target_user_name,omitempty"`
-	Type              string `json:"type,omitempty"`
+	InitiatorPswd     string `json:"initiator_pswd,omitempty" mapstructure:"initiator_pswd"`
+	InitiatorUserName string `json:"initiator_user_name,omitempty" mapstructure:"initiator_user_name"`
+	Path              string `json:"path,omitempty" mapstructure:"path"`
+	TargetPswd        string `json:"target_pswd,omitempty" mapstructure:"target_pswd"`
+	TargetUserName    string `json:"target_user_name,omitempty" mapstructure:"target_user_name"`
+	Type              string `json:"type,omitempty" mapstructure:"type"`
 }
 
 func NewAuth(arg []byte) (Auth, error) {
@@ -199,13 +199,13 @@ func (en *Auth) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type BootDrive struct {
-	Causes    []interface{} `json:"causes,omitempty"`
-	Health    string        `json:"health,omitempty"`
-	Id        string        `json:"id,omitempty"`
-	OpState   string        `json:"op_state,omitempty"`
-	Path      string        `json:"path,omitempty"`
-	Size      int           `json:"size,omitempty"`
-	SlotLabel string        `json:"slot_label,omitempty"`
+	Causes    []interface{} `json:"causes,omitempty" mapstructure:"causes"`
+	Health    string        `json:"health,omitempty" mapstructure:"health"`
+	Id        string        `json:"id,omitempty" mapstructure:"id"`
+	OpState   string        `json:"op_state,omitempty" mapstructure:"op_state"`
+	Path      string        `json:"path,omitempty" mapstructure:"path"`
+	Size      int           `json:"size,omitempty" mapstructure:"size"`
+	SlotLabel string        `json:"slot_label,omitempty" mapstructure:"slot_label"`
 }
 
 func NewBootDrive(arg []byte) (BootDrive, error) {
@@ -230,8 +230,8 @@ func (en *BootDrive) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Dns struct {
-	Domain string `json:"domain,omitempty"`
-	Path   string `json:"path,omitempty"`
+	Domain string `json:"domain,omitempty" mapstructure:"domain"`
+	Path   string `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewDns(arg []byte) (Dns, error) {
@@ -256,9 +256,9 @@ func (en *Dns) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type DnsSearchDomain struct {
-	Domain string `json:"domain,omitempty"`
-	Order  int    `json:"order,omitempty"`
-	Path   string `json:"path,omitempty"`
+	Domain string `json:"domain,omitempty" mapstructure:"domain"`
+	Order  int    `json:"order,omitempty" mapstructure:"order"`
+	Path   string `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewDnsSearchDomain(arg []byte) (DnsSearchDomain, error) {
@@ -283,9 +283,9 @@ func (en *DnsSearchDomain) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type DnsServer struct {
-	Ip    string `json:"ip,omitempty"`
-	Order int    `json:"order,omitempty"`
-	Path  string `json:"path,omitempty"`
+	Ip    string `json:"ip,omitempty" mapstructure:"ip"`
+	Order int    `json:"order,omitempty" mapstructure:"order"`
+	Path  string `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewDnsServer(arg []byte) (DnsServer, error) {
@@ -310,19 +310,19 @@ func (en *DnsServer) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type EventLog struct {
-	Cause        string `json:"cause,omitempty"`
-	Code         string `json:"code,omitempty"`
-	Id           string `json:"id,omitempty"`
-	ObjectId     string `json:"object_id,omitempty"`
-	ObjectLbl    string `json:"object_lbl,omitempty"`
-	ObjectPath   string `json:"object_path,omitempty"`
-	ObjectTenant string `json:"object_tenant,omitempty"`
-	ObjectType   string `json:"object_type,omitempty"`
-	ObjectUrl    string `json:"object_url,omitempty"`
-	Path         string `json:"path,omitempty"`
-	Severity     string `json:"severity,omitempty"`
-	Timestamp    string `json:"timestamp,omitempty"`
-	Type         string `json:"type,omitempty"`
+	Cause        string `json:"cause,omitempty" mapstructure:"cause"`
+	Code         string `json:"code,omitempty" mapstructure:"code"`
+	Id           string `json:"id,omitempty" mapstructure:"id"`
+	ObjectId     string `json:"object_id,omitempty" mapstructure:"object_id"`
+	ObjectLbl    string `json:"object_lbl,omitempty" mapstructure:"object_lbl"`
+	ObjectPath   string `json:"object_path,omitempty" mapstructure:"object_path"`
+	ObjectTenant string `json:"object_tenant,omitempty" mapstructure:"object_tenant"`
+	ObjectType   string `json:"object_type,omitempty" mapstructure:"object_type"`
+	ObjectUrl    string `json:"object_url,omitempty" mapstructure:"object_url"`
+	Path         string `json:"path,omitempty" mapstructure:"path"`
+	Severity     string `json:"severity,omitempty" mapstructure:"severity"`
+	Timestamp    string `json:"timestamp,omitempty" mapstructure:"timestamp"`
+	Type         string `json:"type,omitempty" mapstructure:"type"`
 }
 
 func NewEventLog(arg []byte) (EventLog, error) {
@@ -347,24 +347,24 @@ func (en *EventLog) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type FaultLog struct {
-	Acknowledged    bool   `json:"acknowledged,omitempty"`
-	CallhomeEnabled bool   `json:"callhome_enabled,omitempty"`
-	Cause           string `json:"cause,omitempty"`
-	Cleared         bool   `json:"cleared,omitempty"`
-	Code            string `json:"code,omitempty"`
-	Count           int    `json:"count,omitempty"`
-	Id              string `json:"id,omitempty"`
-	ObjectId        string `json:"object_id,omitempty"`
-	ObjectLbl       string `json:"object_lbl,omitempty"`
-	ObjectPath      string `json:"object_path,omitempty"`
-	ObjectTenant    string `json:"object_tenant,omitempty"`
-	ObjectType      string `json:"object_type,omitempty"`
-	ObjectUrl       string `json:"object_url,omitempty"`
-	Path            string `json:"path,omitempty"`
-	Repeat          string `json:"repeat,omitempty"`
-	Severity        string `json:"severity,omitempty"`
-	Timestamp       int    `json:"timestamp,omitempty"`
-	Type            string `json:"type,omitempty"`
+	Acknowledged    bool   `json:"acknowledged,omitempty" mapstructure:"acknowledged"`
+	CallhomeEnabled bool   `json:"callhome_enabled,omitempty" mapstructure:"callhome_enabled"`
+	Cause           string `json:"cause,omitempty" mapstructure:"cause"`
+	Cleared         bool   `json:"cleared,omitempty" mapstructure:"cleared"`
+	Code            string `json:"code,omitempty" mapstructure:"code"`
+	Count           int    `json:"count,omitempty" mapstructure:"count"`
+	Id              string `json:"id,omitempty" mapstructure:"id"`
+	ObjectId        string `json:"object_id,omitempty" mapstructure:"object_id"`
+	ObjectLbl       string `json:"object_lbl,omitempty" mapstructure:"object_lbl"`
+	ObjectPath      string `json:"object_path,omitempty" mapstructure:"object_path"`
+	ObjectTenant    string `json:"object_tenant,omitempty" mapstructure:"object_tenant"`
+	ObjectType      string `json:"object_type,omitempty" mapstructure:"object_type"`
+	ObjectUrl       string `json:"object_url,omitempty" mapstructure:"object_url"`
+	Path            string `json:"path,omitempty" mapstructure:"path"`
+	Repeat          string `json:"repeat,omitempty" mapstructure:"repeat"`
+	Severity        string `json:"severity,omitempty" mapstructure:"severity"`
+	Timestamp       int    `json:"timestamp,omitempty" mapstructure:"timestamp"`
+	Type            string `json:"type,omitempty" mapstructure:"type"`
 }
 
 func NewFaultLog(arg []byte) (FaultLog, error) {
@@ -389,13 +389,13 @@ func (en *FaultLog) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Hdd struct {
-	Causes    []interface{} `json:"causes,omitempty"`
-	Health    string        `json:"health,omitempty"`
-	Id        string        `json:"id,omitempty"`
-	OpState   string        `json:"op_state,omitempty"`
-	Path      string        `json:"path,omitempty"`
-	Size      int           `json:"size,omitempty"`
-	SlotLabel string        `json:"slot_label,omitempty"`
+	Causes    []interface{} `json:"causes,omitempty" mapstructure:"causes"`
+	Health    string        `json:"health,omitempty" mapstructure:"health"`
+	Id        string        `json:"id,omitempty" mapstructure:"id"`
+	OpState   string        `json:"op_state,omitempty" mapstructure:"op_state"`
+	Path      string        `json:"path,omitempty" mapstructure:"path"`
+	Size      int           `json:"size,omitempty" mapstructure:"size"`
+	SlotLabel string        `json:"slot_label,omitempty" mapstructure:"slot_label"`
 }
 
 func NewHdd(arg []byte) (Hdd, error) {
@@ -420,12 +420,12 @@ func (en *Hdd) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type HttpProxy struct {
-	Enabled  bool   `json:"enabled,omitempty"`
-	Host     string `json:"host,omitempty"`
-	Password string `json:"password,omitempty"`
-	Path     string `json:"path,omitempty"`
-	Port     int    `json:"port,omitempty"`
-	User     *User  `json:"user,omitempty"`
+	Enabled  bool   `json:"enabled,omitempty" mapstructure:"enabled"`
+	Host     string `json:"host,omitempty" mapstructure:"host"`
+	Password string `json:"password,omitempty" mapstructure:"password"`
+	Path     string `json:"path,omitempty" mapstructure:"path"`
+	Port     int    `json:"port,omitempty" mapstructure:"port"`
+	User     *User  `json:"user,omitempty" mapstructure:"user"`
 }
 
 func NewHttpProxy(arg []byte) (HttpProxy, error) {
@@ -450,9 +450,9 @@ func (en *HttpProxy) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Initiator struct {
-	Id   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-	Path string `json:"path,omitempty"`
+	Id   string `json:"id,omitempty" mapstructure:"id"`
+	Name string `json:"name,omitempty" mapstructure:"name"`
+	Path string `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewInitiator(arg []byte) (Initiator, error) {
@@ -477,9 +477,9 @@ func (en *Initiator) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type InitiatorGroup struct {
-	Members []interface{} `json:"members,omitempty"`
-	Name    string        `json:"name,omitempty"`
-	Path    string        `json:"path,omitempty"`
+	Members []interface{} `json:"members,omitempty" mapstructure:"members"`
+	Name    string        `json:"name,omitempty" mapstructure:"name"`
+	Path    string        `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewInitiatorGroup(arg []byte) (InitiatorGroup, error) {
@@ -504,14 +504,14 @@ func (en *InitiatorGroup) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type InternalIpBlock struct {
-	Gateway string `json:"gateway,omitempty"`
-	Mtu     int    `json:"mtu,omitempty"`
-	Name    string `json:"name,omitempty"`
-	Netmask int    `json:"netmask,omitempty"`
-	Path    string `json:"path,omitempty"`
-	Range   int    `json:"range,omitempty"`
-	StartIp string `json:"start_ip,omitempty"`
-	Vlan    int    `json:"vlan,omitempty"`
+	Gateway string `json:"gateway,omitempty" mapstructure:"gateway"`
+	Mtu     int    `json:"mtu,omitempty" mapstructure:"mtu"`
+	Name    string `json:"name,omitempty" mapstructure:"name"`
+	Netmask int    `json:"netmask,omitempty" mapstructure:"netmask"`
+	Path    string `json:"path,omitempty" mapstructure:"path"`
+	Range   int    `json:"range,omitempty" mapstructure:"range"`
+	StartIp string `json:"start_ip,omitempty" mapstructure:"start_ip"`
+	Vlan    int    `json:"vlan,omitempty" mapstructure:"vlan"`
 }
 
 func NewInternalIpBlock(arg []byte) (InternalIpBlock, error) {
@@ -536,13 +536,13 @@ func (en *InternalIpBlock) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type IpAddress struct {
-	Gateway string `json:"gateway,omitempty"`
-	Ip      string `json:"ip,omitempty"`
-	Mtu     int    `json:"mtu,omitempty"`
-	Name    string `json:"name,omitempty"`
-	Netmask int    `json:"netmask,omitempty"`
-	Path    string `json:"path,omitempty"`
-	Vlan    int    `json:"vlan,omitempty"`
+	Gateway string `json:"gateway,omitempty" mapstructure:"gateway"`
+	Ip      string `json:"ip,omitempty" mapstructure:"ip"`
+	Mtu     int    `json:"mtu,omitempty" mapstructure:"mtu"`
+	Name    string `json:"name,omitempty" mapstructure:"name"`
+	Netmask int    `json:"netmask,omitempty" mapstructure:"netmask"`
+	Path    string `json:"path,omitempty" mapstructure:"path"`
+	Vlan    int    `json:"vlan,omitempty" mapstructure:"vlan"`
 }
 
 func NewIpAddress(arg []byte) (IpAddress, error) {
@@ -567,14 +567,14 @@ func (en *IpAddress) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type IpBlock struct {
-	Gateway string `json:"gateway,omitempty"`
-	Mtu     int    `json:"mtu,omitempty"`
-	Name    string `json:"name,omitempty"`
-	Netmask int    `json:"netmask,omitempty"`
-	Path    string `json:"path,omitempty"`
-	Range   int    `json:"range,omitempty"`
-	StartIp string `json:"start_ip,omitempty"`
-	Vlan    int    `json:"vlan,omitempty"`
+	Gateway string `json:"gateway,omitempty" mapstructure:"gateway"`
+	Mtu     int    `json:"mtu,omitempty" mapstructure:"mtu"`
+	Name    string `json:"name,omitempty" mapstructure:"name"`
+	Netmask int    `json:"netmask,omitempty" mapstructure:"netmask"`
+	Path    string `json:"path,omitempty" mapstructure:"path"`
+	Range   int    `json:"range,omitempty" mapstructure:"range"`
+	StartIp string `json:"start_ip,omitempty" mapstructure:"start_ip"`
+	Vlan    int    `json:"vlan,omitempty" mapstructure:"vlan"`
 }
 
 func NewIpBlock(arg []byte) (IpBlock, error) {
@@ -599,10 +599,10 @@ func (en *IpBlock) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type IpPool struct {
-	Descr        string                 `json:"descr,omitempty"`
-	Name         string                 `json:"name,omitempty"`
-	NetworkPaths map[string]interface{} `json:"network_paths,omitempty"`
-	Path         string                 `json:"path,omitempty"`
+	Descr        string                 `json:"descr,omitempty" mapstructure:"descr"`
+	Name         string                 `json:"name,omitempty" mapstructure:"name"`
+	NetworkPaths map[string]interface{} `json:"network_paths,omitempty" mapstructure:"network_paths"`
+	Path         string                 `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewIpPool(arg []byte) (IpPool, error) {
@@ -627,14 +627,14 @@ func (en *IpPool) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type MonitoringDestination struct {
-	Facility  string `json:"facility,omitempty"`
-	Host      string `json:"host,omitempty"`
-	LastMsgTs string `json:"last_msg_ts,omitempty"`
-	Name      string `json:"name,omitempty"`
-	OpState   string `json:"op_state,omitempty"`
-	Path      string `json:"path,omitempty"`
-	Port      int    `json:"port,omitempty"`
-	Type      string `json:"type,omitempty"`
+	Facility  string `json:"facility,omitempty" mapstructure:"facility"`
+	Host      string `json:"host,omitempty" mapstructure:"host"`
+	LastMsgTs string `json:"last_msg_ts,omitempty" mapstructure:"last_msg_ts"`
+	Name      string `json:"name,omitempty" mapstructure:"name"`
+	OpState   string `json:"op_state,omitempty" mapstructure:"op_state"`
+	Path      string `json:"path,omitempty" mapstructure:"path"`
+	Port      int    `json:"port,omitempty" mapstructure:"port"`
+	Type      string `json:"type,omitempty" mapstructure:"type"`
 }
 
 func NewMonitoringDestination(arg []byte) (MonitoringDestination, error) {
@@ -659,10 +659,10 @@ func (en *MonitoringDestination) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type MonitoringPolicy struct {
-	Destinations []interface{} `json:"destinations,omitempty"`
-	Enabled      bool          `json:"enabled,omitempty"`
-	Name         string        `json:"name,omitempty"`
-	Path         string        `json:"path,omitempty"`
+	Destinations []interface{} `json:"destinations,omitempty" mapstructure:"destinations"`
+	Enabled      bool          `json:"enabled,omitempty" mapstructure:"enabled"`
+	Name         string        `json:"name,omitempty" mapstructure:"name"`
+	Path         string        `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewMonitoringPolicy(arg []byte) (MonitoringPolicy, error) {
@@ -687,12 +687,12 @@ func (en *MonitoringPolicy) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Network struct {
-	AccessNetworks  []interface{}          `json:"access_networks,omitempty"`
-	AccessVip       map[string]interface{} `json:"access_vip,omitempty"`
-	InternalNetwork map[string]interface{} `json:"internal_network,omitempty"`
-	Mapping         map[string]interface{} `json:"mapping,omitempty"`
-	MgmtVip         map[string]interface{} `json:"mgmt_vip,omitempty"`
-	Path            string                 `json:"path,omitempty"`
+	AccessNetworks  []interface{}          `json:"access_networks,omitempty" mapstructure:"access_networks"`
+	AccessVip       map[string]interface{} `json:"access_vip,omitempty" mapstructure:"access_vip"`
+	InternalNetwork map[string]interface{} `json:"internal_network,omitempty" mapstructure:"internal_network"`
+	Mapping         map[string]interface{} `json:"mapping,omitempty" mapstructure:"mapping"`
+	MgmtVip         map[string]interface{} `json:"mgmt_vip,omitempty" mapstructure:"mgmt_vip"`
+	Path            string                 `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewNetwork(arg []byte) (Network, error) {
@@ -717,13 +717,13 @@ func (en *Network) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type NetworkMapping struct {
-	Access1   string `json:"access_1,omitempty"`
-	Access2   string `json:"access_2,omitempty"`
-	Internal1 string `json:"internal_1,omitempty"`
-	Internal2 string `json:"internal_2,omitempty"`
-	Mgmt1     string `json:"mgmt_1,omitempty"`
-	Mgmt2     string `json:"mgmt_2,omitempty"`
-	Path      string `json:"path,omitempty"`
+	Access1   string `json:"access_1,omitempty" mapstructure:"access_1"`
+	Access2   string `json:"access_2,omitempty" mapstructure:"access_2"`
+	Internal1 string `json:"internal_1,omitempty" mapstructure:"internal_1"`
+	Internal2 string `json:"internal_2,omitempty" mapstructure:"internal_2"`
+	Mgmt1     string `json:"mgmt_1,omitempty" mapstructure:"mgmt_1"`
+	Mgmt2     string `json:"mgmt_2,omitempty" mapstructure:"mgmt_2"`
+	Path      string `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewNetworkMapping(arg []byte) (NetworkMapping, error) {
@@ -748,12 +748,12 @@ func (en *NetworkMapping) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Nic struct {
-	Causes    []interface{} `json:"causes,omitempty"`
-	Health    string        `json:"health,omitempty"`
-	Id        string        `json:"id,omitempty"`
-	OpState   string        `json:"op_state,omitempty"`
-	Path      string        `json:"path,omitempty"`
-	SlotLabel string        `json:"slot_label,omitempty"`
+	Causes    []interface{} `json:"causes,omitempty" mapstructure:"causes"`
+	Health    string        `json:"health,omitempty" mapstructure:"health"`
+	Id        string        `json:"id,omitempty" mapstructure:"id"`
+	OpState   string        `json:"op_state,omitempty" mapstructure:"op_state"`
+	Path      string        `json:"path,omitempty" mapstructure:"path"`
+	SlotLabel string        `json:"slot_label,omitempty" mapstructure:"slot_label"`
 }
 
 func NewNic(arg []byte) (Nic, error) {
@@ -778,9 +778,9 @@ func (en *Nic) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type NtpServer struct {
-	Ip    string `json:"ip,omitempty"`
-	Order int    `json:"order,omitempty"`
-	Path  string `json:"path,omitempty"`
+	Ip    string `json:"ip,omitempty" mapstructure:"ip"`
+	Order int    `json:"order,omitempty" mapstructure:"order"`
+	Path  string `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewNtpServer(arg []byte) (NtpServer, error) {
@@ -805,13 +805,13 @@ func (en *NtpServer) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type NvmFlashDevice struct {
-	Causes    []interface{} `json:"causes,omitempty"`
-	Health    string        `json:"health,omitempty"`
-	Id        string        `json:"id,omitempty"`
-	OpState   string        `json:"op_state,omitempty"`
-	Path      string        `json:"path,omitempty"`
-	Size      int           `json:"size,omitempty"`
-	SlotLabel string        `json:"slot_label,omitempty"`
+	Causes    []interface{} `json:"causes,omitempty" mapstructure:"causes"`
+	Health    string        `json:"health,omitempty" mapstructure:"health"`
+	Id        string        `json:"id,omitempty" mapstructure:"id"`
+	OpState   string        `json:"op_state,omitempty" mapstructure:"op_state"`
+	Path      string        `json:"path,omitempty" mapstructure:"path"`
+	Size      int           `json:"size,omitempty" mapstructure:"size"`
+	SlotLabel string        `json:"slot_label,omitempty" mapstructure:"slot_label"`
 }
 
 func NewNvmFlashDevice(arg []byte) (NvmFlashDevice, error) {
@@ -836,13 +836,13 @@ func (en *NvmFlashDevice) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type PerformancePolicy struct {
-	Path              string `json:"path,omitempty"`
-	ReadBandwidthMax  int    `json:"read_bandwidth_max,omitempty"`
-	ReadIopsMax       int    `json:"read_iops_max,omitempty"`
-	TotalBandwidthMax int    `json:"total_bandwidth_max,omitempty"`
-	TotalIopsMax      int    `json:"total_iops_max,omitempty"`
-	WriteBandwidthMax int    `json:"write_bandwidth_max,omitempty"`
-	WriteIopsMax      int    `json:"write_iops_max,omitempty"`
+	Path              string `json:"path,omitempty" mapstructure:"path"`
+	ReadBandwidthMax  int    `json:"read_bandwidth_max,omitempty" mapstructure:"read_bandwidth_max"`
+	ReadIopsMax       int    `json:"read_iops_max,omitempty" mapstructure:"read_iops_max"`
+	TotalBandwidthMax int    `json:"total_bandwidth_max,omitempty" mapstructure:"total_bandwidth_max"`
+	TotalIopsMax      int    `json:"total_iops_max,omitempty" mapstructure:"total_iops_max"`
+	WriteBandwidthMax int    `json:"write_bandwidth_max,omitempty" mapstructure:"write_bandwidth_max"`
+	WriteIopsMax      int    `json:"write_iops_max,omitempty" mapstructure:"write_iops_max"`
 }
 
 func NewPerformancePolicy(arg []byte) (PerformancePolicy, error) {
@@ -867,9 +867,9 @@ func (en *PerformancePolicy) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Role struct {
-	Path       string        `json:"path,omitempty"`
-	Privileges []interface{} `json:"privileges,omitempty"`
-	RoleId     string        `json:"role_id,omitempty"`
+	Path       string        `json:"path,omitempty" mapstructure:"path"`
+	Privileges []interface{} `json:"privileges,omitempty" mapstructure:"privileges"`
+	RoleId     string        `json:"role_id,omitempty" mapstructure:"role_id"`
 }
 
 func NewRole(arg []byte) (Role, error) {
@@ -894,11 +894,11 @@ func (en *Role) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Snapshot struct {
-	OpState   string `json:"op_state,omitempty"`
-	Path      string `json:"path,omitempty"`
-	Timestamp string `json:"timestamp,omitempty"`
-	UtcTs     string `json:"utc_ts,omitempty"`
-	Uuid      string `json:"uuid,omitempty"`
+	OpState   string `json:"op_state,omitempty" mapstructure:"op_state"`
+	Path      string `json:"path,omitempty" mapstructure:"path"`
+	Timestamp string `json:"timestamp,omitempty" mapstructure:"timestamp"`
+	UtcTs     string `json:"utc_ts,omitempty" mapstructure:"utc_ts"`
+	Uuid      string `json:"uuid,omitempty" mapstructure:"uuid"`
 }
 
 func NewSnapshot(arg []byte) (Snapshot, error) {
@@ -923,11 +923,11 @@ func (en *Snapshot) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type SnapshotPolicy struct {
-	Interval       string `json:"interval,omitempty"`
-	Name           string `json:"name,omitempty"`
-	Path           string `json:"path,omitempty"`
-	RetentionCount int    `json:"retention_count,omitempty"`
-	StartTime      string `json:"start_time,omitempty"`
+	Interval       string `json:"interval,omitempty" mapstructure:"interval"`
+	Name           string `json:"name,omitempty" mapstructure:"name"`
+	Path           string `json:"path,omitempty" mapstructure:"path"`
+	RetentionCount int    `json:"retention_count,omitempty" mapstructure:"retention_count"`
+	StartTime      string `json:"start_time,omitempty" mapstructure:"start_time"`
 }
 
 func NewSnapshotPolicy(arg []byte) (SnapshotPolicy, error) {
@@ -952,11 +952,11 @@ func (en *SnapshotPolicy) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type SnmpPolicy struct {
-	Contact  string  `json:"contact,omitempty"`
-	Enabled  bool    `json:"enabled,omitempty"`
-	Location string  `json:"location,omitempty"`
-	Path     string  `json:"path,omitempty"`
-	Users    *[]User `json:"users,omitempty"`
+	Contact  string  `json:"contact,omitempty" mapstructure:"contact"`
+	Enabled  bool    `json:"enabled,omitempty" mapstructure:"enabled"`
+	Location string  `json:"location,omitempty" mapstructure:"location"`
+	Path     string  `json:"path,omitempty" mapstructure:"path"`
+	Users    *[]User `json:"users,omitempty" mapstructure:"users"`
 }
 
 func NewSnmpPolicy(arg []byte) (SnmpPolicy, error) {
@@ -981,15 +981,15 @@ func (en *SnmpPolicy) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type SnmpUser struct {
-	AuthPass      string `json:"auth_pass,omitempty"`
-	AuthProtocol  string `json:"auth_protocol,omitempty"`
-	EncrPass      string `json:"encr_pass,omitempty"`
-	EncrProtocol  string `json:"encr_protocol,omitempty"`
-	Path          string `json:"path,omitempty"`
-	SecurityLevel string `json:"security_level,omitempty"`
-	UserId        string `json:"user_id,omitempty"`
-	Version       string `json:"version,omitempty"`
-	View          string `json:"view,omitempty"`
+	AuthPass      string `json:"auth_pass,omitempty" mapstructure:"auth_pass"`
+	AuthProtocol  string `json:"auth_protocol,omitempty" mapstructure:"auth_protocol"`
+	EncrPass      string `json:"encr_pass,omitempty" mapstructure:"encr_pass"`
+	EncrProtocol  string `json:"encr_protocol,omitempty" mapstructure:"encr_protocol"`
+	Path          string `json:"path,omitempty" mapstructure:"path"`
+	SecurityLevel string `json:"security_level,omitempty" mapstructure:"security_level"`
+	UserId        string `json:"user_id,omitempty" mapstructure:"user_id"`
+	Version       string `json:"version,omitempty" mapstructure:"version"`
+	View          string `json:"view,omitempty" mapstructure:"view"`
 }
 
 func NewSnmpUser(arg []byte) (SnmpUser, error) {
@@ -1014,22 +1014,22 @@ func (en *SnmpUser) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type StorageInstance struct {
-	Access             map[string]interface{} `json:"access,omitempty"`
-	AccessControlMode  string                 `json:"access_control_mode,omitempty"`
-	AclPolicy          *AclPolicy             `json:"acl_policy,omitempty"`
-	ActiveInitiators   []interface{}          `json:"active_initiators,omitempty"`
-	ActiveStorageNodes []interface{}          `json:"active_storage_nodes,omitempty"`
-	AdminState         string                 `json:"admin_state,omitempty"`
-	Auth               *Auth                  `json:"auth,omitempty"`
-	Causes             []interface{}          `json:"causes,omitempty"`
-	DeploymentState    string                 `json:"deployment_state,omitempty"`
-	Health             string                 `json:"health,omitempty"`
-	IpPool             *IpPool                `json:"ip_pool,omitempty"`
-	Name               string                 `json:"name,omitempty"`
-	OpState            string                 `json:"op_state,omitempty"`
-	Path               string                 `json:"path,omitempty"`
-	Uuid               string                 `json:"uuid,omitempty"`
-	Volumes            *[]Volume              `json:"volumes,omitempty"`
+	Access             map[string]interface{} `json:"access,omitempty" mapstructure:"access"`
+	AccessControlMode  string                 `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
+	AclPolicy          *AclPolicy             `json:"acl_policy,omitempty" mapstructure:"acl_policy"`
+	ActiveInitiators   []interface{}          `json:"active_initiators,omitempty" mapstructure:"active_initiators"`
+	ActiveStorageNodes []interface{}          `json:"active_storage_nodes,omitempty" mapstructure:"active_storage_nodes"`
+	AdminState         string                 `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	Auth               *Auth                  `json:"auth,omitempty" mapstructure:"auth"`
+	Causes             []interface{}          `json:"causes,omitempty" mapstructure:"causes"`
+	DeploymentState    string                 `json:"deployment_state,omitempty" mapstructure:"deployment_state"`
+	Health             string                 `json:"health,omitempty" mapstructure:"health"`
+	IpPool             *IpPool                `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
+	Name               string                 `json:"name,omitempty" mapstructure:"name"`
+	OpState            string                 `json:"op_state,omitempty" mapstructure:"op_state"`
+	Path               string                 `json:"path,omitempty" mapstructure:"path"`
+	Uuid               string                 `json:"uuid,omitempty" mapstructure:"uuid"`
+	Volumes            *[]Volume              `json:"volumes,omitempty" mapstructure:"volumes"`
 }
 
 func NewStorageInstance(arg []byte) (StorageInstance, error) {
@@ -1054,49 +1054,49 @@ func (en *StorageInstance) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type StorageNode struct {
-	AdminState          string                 `json:"admin_state,omitempty"`
-	AvailableCapacity   int                    `json:"available_capacity,omitempty"`
-	BiosVersion         string                 `json:"bios_version,omitempty"`
-	BootDrives          map[string]interface{} `json:"boot_drives,omitempty"`
-	BuildVersion        string                 `json:"build_version,omitempty"`
-	Causes              []interface{}          `json:"causes,omitempty"`
-	CompressionEnabled  bool                   `json:"compression_enabled,omitempty"`
-	CompressionRatio    string                 `json:"compression_ratio,omitempty"`
-	Disconnected        bool                   `json:"disconnected,omitempty"`
-	FlashDevices        map[string]interface{} `json:"flash_devices,omitempty"`
-	Hdds                *[]Hdd                 `json:"hdds,omitempty"`
-	Health              string                 `json:"health,omitempty"`
-	HwHealth            string                 `json:"hw_health,omitempty"`
-	HwState             string                 `json:"hw_state,omitempty"`
-	InternalIp1         string                 `json:"internal_ip_1,omitempty"`
-	InternalIp2         string                 `json:"internal_ip_2,omitempty"`
-	LastRebootTimestamp int                    `json:"last_reboot_timestamp,omitempty"`
-	MgmtIp1             string                 `json:"mgmt_ip_1,omitempty"`
-	MgmtIp2             string                 `json:"mgmt_ip_2,omitempty"`
-	Model               string                 `json:"model,omitempty"`
-	Name                string                 `json:"name,omitempty"`
-	Nics                *[]Nic                 `json:"nics,omitempty"`
-	NvmFlashDevices     *[]NvmFlashDevice      `json:"nvm_flash_devices,omitempty"`
-	OpProgress          map[string]interface{} `json:"op_progress,omitempty"`
-	OpState             string                 `json:"op_state,omitempty"`
-	OpStatus            string                 `json:"op_status,omitempty"`
-	OsVersion           string                 `json:"os_version,omitempty"`
-	Path                string                 `json:"path,omitempty"`
-	Psus                map[string]interface{} `json:"psus,omitempty"`
-	SerialNo            string                 `json:"serial_no,omitempty"`
-	StorageInstances    *[]StorageInstance     `json:"storage_instances,omitempty"`
-	SubsystemHealth     map[string]interface{} `json:"subsystem_health,omitempty"`
-	SubsystemStates     map[string]interface{} `json:"subsystem_states,omitempty"`
-	SwHealth            string                 `json:"sw_health,omitempty"`
-	SwState             string                 `json:"sw_state,omitempty"`
-	SwVersion           string                 `json:"sw_version,omitempty"`
-	TotalCapacity       int                    `json:"total_capacity,omitempty"`
-	TotalRawCapacity    int                    `json:"total_raw_capacity,omitempty"`
-	Type                string                 `json:"type,omitempty"`
-	Upgrade             map[string]interface{} `json:"upgrade,omitempty"`
-	Uuid                string                 `json:"uuid,omitempty"`
-	Vendor              string                 `json:"vendor,omitempty"`
-	Volumes             *[]Volume              `json:"volumes,omitempty"`
+	AdminState          string                 `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	AvailableCapacity   int                    `json:"available_capacity,omitempty" mapstructure:"available_capacity"`
+	BiosVersion         string                 `json:"bios_version,omitempty" mapstructure:"bios_version"`
+	BootDrives          map[string]interface{} `json:"boot_drives,omitempty" mapstructure:"boot_drives"`
+	BuildVersion        string                 `json:"build_version,omitempty" mapstructure:"build_version"`
+	Causes              []interface{}          `json:"causes,omitempty" mapstructure:"causes"`
+	CompressionEnabled  bool                   `json:"compression_enabled,omitempty" mapstructure:"compression_enabled"`
+	CompressionRatio    string                 `json:"compression_ratio,omitempty" mapstructure:"compression_ratio"`
+	Disconnected        bool                   `json:"disconnected,omitempty" mapstructure:"disconnected"`
+	FlashDevices        map[string]interface{} `json:"flash_devices,omitempty" mapstructure:"flash_devices"`
+	Hdds                *[]Hdd                 `json:"hdds,omitempty" mapstructure:"hdds"`
+	Health              string                 `json:"health,omitempty" mapstructure:"health"`
+	HwHealth            string                 `json:"hw_health,omitempty" mapstructure:"hw_health"`
+	HwState             string                 `json:"hw_state,omitempty" mapstructure:"hw_state"`
+	InternalIp1         string                 `json:"internal_ip_1,omitempty" mapstructure:"internal_ip_1"`
+	InternalIp2         string                 `json:"internal_ip_2,omitempty" mapstructure:"internal_ip_2"`
+	LastRebootTimestamp int                    `json:"last_reboot_timestamp,omitempty" mapstructure:"last_reboot_timestamp"`
+	MgmtIp1             string                 `json:"mgmt_ip_1,omitempty" mapstructure:"mgmt_ip_1"`
+	MgmtIp2             string                 `json:"mgmt_ip_2,omitempty" mapstructure:"mgmt_ip_2"`
+	Model               string                 `json:"model,omitempty" mapstructure:"model"`
+	Name                string                 `json:"name,omitempty" mapstructure:"name"`
+	Nics                *[]Nic                 `json:"nics,omitempty" mapstructure:"nics"`
+	NvmFlashDevices     *[]NvmFlashDevice      `json:"nvm_flash_devices,omitempty" mapstructure:"nvm_flash_devices"`
+	OpProgress          map[string]interface{} `json:"op_progress,omitempty" mapstructure:"op_progress"`
+	OpState             string                 `json:"op_state,omitempty" mapstructure:"op_state"`
+	OpStatus            string                 `json:"op_status,omitempty" mapstructure:"op_status"`
+	OsVersion           string                 `json:"os_version,omitempty" mapstructure:"os_version"`
+	Path                string                 `json:"path,omitempty" mapstructure:"path"`
+	Psus                map[string]interface{} `json:"psus,omitempty" mapstructure:"psus"`
+	SerialNo            string                 `json:"serial_no,omitempty" mapstructure:"serial_no"`
+	StorageInstances    *[]StorageInstance     `json:"storage_instances,omitempty" mapstructure:"storage_instances"`
+	SubsystemHealth     map[string]interface{} `json:"subsystem_health,omitempty" mapstructure:"subsystem_health"`
+	SubsystemStates     map[string]interface{} `json:"subsystem_states,omitempty" mapstructure:"subsystem_states"`
+	SwHealth            string                 `json:"sw_health,omitempty" mapstructure:"sw_health"`
+	SwState             string                 `json:"sw_state,omitempty" mapstructure:"sw_state"`
+	SwVersion           string                 `json:"sw_version,omitempty" mapstructure:"sw_version"`
+	TotalCapacity       int                    `json:"total_capacity,omitempty" mapstructure:"total_capacity"`
+	TotalRawCapacity    int                    `json:"total_raw_capacity,omitempty" mapstructure:"total_raw_capacity"`
+	Type                string                 `json:"type,omitempty" mapstructure:"type"`
+	Upgrade             map[string]interface{} `json:"upgrade,omitempty" mapstructure:"upgrade"`
+	Uuid                string                 `json:"uuid,omitempty" mapstructure:"uuid"`
+	Vendor              string                 `json:"vendor,omitempty" mapstructure:"vendor"`
+	Volumes             *[]Volume              `json:"volumes,omitempty" mapstructure:"volumes"`
 }
 
 func NewStorageNode(arg []byte) (StorageNode, error) {
@@ -1121,11 +1121,11 @@ func (en *StorageNode) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type StorageTemplate struct {
-	Auth            *Auth             `json:"auth,omitempty"`
-	IpPool          *IpPool           `json:"ip_pool,omitempty"`
-	Name            string            `json:"name,omitempty"`
-	Path            string            `json:"path,omitempty"`
-	VolumeTemplates *[]VolumeTemplate `json:"volume_templates,omitempty"`
+	Auth            *Auth             `json:"auth,omitempty" mapstructure:"auth"`
+	IpPool          *IpPool           `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
+	Name            string            `json:"name,omitempty" mapstructure:"name"`
+	Path            string            `json:"path,omitempty" mapstructure:"path"`
+	VolumeTemplates *[]VolumeTemplate `json:"volume_templates,omitempty" mapstructure:"volume_templates"`
 }
 
 func NewStorageTemplate(arg []byte) (StorageTemplate, error) {
@@ -1150,14 +1150,14 @@ func (en *StorageTemplate) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Subsystem struct {
-	Causes      []interface{} `json:"causes,omitempty"`
-	Fan         string        `json:"fan,omitempty"`
-	Health      string        `json:"health,omitempty"`
-	Network     *Network      `json:"network,omitempty"`
-	Path        string        `json:"path,omitempty"`
-	Power       string        `json:"power,omitempty"`
-	Temperature string        `json:"temperature,omitempty"`
-	Voltage     string        `json:"voltage,omitempty"`
+	Causes      []interface{} `json:"causes,omitempty" mapstructure:"causes"`
+	Fan         string        `json:"fan,omitempty" mapstructure:"fan"`
+	Health      string        `json:"health,omitempty" mapstructure:"health"`
+	Network     *Network      `json:"network,omitempty" mapstructure:"network"`
+	Path        string        `json:"path,omitempty" mapstructure:"path"`
+	Power       string        `json:"power,omitempty" mapstructure:"power"`
+	Temperature string        `json:"temperature,omitempty" mapstructure:"temperature"`
+	Voltage     string        `json:"voltage,omitempty" mapstructure:"voltage"`
 }
 
 func NewSubsystem(arg []byte) (Subsystem, error) {
@@ -1182,38 +1182,38 @@ func (en *Subsystem) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type System struct {
-	AccessInterfaceAggrType     string                 `json:"access_interface_aggr_type,omitempty"`
-	AllFlashAvailableCapacity   int                    `json:"all_flash_available_capacity,omitempty"`
-	AllFlashProvisionedCapacity int                    `json:"all_flash_provisioned_capacity,omitempty"`
-	AllFlashTotalCapacity       int                    `json:"all_flash_total_capacity,omitempty"`
-	AvailableCapacity           int                    `json:"available_capacity,omitempty"`
-	BuildVersion                string                 `json:"build_version,omitempty"`
-	CallhomeEnabled             bool                   `json:"callhome_enabled,omitempty"`
-	Causes                      []interface{}          `json:"causes,omitempty"`
-	CompressionEnabled          bool                   `json:"compression_enabled,omitempty"`
-	CompressionRatio            string                 `json:"compression_ratio,omitempty"`
-	Dns                         *Dns                   `json:"dns,omitempty"`
-	Health                      string                 `json:"health,omitempty"`
-	HttpProxy                   *HttpProxy             `json:"http_proxy,omitempty"`
-	HybridAvailableCapacity     int                    `json:"hybrid_available_capacity,omitempty"`
-	HybridProvisionedCapacity   int                    `json:"hybrid_provisioned_capacity,omitempty"`
-	HybridTotalCapacity         int                    `json:"hybrid_total_capacity,omitempty"`
-	InterfaceAggregationMode    string                 `json:"interface_aggregation_mode,omitempty"`
-	InternalInterfaceAggrType   string                 `json:"internal_interface_aggr_type,omitempty"`
-	L3Enabled                   bool                   `json:"l3_enabled,omitempty"`
-	LastRebootTimestamp         string                 `json:"last_reboot_timestamp,omitempty"`
-	Name                        string                 `json:"name,omitempty"`
-	Network                     *Network               `json:"network,omitempty"`
-	NetworkDevices              map[string]interface{} `json:"network_devices,omitempty"`
-	NtpServers                  *[]NtpServer           `json:"ntp_servers,omitempty"`
-	OpState                     string                 `json:"op_state,omitempty"`
-	Path                        string                 `json:"path,omitempty"`
-	SwVersion                   string                 `json:"sw_version,omitempty"`
-	TotalCapacity               int                    `json:"total_capacity,omitempty"`
-	TotalProvisionedCapacity    int                    `json:"total_provisioned_capacity,omitempty"`
-	Upgrade                     map[string]interface{} `json:"upgrade,omitempty"`
-	Uptime                      int                    `json:"uptime,omitempty"`
-	Uuid                        string                 `json:"uuid,omitempty"`
+	AccessInterfaceAggrType     string                 `json:"access_interface_aggr_type,omitempty" mapstructure:"access_interface_aggr_type"`
+	AllFlashAvailableCapacity   int                    `json:"all_flash_available_capacity,omitempty" mapstructure:"all_flash_available_capacity"`
+	AllFlashProvisionedCapacity int                    `json:"all_flash_provisioned_capacity,omitempty" mapstructure:"all_flash_provisioned_capacity"`
+	AllFlashTotalCapacity       int                    `json:"all_flash_total_capacity,omitempty" mapstructure:"all_flash_total_capacity"`
+	AvailableCapacity           int                    `json:"available_capacity,omitempty" mapstructure:"available_capacity"`
+	BuildVersion                string                 `json:"build_version,omitempty" mapstructure:"build_version"`
+	CallhomeEnabled             bool                   `json:"callhome_enabled,omitempty" mapstructure:"callhome_enabled"`
+	Causes                      []interface{}          `json:"causes,omitempty" mapstructure:"causes"`
+	CompressionEnabled          bool                   `json:"compression_enabled,omitempty" mapstructure:"compression_enabled"`
+	CompressionRatio            string                 `json:"compression_ratio,omitempty" mapstructure:"compression_ratio"`
+	Dns                         *Dns                   `json:"dns,omitempty" mapstructure:"dns"`
+	Health                      string                 `json:"health,omitempty" mapstructure:"health"`
+	HttpProxy                   *HttpProxy             `json:"http_proxy,omitempty" mapstructure:"http_proxy"`
+	HybridAvailableCapacity     int                    `json:"hybrid_available_capacity,omitempty" mapstructure:"hybrid_available_capacity"`
+	HybridProvisionedCapacity   int                    `json:"hybrid_provisioned_capacity,omitempty" mapstructure:"hybrid_provisioned_capacity"`
+	HybridTotalCapacity         int                    `json:"hybrid_total_capacity,omitempty" mapstructure:"hybrid_total_capacity"`
+	InterfaceAggregationMode    string                 `json:"interface_aggregation_mode,omitempty" mapstructure:"interface_aggregation_mode"`
+	InternalInterfaceAggrType   string                 `json:"internal_interface_aggr_type,omitempty" mapstructure:"internal_interface_aggr_type"`
+	L3Enabled                   bool                   `json:"l3_enabled,omitempty" mapstructure:"l3_enabled"`
+	LastRebootTimestamp         string                 `json:"last_reboot_timestamp,omitempty" mapstructure:"last_reboot_timestamp"`
+	Name                        string                 `json:"name,omitempty" mapstructure:"name"`
+	Network                     *Network               `json:"network,omitempty" mapstructure:"network"`
+	NetworkDevices              map[string]interface{} `json:"network_devices,omitempty" mapstructure:"network_devices"`
+	NtpServers                  *[]NtpServer           `json:"ntp_servers,omitempty" mapstructure:"ntp_servers"`
+	OpState                     string                 `json:"op_state,omitempty" mapstructure:"op_state"`
+	Path                        string                 `json:"path,omitempty" mapstructure:"path"`
+	SwVersion                   string                 `json:"sw_version,omitempty" mapstructure:"sw_version"`
+	TotalCapacity               int                    `json:"total_capacity,omitempty" mapstructure:"total_capacity"`
+	TotalProvisionedCapacity    int                    `json:"total_provisioned_capacity,omitempty" mapstructure:"total_provisioned_capacity"`
+	Upgrade                     map[string]interface{} `json:"upgrade,omitempty" mapstructure:"upgrade"`
+	Uptime                      int                    `json:"uptime,omitempty" mapstructure:"uptime"`
+	Uuid                        string                 `json:"uuid,omitempty" mapstructure:"uuid"`
 }
 
 func NewSystem(arg []byte) (System, error) {
@@ -1238,11 +1238,11 @@ func (en *System) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Tenant struct {
-	Descr      string                 `json:"descr,omitempty"`
-	Name       string                 `json:"name,omitempty"`
-	ParentPath string                 `json:"parent_path,omitempty"`
-	Path       string                 `json:"path,omitempty"`
-	Subtenants map[string]interface{} `json:"subtenants,omitempty"`
+	Descr      string                 `json:"descr,omitempty" mapstructure:"descr"`
+	Name       string                 `json:"name,omitempty" mapstructure:"name"`
+	ParentPath string                 `json:"parent_path,omitempty" mapstructure:"parent_path"`
+	Path       string                 `json:"path,omitempty" mapstructure:"path"`
+	Subtenants map[string]interface{} `json:"subtenants,omitempty" mapstructure:"subtenants"`
 }
 
 func NewTenant(arg []byte) (Tenant, error) {
@@ -1267,15 +1267,15 @@ func (en *Tenant) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type User struct {
-	Email    string    `json:"email,omitempty"`
-	Enabled  bool      `json:"enabled,omitempty"`
-	FullName string    `json:"full_name,omitempty"`
-	Password string    `json:"password,omitempty"`
-	Path     string    `json:"path,omitempty"`
-	Roles    *[]Role   `json:"roles,omitempty"`
-	Tenants  *[]Tenant `json:"tenants,omitempty"`
-	UserId   string    `json:"user_id,omitempty"`
-	Version  string    `json:"version,omitempty"`
+	Email    string    `json:"email,omitempty" mapstructure:"email"`
+	Enabled  bool      `json:"enabled,omitempty" mapstructure:"enabled"`
+	FullName string    `json:"full_name,omitempty" mapstructure:"full_name"`
+	Password string    `json:"password,omitempty" mapstructure:"password"`
+	Path     string    `json:"path,omitempty" mapstructure:"path"`
+	Roles    *[]Role   `json:"roles,omitempty" mapstructure:"roles"`
+	Tenants  *[]Tenant `json:"tenants,omitempty" mapstructure:"tenants"`
+	UserId   string    `json:"user_id,omitempty" mapstructure:"user_id"`
+	Version  string    `json:"version,omitempty" mapstructure:"version"`
 }
 
 func NewUser(arg []byte) (User, error) {
@@ -1300,9 +1300,9 @@ func (en *User) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Vip struct {
-	Name         string                 `json:"name,omitempty"`
-	NetworkPaths map[string]interface{} `json:"network_paths,omitempty"`
-	Path         string                 `json:"path,omitempty"`
+	Name         string                 `json:"name,omitempty" mapstructure:"name"`
+	NetworkPaths map[string]interface{} `json:"network_paths,omitempty" mapstructure:"network_paths"`
+	Path         string                 `json:"path,omitempty" mapstructure:"path"`
 }
 
 func NewVip(arg []byte) (Vip, error) {
@@ -1327,24 +1327,24 @@ func (en *Vip) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type Volume struct {
-	ActiveStorageNodes []interface{} `json:"active_storage_nodes,omitempty"`
-	AvailabilityState  string        `json:"availability_state,omitempty"`
-	CapacityInUse      float64       `json:"capacity_in_use,omitempty"`
-	Causes             []interface{} `json:"causes,omitempty"`
-	DeploymentState    string        `json:"deployment_state,omitempty"`
-	Health             string        `json:"health,omitempty"`
-	Name               string        `json:"name,omitempty"`
-	OpState            string        `json:"op_state,omitempty"`
-	OpStatus           string        `json:"op_status,omitempty"`
-	Path               string        `json:"path,omitempty"`
-	PlacementMode      string        `json:"placement_mode,omitempty"`
-	RecoveryState      string        `json:"recovery_state,omitempty"`
-	ReplicaCount       int           `json:"replica_count,omitempty"`
-	RestorePoint       string        `json:"restore_point,omitempty"`
-	Size               float64       `json:"size,omitempty"`
-	Snapshots          *[]Snapshot   `json:"snapshots,omitempty"`
-	StorageState       string        `json:"storage_state,omitempty"`
-	Uuid               string        `json:"uuid,omitempty"`
+	ActiveStorageNodes []interface{} `json:"active_storage_nodes,omitempty" mapstructure:"active_storage_nodes"`
+	AvailabilityState  string        `json:"availability_state,omitempty" mapstructure:"availability_state"`
+	CapacityInUse      float64       `json:"capacity_in_use,omitempty" mapstructure:"capacity_in_use"`
+	Causes             []interface{} `json:"causes,omitempty" mapstructure:"causes"`
+	DeploymentState    string        `json:"deployment_state,omitempty" mapstructure:"deployment_state"`
+	Health             string        `json:"health,omitempty" mapstructure:"health"`
+	Name               string        `json:"name,omitempty" mapstructure:"name"`
+	OpState            string        `json:"op_state,omitempty" mapstructure:"op_state"`
+	OpStatus           string        `json:"op_status,omitempty" mapstructure:"op_status"`
+	Path               string        `json:"path,omitempty" mapstructure:"path"`
+	PlacementMode      string        `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	RecoveryState      string        `json:"recovery_state,omitempty" mapstructure:"recovery_state"`
+	ReplicaCount       int           `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	RestorePoint       string        `json:"restore_point,omitempty" mapstructure:"restore_point"`
+	Size               float64       `json:"size,omitempty" mapstructure:"size"`
+	Snapshots          *[]Snapshot   `json:"snapshots,omitempty" mapstructure:"snapshots"`
+	StorageState       string        `json:"storage_state,omitempty" mapstructure:"storage_state"`
+	Uuid               string        `json:"uuid,omitempty" mapstructure:"uuid"`
 }
 
 func NewVolume(arg []byte) (Volume, error) {
@@ -1369,11 +1369,11 @@ func (en *Volume) UnpackB(arg []byte) error {
 // returned from an Endpoint call or in a Create or Set request
 // to an Endpoint
 type VolumeTemplate struct {
-	Name          string `json:"name,omitempty"`
-	Path          string `json:"path,omitempty"`
-	PlacementMode string `json:"placement_mode,omitempty"`
-	ReplicaCount  int    `json:"replica_count,omitempty"`
-	Size          int    `json:"size,omitempty"`
+	Name          string `json:"name,omitempty" mapstructure:"name"`
+	Path          string `json:"path,omitempty" mapstructure:"path"`
+	PlacementMode string `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	ReplicaCount  int    `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size          int    `json:"size,omitempty" mapstructure:"size"`
 }
 
 func NewVolumeTemplate(arg []byte) (VolumeTemplate, error) {

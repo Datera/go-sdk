@@ -1,8 +1,8 @@
 package main
 
 import (
-	// "flag"
 	"fmt"
+	"time"
 
 	dsdk "github.com/Datera/go-sdk/pkg/dsdk"
 )
@@ -67,6 +67,61 @@ func testInitiatorGroups(sdk *dsdk.SDK) error {
 	return nil
 }
 
+func createAi(sdk *dsdk.SDK) (*dsdk.AppInstance, error) {
+	vol := &dsdk.Volume{
+		Name:          "volume-1",
+		Size:          5,
+		PlacementMode: "hybrid",
+		ReplicaCount:  1,
+	}
+	si := &dsdk.StorageInstance{
+		Name:    "storage-1",
+		Volumes: []*dsdk.Volume{vol},
+	}
+	aiReq := dsdk.AppInstancesCreateRequest{
+		Name:             "my-test-ai",
+		StorageInstances: []*dsdk.StorageInstance{si},
+	}
+	resp, err := sdk.AppInstances.Create(&aiReq)
+	if err != nil {
+		return nil, err
+	}
+	ai := dsdk.AppInstance(*resp)
+	return &ai, nil
+}
+
+func testAclPolicy(sdk *dsdk.SDK) error {
+
+	ai, err := createAi(sdk)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_, err = ai.Set(&dsdk.AppInstanceSetRequest{
+			AdminState: "offline",
+		})
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		_, err := ai.Delete(&dsdk.AppInstanceDeleteRequest{})
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}()
+	time.Sleep(time.Second / 2)
+	fmt.Printf("\nAI: %#v\n", ai)
+	// si := ai.StorageInstances[0]
+	// resp, err := si.AclPolicy.Get(&dsdk.AclPolicyGetRequest{})
+	// if err != nil {
+	// 	return err
+	// }
+	// acl := dsdk.AclPolicy(*resp)
+	// fmt.Println(acl)
+	return nil
+}
+
 func testTenants(sdk *dsdk.SDK) error {
 	resp, err := sdk.Tenants.List(&dsdk.TenantsListRequest{})
 	if err != nil {
@@ -104,6 +159,9 @@ func main() {
 	}
 	if err = testTenants(sdk); err != nil {
 		fmt.Printf("\nTenants ERROR: %s\n", err)
+	}
+	if err = testAclPolicy(sdk); err != nil {
+		fmt.Printf("\nAclPolicy ERROR: %s\n", err)
 	}
 
 }

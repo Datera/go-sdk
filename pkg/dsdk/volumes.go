@@ -8,32 +8,32 @@ import (
 )
 
 type Volume struct {
-	Path                string        `json:"path,omitempty"`
-	ActiveStorageNodes  []StorageNode `json:"active_storage_nodes,omitempty"`
-	AvailabilityState   string        `json:"availability_state,omitempty"`
-	CapacityInUse       int           `json:"capacity_in_use,omitempty"`
-	Causes              []string      `json:"causes,omitempty"`
-	DeploymentState     string        `json:"deployment_state,omitempty"`
-	EffectiveSize       int           `json:"effective_size,omitempty"`
-	ExclusiveSize       int           `json:"exclusive_size,omitempty"`
-	Health              string        `json:"health,omitempty"`
-	LogicalSize         int           `json:"logical_size,omitempty"`
-	Name                string        `json:"name,omitempty"`
-	OpState             string        `json:"op_state,omitempty"`
-	OpStatus            string        `json:"op_status,omitempty"`
-	PhysicalSize        int           `json:"physical_size,omitempty"`
-	PlacementMode       string        `json:"placement_mode,omitempty"`
-	PlacementPolicy     string        `json:"placement_policy,omitempty"`
-	RecoveryState       string        `json:"recovery_state,omitempty"`
-	ReplicaCount        int           `json:"replica_count,omitempty"`
-	RestorePoint        string        `json:"restore_point,omitempty"`
-	Size                int           `json:"size,omitempty"`
-	Snapshots           []Snapshot    `json:"snapshots,omitempty"`
-	StoragePool         []StoragePool `json:"storage_pool,omitempty"`
-	StorageState        string        `json:"storage_state,omitempty"`
-	Uuid                string        `json:"uuid,omitempty"`
-	SnapshotsEp         *Snapshots
-	PerformancePolicyEp *PerformancePolicy
+	Path                string             `json:"path,omitempty" mapstructure:"path"`
+	ActiveStorageNodes  []*StorageNode     `json:"active_storage_nodes,omitempty" mapstructure:"active_storage_nodes"`
+	AvailabilityState   string             `json:"availability_state,omitempty" mapstructure:"availability_state"`
+	CapacityInUse       int                `json:"capacity_in_use,omitempty" mapstructure:"capacity_in_use"`
+	Causes              []string           `json:"causes,omitempty" mapstructure:"causes"`
+	DeploymentState     string             `json:"deployment_state,omitempty" mapstructure:"deployment_state"`
+	EffectiveSize       int                `json:"effective_size,omitempty" mapstructure:"effective_size"`
+	ExclusiveSize       int                `json:"exclusive_size,omitempty" mapstructure:"exclusive_size"`
+	Health              string             `json:"health,omitempty" mapstructure:"health"`
+	LogicalSize         int                `json:"logical_size,omitempty" mapstructure:"logical_size"`
+	Name                string             `json:"name,omitempty" mapstructure:"name"`
+	OpState             string             `json:"op_state,omitempty" mapstructure:"op_state"`
+	OpStatus            string             `json:"op_status,omitempty" mapstructure:"op_status"`
+	PhysicalSize        int                `json:"physical_size,omitempty" mapstructure:"physical_size"`
+	PlacementMode       string             `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy     string             `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	RecoveryState       string             `json:"recovery_state,omitempty" mapstructure:"recovery_state"`
+	ReplicaCount        int                `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	RestorePoint        string             `json:"restore_point,omitempty" mapstructure:"restore_point"`
+	Size                int                `json:"size,omitempty" mapstructure:"size"`
+	Snapshots           []*Snapshot        `json:"snapshots,omitempty" mapstructure:"snapshots"`
+	StoragePool         []*StoragePool     `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
+	StorageState        string             `json:"storage_state,omitempty" mapstructure:"storage_state"`
+	Uuid                string             `json:"uuid,omitempty" mapstructure:"uuid"`
+	SnapshotsEp         *Snapshots         `json:"-"`
+	PerformancePolicyEp *PerformancePolicy `json:"-"`
 	ctxt                context.Context
 	conn                *ApiConnection
 }
@@ -45,12 +45,12 @@ type Volumes struct {
 }
 
 type VolumesCreateRequest struct {
-	Name            string `json:"name,omitempty"`
-	ReplicaCount    int    `json:"replica_count,omitempty"`
-	Size            int    `json:"size,omitempty"`
-	PlacementMode   string `json:"placement_mode,omitempty"`
-	PlacementPolicy string `json:"placement_policy,omitempty"`
-	Force           bool   `json:"force,omitempty"`
+	Name            string `json:"name,omitempty" mapstructure:"name"`
+	ReplicaCount    int    `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int    `json:"size,omitempty" mapstructure:"size"`
+	PlacementMode   string `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy string `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	Force           bool   `json:"force,omitempty" mapstructure:"force"`
 }
 
 type VolumesCreateResponse Volume
@@ -111,7 +111,7 @@ func (e *Volumes) List(ro *VolumesListRequest) (*VolumesListResponse, error) {
 }
 
 type VolumesGetRequest struct {
-	Name string
+	Name string `json:"name,omitempty" mapstructure:"name"`
 }
 
 type VolumesGetResponse Volume
@@ -133,7 +133,12 @@ func (e *Volumes) Get(ro *VolumesGetRequest) (*VolumesGetResponse, error) {
 }
 
 type VolumeSetRequest struct {
-	Name string `json:"name,omitempty"`
+	ReplicaCount    int            `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int            `json:"size,omitempty" mapstructure:"size"`
+	PlacementMode   string         `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy string         `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	RestorePoint    string         `json:"restore_point,omitempty" mapstructure:"restore_point"`
+	StoragePool     []*StoragePool `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 }
 
 type VolumeSetResponse Volume

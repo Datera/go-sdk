@@ -8,51 +8,51 @@ import (
 )
 
 type StorageNode struct {
-	Path                string            `json:"path,omitempty"`
-	AdminState          string            `json:"admin_state,omitempty"`
-	AvailableCapacity   int               `json:"available_capacity,omitempty"`
-	BiosVersion         string            `json:"bios_version,omitempty"`
-	BootDrives          []BootDrive       `json:"boot_drives,omitempty"`
-	BuildVersion        string            `json:"build_version,omitempty"`
-	Causes              []string          `json:"causes,omitempty"`
-	Compression         bool              `json:"compression_enabled,omitempty"`
-	CompressionRatio    string            `json:"compression_ratio,omitempty"`
-	Disconnected        bool              `json:"disconnected,omitempty"`
-	FailureDomains      []FailureDomain   `json:"failure_domains,omitempty"`
-	FlashDevices        []FlashDevice     `json:"flash_devices,omitempty"`
-	Hdds                []Hdd             `json:"hdds,omitempty"`
-	Health              string            `json:"health,omitempty"`
-	HwHealth            string            `json:"hw_health,omitempty"`
-	HwState             string            `json:"hw_state,omitempty"`
-	InternalIp1         string            `json:"internal_ip_1,omitempty"`
-	InternalIp2         string            `json:"internal_ip_2,omitempty"`
-	LastRebootTimestamp string            `json:"last_reboot_timestamp,omitempty"`
-	MediaPolicy         string            `json:"media_policy,omitempty"`
-	MgmtIp1             string            `json:"mgmt_ip_1,omitempty"`
-	MgmtIp2             string            `json:"mgmt_ip_2,omitempty"`
-	Model               string            `json:"model,omitempty"`
-	Name                string            `json:"name,omitempty"`
-	Nics                []Nic             `json:"nics,omitempty"`
-	NvmFlashDevices     []NvmFlashDevice  `json:"nvm_flash_devices,omitempty"`
-	OpProgress          string            `json:"op_progress,omitempty"`
-	OpState             string            `json:"op_state,omitempty"`
-	OpStatus            string            `json:"op_status,omitempty"`
-	OsVersion           string            `json:"os_version,omitempty"`
-	Psus                []Psu             `json:"psus,omitempty"`
-	SerialNo            string            `json:"serial_no,omitempty"`
-	StorageInstances    []StorageInstance `json:"storage_instances,omitempty"`
-	SubsystemHealth     []Subsystem       `json:"subsystem_health,omitempty"`
-	SubsystemStates     []Subsystem       `json:"subsystem_states,omitempty"`
-	SwHealth            string            `json:"sw_health,omitempty"`
-	SwState             string            `json:"sw_state,omitempty"`
-	SwVersion           string            `json:"sw_version,omitempty"`
-	TotalCapacity       int               `json:"total_capacity,omitempty"`
-	TotalRawCapacity    int               `json:"total_raw_capacity,omitempty"`
-	Type                string            `json:"type,omitempty"`
-	Upgrade             Upgrade           `json:"upgrade,omitempty"`
-	Uuid                string            `json:"uuid,omitempty"`
-	Vendor              string            `json:"vendor,omitempty"`
-	Volumes             []Volume          `json:"volumes,omitempty"`
+	Path                string             `json:"path,omitempty" mapstructure:"path"`
+	AdminState          string             `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	AvailableCapacity   int                `json:"available_capacity,omitempty" mapstructure:"available_capacity"`
+	BiosVersion         string             `json:"bios_version,omitempty" mapstructure:"bios_version"`
+	BootDrives          []*BootDrive       `json:"boot_drives,omitempty" mapstructure:"boot_drives"`
+	BuildVersion        string             `json:"build_version,omitempty" mapstructure:"build_version"`
+	Causes              []string           `json:"causes,omitempty" mapstructure:"causes"`
+	Compression         bool               `json:"compression_enabled,omitempty" mapstructure:"compression_enabled"`
+	CompressionRatio    string             `json:"compression_ratio,omitempty" mapstructure:"compression_ratio"`
+	Disconnected        bool               `json:"disconnected,omitempty" mapstructure:"disconnected"`
+	FailureDomains      []*FailureDomain   `json:"failure_domains,omitempty" mapstructure:"failure_domains"`
+	FlashDevices        []*FlashDevice     `json:"flash_devices,omitempty" mapstructure:"flash_devices"`
+	Hdds                []*Hdd             `json:"hdds,omitempty" mapstructure:"hdds"`
+	Health              string             `json:"health,omitempty" mapstructure:"health"`
+	HwHealth            string             `json:"hw_health,omitempty" mapstructure:"hw_health"`
+	HwState             string             `json:"hw_state,omitempty" mapstructure:"hw_state"`
+	InternalIp1         string             `json:"internal_ip_1,omitempty" mapstructure:"internal_ip_1"`
+	InternalIp2         string             `json:"internal_ip_2,omitempty" mapstructure:"internal_ip_2"`
+	LastRebootTimestamp string             `json:"last_reboot_timestamp,omitempty" mapstructure:"last_reboot_timestamp"`
+	MediaPolicy         string             `json:"media_policy,omitempty" mapstructure:"media_policy"`
+	MgmtIp1             string             `json:"mgmt_ip_1,omitempty" mapstructure:"mgmt_ip_1"`
+	MgmtIp2             string             `json:"mgmt_ip_2,omitempty" mapstructure:"mgmt_ip_2"`
+	Model               string             `json:"model,omitempty" mapstructure:"model"`
+	Name                string             `json:"name,omitempty" mapstructure:"name"`
+	Nics                []*Nic             `json:"nics,omitempty" mapstructure:"nics"`
+	NvmFlashDevices     []*NvmFlashDevice  `json:"nvm_flash_devices,omitempty" mapstructure:"nvm_flash_devices"`
+	OpProgress          string             `json:"op_progress,omitempty" mapstructure:"op_progress"`
+	OpState             string             `json:"op_state,omitempty" mapstructure:"op_state"`
+	OpStatus            string             `json:"op_status,omitempty" mapstructure:"op_status"`
+	OsVersion           string             `json:"os_version,omitempty" mapstructure:"os_version"`
+	Psus                []*Psu             `json:"psus,omitempty" mapstructure:"psus"`
+	SerialNo            string             `json:"serial_no,omitempty" mapstructure:"serial_no"`
+	StorageInstances    []*StorageInstance `json:"storage_instances,omitempty" mapstructure:"storage_instances"`
+	SubsystemHealth     []*Subsystem       `json:"subsystem_health,omitempty" mapstructure:"subsystem_health"`
+	SubsystemStates     *Subsystem         `json:"subsystem_states,omitempty" mapstructure:"subsystem_states"`
+	SwHealth            string             `json:"sw_health,omitempty" mapstructure:"sw_health"`
+	SwState             string             `json:"sw_state,omitempty" mapstructure:"sw_state"`
+	SwVersion           string             `json:"sw_version,omitempty" mapstructure:"sw_version"`
+	TotalCapacity       int                `json:"total_capacity,omitempty" mapstructure:"total_capacity"`
+	TotalRawCapacity    int                `json:"total_raw_capacity,omitempty" mapstructure:"total_raw_capacity"`
+	Type                string             `json:"type,omitempty" mapstructure:"type"`
+	Upgrade             *Upgrade           `json:"upgrade,omitempty" mapstructure:"upgrade"`
+	Uuid                string             `json:"uuid,omitempty" mapstructure:"uuid"`
+	Vendor              string             `json:"vendor,omitempty" mapstructure:"vendor"`
+	Volumes             []*Volume          `json:"volumes,omitempty" mapstructure:"volumes"`
 	BootDrivesEp        *BootDrives
 	ctxt                context.Context
 	conn                *ApiConnection
@@ -124,8 +124,8 @@ func (e *StorageNodes) Get(ro *StorageNodesGetRequest) (*StorageNodesGetResponse
 }
 
 type StorageNodeSetRequest struct {
-	AdminState  string `json:"admin_state,omitempty"`
-	MediaPolicy string `json:"media_policy,omitempty"`
+	AdminState  string `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	MediaPolicy string `json:"media_policy,omitempty" mapstructure:"media_policy"`
 }
 
 type StorageNodeSetResponse StorageNode

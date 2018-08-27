@@ -8,9 +8,9 @@ import (
 )
 
 type Initiator struct {
-	Path string `json:"path,omitempty"`
-	Id   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
+	Path string `json:"path,omitempty" mapstructure:"path"`
+	Id   string `json:"id,omitempty" mapstructure:"id"`
+	Name string `json:"name,omitempty" mapstructure:"name"`
 	ctxt context.Context
 	conn *ApiConnection
 }
@@ -22,9 +22,9 @@ type Initiators struct {
 }
 
 type InitiatorsCreateRequest struct {
-	Id    string `json:"id,omitempty"`
-	Name  string `json:"name,omitempty"`
-	Force bool   `json:"force,omitempty"`
+	Id    string `json:"id,omitempty" mapstructure:"id"`
+	Name  string `json:"name,omitempty" mapstructure:"name"`
+	Force bool   `json:"force,omitempty" mapstructure:"force"`
 }
 
 type InitiatorsCreateResponse Initiator
@@ -104,7 +104,7 @@ func (e *Initiators) Get(ro *InitiatorsGetRequest) (*InitiatorsGetResponse, erro
 }
 
 type InitiatorSetRequest struct {
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" mapstructure:"name"`
 }
 
 type InitiatorSetResponse Initiator
@@ -126,7 +126,7 @@ func (e *Initiator) Set(ro *InitiatorSetRequest) (*InitiatorSetResponse, error) 
 }
 
 type InitiatorDeleteRequest struct {
-	Id string `json:"id,omitempty"`
+	Id string `json:"id,omitempty" mapstructure:"id"`
 }
 
 type InitiatorDeleteResponse Initiator

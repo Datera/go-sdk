@@ -8,10 +8,10 @@ import (
 )
 
 type AccessNetworkIpPool struct {
-	Path         string        `json:"path,omitempty"`
-	Name         string        `json:"name,omitempty"`
-	NetworkPaths []interface{} `json:"network_paths,omitempty"`
-	Descr        string        `json:"descr,omitempty"`
+	Path         string        `json:"path,omitempty" mapstructure:"path"`
+	Name         string        `json:"name,omitempty" mapstructure:"name"`
+	NetworkPaths []interface{} `json:"network_paths,omitempty" mapstructure:"network_paths"`
+	Descr        string        `json:"descr,omitempty" mapstructure:"descr"`
 	ctxt         context.Context
 	conn         *ApiConnection
 }
@@ -23,9 +23,9 @@ type AccessNetworkIpPools struct {
 }
 
 type AccessNetworkIpPoolsCreateRequest struct {
-	Id    string `json:"id,omitempty"`
-	Name  string `json:"name,omitempty"`
-	Force bool   `json:"force,omitempty"`
+	Id    string `json:"id,omitempty" mapstructure:"id"`
+	Name  string `json:"name,omitempty" mapstructure:"name"`
+	Force bool   `json:"force,omitempty" mapstructure:"force"`
 }
 
 type AccessNetworkIpPoolsCreateResponse AccessNetworkIpPool
@@ -105,7 +105,7 @@ func (e *AccessNetworkIpPools) Get(ro *AccessNetworkIpPoolsGetRequest) (*AccessN
 }
 
 type AccessNetworkIpPoolSetRequest struct {
-	Members []Initiator `json:"members,omitempty"`
+	Members []Initiator `json:"members,omitempty" mapstructure:"members"`
 }
 
 type AccessNetworkIpPoolSetResponse AccessNetworkIpPool
@@ -127,7 +127,7 @@ func (e *AccessNetworkIpPool) Set(ro *AccessNetworkIpPoolSetRequest) (*AccessNet
 }
 
 type AccessNetworkIpPoolDeleteRequest struct {
-	Id string `json:"id,omitempty"`
+	Id string `json:"id,omitempty" mapstructure:"id"`
 }
 
 type AccessNetworkIpPoolDeleteResponse AccessNetworkIpPool

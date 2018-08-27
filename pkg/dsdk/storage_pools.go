@@ -8,9 +8,9 @@ import (
 )
 
 type StoragePool struct {
-	Path    string        `json:"path,omitempty"`
-	Members []StorageNode `json:"members,omitempty"`
-	Name    string        `json:"name,omitempty"`
+	Path    string         `json:"path,omitempty" mapstructure:"path"`
+	Members []*StorageNode `json:"members,omitempty" mapstructure:"members"`
+	Name    string         `json:"name,omitempty" mapstructure:"name"`
 	ctxt    context.Context
 	conn    *ApiConnection
 }
@@ -22,8 +22,8 @@ type StoragePools struct {
 }
 
 type StoragePoolsCreateRequest struct {
-	Members []StorageNode `json:"members,omitempty"`
-	Name    string        `json:"name,omitempty"`
+	Members []*StorageNode `json:"members,omitempty" mapstructure:"members"`
+	Name    string         `json:"name,omitempty" mapstructure:"name"`
 }
 
 type StoragePoolsCreateResponse StoragePool
@@ -82,7 +82,7 @@ func (e *StoragePools) List(ro *StoragePoolsListRequest) (*StoragePoolsListRespo
 }
 
 type StoragePoolsGetRequest struct {
-	Uuid string `json:"id,omitempty"`
+	Uuid string `json:"id,omitempty" mapstructure:"id"`
 }
 
 type StoragePoolsGetResponse StoragePool
@@ -103,7 +103,7 @@ func (e *StoragePools) Get(ro *StoragePoolsGetRequest) (*StoragePoolsGetResponse
 }
 
 type StoragePoolSetRequest struct {
-	Members []StorageNode `json:"members,omitempty"`
+	Members []*StorageNode `json:"members,omitempty" mapstructure:"members"`
 }
 
 type StoragePoolSetResponse StoragePool

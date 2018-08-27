@@ -8,11 +8,11 @@ import (
 )
 
 type SnapshotPolicy struct {
-	Path           string `json:"path,omitempty"`
-	Name           string `json:"name,omitempty"`
-	Interval       string `json:"interval,omitempty"`
-	RetentionCount int    `json:"retention_count,omitempty"`
-	StartTime      string `json:"start_time,omitempty"`
+	Path           string `json:"path,omitempty" mapstructure:"path"`
+	Name           string `json:"name,omitempty" mapstructure:"name"`
+	Interval       string `json:"interval,omitempty" mapstructure:"interval"`
+	RetentionCount int    `json:"retention_count,omitempty" mapstructure:"retention_count"`
+	StartTime      string `json:"start_time,omitempty" mapstructure:"start_time"`
 	ctxt           context.Context
 	conn           *ApiConnection
 }
@@ -24,10 +24,10 @@ type SnapshotPolicies struct {
 }
 
 type SnapshotPoliciesCreateRequest struct {
-	Name           string `json:"name,omitempty"`
-	Interval       string `json:"interval,omitempty"`
-	RetentionCount string `json:"retention_count,omitempty"`
-	StartTime      string `json:"start_time,omitempty"`
+	Name           string `json:"name,omitempty" mapstructure:"name"`
+	Interval       string `json:"interval,omitempty" mapstructure:"interval"`
+	RetentionCount string `json:"retention_count,omitempty" mapstructure:"retention_count"`
+	StartTime      string `json:"start_time,omitempty" mapstructure:"start_time"`
 }
 
 type SnapshotPoliciesCreateResponse SnapshotPolicy
@@ -107,9 +107,9 @@ func (e *SnapshotPolicies) Get(ro *SnapshotPoliciesGetRequest) (*SnapshotPolicie
 }
 
 type SnapshotPolicySetRequest struct {
-	Interval       string `json:"name,omitempty"`
-	RetentionCount int    `json:"retention_count,omitempty"`
-	StartTime      string `json:"start_time,omitempty"`
+	Interval       string `json:"name,omitempty" mapstructure:"name"`
+	RetentionCount int    `json:"retention_count,omitempty" mapstructure:"retention_count"`
+	StartTime      string `json:"start_time,omitempty" mapstructure:"start_time"`
 }
 
 type SnapshotPolicySetResponse SnapshotPolicy
@@ -131,7 +131,7 @@ func (e *SnapshotPolicy) Set(ro *SnapshotPolicySetRequest) (*SnapshotPolicySetRe
 }
 
 type SnapshotPolicyDeleteRequest struct {
-	Id string `json:"id,omitempty"`
+	Id string `json:"id,omitempty" mapstructure:"id"`
 }
 
 type SnapshotPolicyDeleteResponse SnapshotPolicy

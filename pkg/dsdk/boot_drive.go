@@ -8,13 +8,13 @@ import (
 )
 
 type BootDrive struct {
-	Path      string   `json:"path,omitempty"`
-	Causes    []string `json:"causes,omitempty"`
-	Health    string   `json:"health,omitempty"`
-	Id        string   `json:"id,omitempty"`
-	OpState   string   `json:"op_state,omitempty"`
-	Size      int      `json:"size,omitempty"`
-	SlotLabel string   `json:"slot_label,omitempty"`
+	Path      string   `json:"path,omitempty" mapstructure:"path"`
+	Causes    []string `json:"causes,omitempty" mapstructure:"causes"`
+	Health    string   `json:"health,omitempty" mapstructure:"health"`
+	Id        string   `json:"id,omitempty" mapstructure:"id"`
+	OpState   string   `json:"op_state,omitempty" mapstructure:"op_state"`
+	Size      int      `json:"size,omitempty" mapstructure:"size"`
+	SlotLabel string   `json:"slot_label,omitempty" mapstructure:"slot_label"`
 	ctxt      context.Context
 	conn      *ApiConnection
 }

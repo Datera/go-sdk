@@ -8,24 +8,24 @@ import (
 )
 
 type StorageInstance struct {
-	Path                 string              `json:"path,omitempty"`
-	Access               Access              `json:"access,omitempty"`
-	AccessControlMode    string              `json:"access_control_mode,omitempty"`
-	AclPolicy            AclPolicy           `json:"acl_policy,omitempty"`
-	ActiveInitiators     []Initiator         `json:"active_initiators,omitempty"`
-	ActiveStorageNodes   []StorageNode       `json:"active_storage_nodes,omitempty"`
-	AdminState           string              `json:"admin_state,omitempty"`
-	Auth                 Auth                `json:"auth,omitempty"`
-	Causes               []string            `json:"causes,omitempty"`
-	DeploymentState      string              `json:"deployment_state,omitempty"`
-	Health               string              `json:"health,omitempty"`
-	IpPool               AccessNetworkIpPool `json:"ip_pool,omitempty"`
-	Name                 string              `json:"name,omitempty"`
-	OpState              string              `json:"op_state,omitempty"`
-	ServiceConfiguration string              `json:"service_configuration,omitempty"`
-	Uuid                 string              `json:"uuid,omitempty"`
-	Volumes              []Volume            `json:"volumes,omitempty"`
-	VolumesEp            *Volumes
+	Path                 string               `json:"path,omitempty" mapstructure:"path"`
+	Access               *Access              `json:"access,omitempty" mapstructure:"access"`
+	AccessControlMode    string               `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
+	AclPolicy            *AclPolicy           `json:"acl_policy,omitempty" mapstructure:"acl_policy"`
+	ActiveInitiators     []*Initiator         `json:"active_initiators,omitempty" mapstructure:"active_initiators"`
+	ActiveStorageNodes   []*StorageNode       `json:"active_storage_nodes,omitempty" mapstructure:"active_storage_nodes"`
+	AdminState           string               `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	Auth                 *Auth                `json:"auth,omitempty" mapstructure:"auth"`
+	Causes               []string             `json:"causes,omitempty" mapstructure:"causes"`
+	DeploymentState      string               `json:"deployment_state,omitempty" mapstructure:"deployment_state"`
+	Health               string               `json:"health,omitempty" mapstructure:"health"`
+	IpPool               *AccessNetworkIpPool `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
+	Name                 string               `json:"name,omitempty" mapstructure:"name"`
+	OpState              string               `json:"op_state,omitempty" mapstructure:"op_state"`
+	ServiceConfiguration string               `json:"service_configuration,omitempty" mapstructure:"service_configuration"`
+	Uuid                 string               `json:"uuid,omitempty" mapstructure:"uuid"`
+	Volumes              []*Volume            `json:"volumes,omitempty" mapstructure:"volumes"`
+	VolumesEp            *Volumes             `json:"-"`
 	ctxt                 context.Context
 	conn                 *ApiConnection
 }
@@ -37,12 +37,14 @@ type StorageInstances struct {
 }
 
 type StorageInstancesCreateRequest struct {
-	Name            string `json:"name,omitempty"`
-	ReplicaCount    int    `json:"replica_count,omitempty"`
-	Size            int    `json:"size,omitempty"`
-	PlacementMode   string `json:"placement_mode,omitempty"`
-	PlacementPolicy string `json:"placement_policy,omitempty"`
-	Force           bool   `json:"force,omitempty"`
+	AccessControlMode    string               `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
+	AclPolicy            *AclPolicy           `json:"acl_policy,omitempty" mapstructure:"acl_policy"`
+	AdminState           string               `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	Auth                 *Auth                `json:"auth,omitempty" mapstructure:"auth"`
+	IpPool               *AccessNetworkIpPool `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
+	Name                 string               `json:"name,omitempty" mapstructure:"name"`
+	ServiceConfiguration string               `json:"service_configuration,omitempty" mapstructure:"service_configuration"`
+	Volumes              []*Volume            `json:"volumes,omitempty" mapstructure:"volumes"`
 }
 
 type StorageInstancesCreateResponse StorageInstance
@@ -125,13 +127,13 @@ func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstance
 }
 
 type StorageInstanceSetRequest struct {
-	AccessControlMode string              `json:"access_control_mode,omitempty"`
-	AclPolicy         AclPolicy           `json:"acl_policy,omitempty"`
-	AdminState        string              `json:"admin_state,omitempty"`
-	Auth              Auth                `json:"auth,omitempty"`
-	Force             bool                `json:"force,omitempty"`
-	IpPool            AccessNetworkIpPool `json:"ip_pool,omitempty"`
-	Volumes           []Volume            `json:"volumes,omitempty"`
+	AccessControlMode string               `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
+	AclPolicy         *AclPolicy           `json:"acl_policy,omitempty" mapstructure:"acl_policy"`
+	AdminState        string               `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	Auth              *Auth                `json:"auth,omitempty" mapstructure:"auth"`
+	Force             bool                 `json:"force,omitempty" mapstructure:"force"`
+	IpPool            *AccessNetworkIpPool `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
+	Volumes           []*Volume            `json:"volumes,omitempty" mapstructure:"volumes"`
 }
 
 type StorageInstanceSetResponse StorageInstance
@@ -154,7 +156,7 @@ func (e *StorageInstance) Set(ro *StorageInstanceSetRequest) (*StorageInstanceSe
 }
 
 type StorageInstanceDeleteRequest struct {
-	Force bool `json:"force,omitempty"`
+	Force bool `json:"force,omitempty" mapstructure:"force"`
 }
 
 type StorageInstanceDeleteResponse StorageInstance
