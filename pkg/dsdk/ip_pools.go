@@ -12,35 +12,30 @@ type AccessNetworkIpPool struct {
 	Name         string        `json:"name,omitempty" mapstructure:"name"`
 	NetworkPaths []interface{} `json:"network_paths,omitempty" mapstructure:"network_paths"`
 	Descr        string        `json:"descr,omitempty" mapstructure:"descr"`
-	ctxt         context.Context
-	conn         *ApiConnection
 }
 
 type AccessNetworkIpPools struct {
 	Path string
-	ctxt context.Context
-	conn *ApiConnection
 }
 
 type AccessNetworkIpPoolsCreateRequest struct {
-	Id    string `json:"id,omitempty" mapstructure:"id"`
-	Name  string `json:"name,omitempty" mapstructure:"name"`
-	Force bool   `json:"force,omitempty" mapstructure:"force"`
+	Ctxt  context.Context `json:"-"`
+	Id    string          `json:"id,omitempty" mapstructure:"id"`
+	Name  string          `json:"name,omitempty" mapstructure:"name"`
+	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
 type AccessNetworkIpPoolsCreateResponse AccessNetworkIpPool
 
-func newAccessNetworkIpPools(ctxt context.Context, conn *ApiConnection, path string) *AccessNetworkIpPools {
+func newAccessNetworkIpPools(path string) *AccessNetworkIpPools {
 	return &AccessNetworkIpPools{
 		Path: _path.Join(path, "access_network_ip_pools"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 func (e *AccessNetworkIpPools) Create(ro *AccessNetworkIpPoolsCreateRequest) (*AccessNetworkIpPoolsCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -48,12 +43,11 @@ func (e *AccessNetworkIpPools) Create(ro *AccessNetworkIpPoolsCreateRequest) (*A
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type AccessNetworkIpPoolsListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -63,7 +57,7 @@ func (e *AccessNetworkIpPools) List(ro *AccessNetworkIpPoolsListRequest) (*Acces
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -76,22 +70,19 @@ func (e *AccessNetworkIpPools) List(ro *AccessNetworkIpPoolsListRequest) (*Acces
 		}
 		resp = append(resp, *elem)
 	}
-	for _, init := range resp {
-		init.conn = e.conn
-		init.ctxt = e.ctxt
-	}
 	return &resp, nil
 }
 
 type AccessNetworkIpPoolsGetRequest struct {
-	Id string
+	Ctxt context.Context `json:"-"`
+	Id   string
 }
 
 type AccessNetworkIpPoolsGetResponse AccessNetworkIpPool
 
 func (e *AccessNetworkIpPools) Get(ro *AccessNetworkIpPoolsGetRequest) (*AccessNetworkIpPoolsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Id), gro)
+	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Id), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -99,20 +90,19 @@ func (e *AccessNetworkIpPools) Get(ro *AccessNetworkIpPoolsGetRequest) (*AccessN
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type AccessNetworkIpPoolSetRequest struct {
-	Members []Initiator `json:"members,omitempty" mapstructure:"members"`
+	Ctxt    context.Context `json:"-"`
+	Members []Initiator     `json:"members,omitempty" mapstructure:"members"`
 }
 
 type AccessNetworkIpPoolSetResponse AccessNetworkIpPool
 
 func (e *AccessNetworkIpPool) Set(ro *AccessNetworkIpPoolSetRequest) (*AccessNetworkIpPoolSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -120,20 +110,19 @@ func (e *AccessNetworkIpPool) Set(ro *AccessNetworkIpPoolSetRequest) (*AccessNet
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 
 }
 
 type AccessNetworkIpPoolDeleteRequest struct {
-	Id string `json:"id,omitempty" mapstructure:"id"`
+	Ctxt context.Context `json:"-"`
+	Id   string          `json:"id,omitempty" mapstructure:"id"`
 }
 
 type AccessNetworkIpPoolDeleteResponse AccessNetworkIpPool
 
 func (e *AccessNetworkIpPool) Delete(ro *AccessNetworkIpPoolDeleteRequest) (*AccessNetworkIpPoolDeleteResponse, error) {
-	rs, err := e.conn.Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +130,5 @@ func (e *AccessNetworkIpPool) Delete(ro *AccessNetworkIpPoolDeleteRequest) (*Acc
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }

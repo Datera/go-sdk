@@ -16,8 +16,8 @@ const (
 
 type SDK struct {
 	conf                 *udc.UDC
-	conn                 *ApiConnection
-	ctxt                 context.Context
+	Conn                 *ApiConnection
+	Ctxt                 context.Context
 	AccessNetworkIpPools *AccessNetworkIpPools
 	AppInstances         *AppInstances
 	AppTemplates         *AppTemplates
@@ -41,17 +41,23 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 	conn := NewApiConnection(ctxt, c, secure)
 	return &SDK{
 		conf:                 c,
-		ctxt:                 ctxt,
-		conn:                 conn,
-		AccessNetworkIpPools: newAccessNetworkIpPools(ctxt, conn, "/"),
-		AppInstances:         newAppInstances(ctxt, conn, "/"),
-		AppTemplates:         newAppTemplates(ctxt, conn, "/"),
-		Initiators:           newInitiators(ctxt, conn, "/"),
-		InitiatorGroups:      newInitiatorGroups(ctxt, conn, "/"),
-		StorageNodes:         newStorageNodes(ctxt, conn, "/"),
-		StoragePools:         newStoragePools(ctxt, conn, "/"),
-		Tenants:              newTenants(ctxt, conn, "/"),
+		Ctxt:                 ctxt,
+		Conn:                 conn,
+		AccessNetworkIpPools: newAccessNetworkIpPools("/"),
+		AppInstances:         newAppInstances("/"),
+		AppTemplates:         newAppTemplates("/"),
+		Initiators:           newInitiators("/"),
+		InitiatorGroups:      newInitiatorGroups("/"),
+		StorageNodes:         newStorageNodes("/"),
+		StoragePools:         newStoragePools("/"),
+		Tenants:              newTenants("/"),
 	}, nil
+}
+
+func (c SDK) Context() context.Context {
+	ctxt := context.WithValue(c.Ctxt, "conn", c.Conn)
+	ctxt = context.WithValue(ctxt, "tid", RandString(34))
+	return ctxt
 }
 
 // Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under

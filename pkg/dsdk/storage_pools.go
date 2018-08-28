@@ -11,34 +11,29 @@ type StoragePool struct {
 	Path    string         `json:"path,omitempty" mapstructure:"path"`
 	Members []*StorageNode `json:"members,omitempty" mapstructure:"members"`
 	Name    string         `json:"name,omitempty" mapstructure:"name"`
-	ctxt    context.Context
-	conn    *ApiConnection
 }
 
 type StoragePools struct {
 	Path string
-	ctxt context.Context
-	conn *ApiConnection
 }
 
 type StoragePoolsCreateRequest struct {
-	Members []*StorageNode `json:"members,omitempty" mapstructure:"members"`
-	Name    string         `json:"name,omitempty" mapstructure:"name"`
+	Ctxt    context.Context `json:"-"`
+	Members []*StorageNode  `json:"members,omitempty" mapstructure:"members"`
+	Name    string          `json:"name,omitempty" mapstructure:"name"`
 }
 
 type StoragePoolsCreateResponse StoragePool
 
-func newStoragePools(ctxt context.Context, conn *ApiConnection, path string) *StoragePools {
+func newStoragePools(path string) *StoragePools {
 	return &StoragePools{
 		Path: _path.Join(path, "storage_pools"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 func (e *StoragePools) Create(ro *StoragePoolsCreateRequest) (*StoragePoolsCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -46,12 +41,11 @@ func (e *StoragePools) Create(ro *StoragePoolsCreateRequest) (*StoragePoolsCreat
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type StoragePoolsListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -61,7 +55,7 @@ func (e *StoragePools) List(ro *StoragePoolsListRequest) (*StoragePoolsListRespo
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -74,22 +68,19 @@ func (e *StoragePools) List(ro *StoragePoolsListRequest) (*StoragePoolsListRespo
 		}
 		resp = append(resp, *elem)
 	}
-	for _, init := range resp {
-		init.conn = e.conn
-		init.ctxt = e.ctxt
-	}
 	return &resp, nil
 }
 
 type StoragePoolsGetRequest struct {
-	Uuid string `json:"id,omitempty" mapstructure:"id"`
+	Ctxt context.Context `json:"-"`
+	Uuid string          `json:"id,omitempty" mapstructure:"id"`
 }
 
 type StoragePoolsGetResponse StoragePool
 
 func (e *StoragePools) Get(ro *StoragePoolsGetRequest) (*StoragePoolsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Uuid), gro)
+	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Uuid), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -97,20 +88,19 @@ func (e *StoragePools) Get(ro *StoragePoolsGetRequest) (*StoragePoolsGetResponse
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type StoragePoolSetRequest struct {
-	Members []*StorageNode `json:"members,omitempty" mapstructure:"members"`
+	Ctxt    context.Context `json:"-"`
+	Members []*StorageNode  `json:"members,omitempty" mapstructure:"members"`
 }
 
 type StoragePoolSetResponse StoragePool
 
 func (e *StoragePool) Set(ro *StoragePoolSetRequest) (*StoragePoolSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -118,19 +108,18 @@ func (e *StoragePool) Set(ro *StoragePoolSetRequest) (*StoragePoolSetResponse, e
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 
 }
 
 type StoragePoolDeleteRequest struct {
+	Ctxt context.Context `json:"-"`
 }
 
 type StoragePoolDeleteResponse StoragePool
 
 func (e *StoragePool) Delete(ro *StoragePoolDeleteRequest) (*StoragePoolDeleteResponse, error) {
-	rs, err := e.conn.Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +127,5 @@ func (e *StoragePool) Delete(ro *StoragePoolDeleteRequest) (*StoragePoolDeleteRe
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }

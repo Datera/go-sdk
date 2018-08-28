@@ -16,25 +16,20 @@ type Subsystem struct {
 	Power       string   `json:"power,omitempty" mapstructure:"power"`
 	Temperature string   `json:"temperature,omitempty" mapstructure:"temperature"`
 	Voltage     string   `json:"voltage,omitempty" mapstructure:"voltage"`
-	ctxt        context.Context
-	conn        *ApiConnection
 }
 
 type Subsystems struct {
 	Path string
-	ctxt context.Context
-	conn *ApiConnection
 }
 
-func newSubsystems(ctxt context.Context, conn *ApiConnection, path string) *Subsystems {
+func newSubsystems(path string) *Subsystems {
 	return &Subsystems{
 		Path: _path.Join(path, "subsystem_states"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 type SubsystemsListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -44,7 +39,7 @@ func (e *Subsystems) List(ro *SubsystemsListRequest) (*SubsystemsListResponse, e
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -57,22 +52,19 @@ func (e *Subsystems) List(ro *SubsystemsListRequest) (*SubsystemsListResponse, e
 		}
 		resp = append(resp, *elem)
 	}
-	for _, init := range resp {
-		init.conn = e.conn
-		init.ctxt = e.ctxt
-	}
 	return &resp, nil
 }
 
 type SubsystemsGetRequest struct {
-	Id string
+	Ctxt context.Context `json:"-"`
+	Id   string
 }
 
 type SubsystemsGetResponse Subsystem
 
 func (e *Subsystems) Get(ro *SubsystemsGetRequest) (*SubsystemsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Id), gro)
+	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Id), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +72,5 @@ func (e *Subsystems) Get(ro *SubsystemsGetRequest) (*SubsystemsGetResponse, erro
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }

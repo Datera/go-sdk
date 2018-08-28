@@ -15,7 +15,7 @@ func TestApiVersions(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	conn := dsdk.NewApiConnection(context.Background(), c, false)
+	Conn := dsdk.NewApiConnection(context.Background(), c, false)
 	apiv := conn.ApiVersions()
 	if len(apiv) != 3 {
 		t.Errorf("%d", len(apiv))
@@ -27,7 +27,7 @@ func TestConnAuth(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	conn := dsdk.NewApiConnection(context.Background(), c, false)
+	Conn := dsdk.NewApiConnection(context.Background(), c, false)
 	err = conn.Login()
 	if err != nil {
 		t.Errorf("%s", err)
@@ -39,7 +39,7 @@ func TestConnReAuth(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	conn := dsdk.NewApiConnection(context.Background(), c, false)
+	Conn := dsdk.NewApiConnection(context.Background(), c, false)
 	_, err = conn.GetList("app_instances", nil)
 	if err != nil {
 		t.Errorf("%s", err)
@@ -51,7 +51,7 @@ func TestCreateInitiator(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	conn := dsdk.NewApiConnection(context.Background(), c, false)
+	Conn := dsdk.NewApiConnection(context.Background(), c, false)
 	id := fmt.Sprintf("iqn.1993-08.org.debian:01:%s", dsdk.RandString(12))
 	ro := &greq.RequestOptions{
 		Data: map[string]string{
@@ -76,7 +76,7 @@ func TestCreateAi(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	conn := dsdk.NewApiConnection(context.Background(), c, false)
+	Conn := dsdk.NewApiConnection(context.Background(), c, false)
 	ro := &greq.RequestOptions{
 		Data: map[string]string{
 			"id":    fmt.Sprintf("iqn.1993-08.org.debian:01:%s", dsdk.RandString(12)),

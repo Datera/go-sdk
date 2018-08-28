@@ -13,36 +13,31 @@ type SnapshotPolicy struct {
 	Interval       string `json:"interval,omitempty" mapstructure:"interval"`
 	RetentionCount int    `json:"retention_count,omitempty" mapstructure:"retention_count"`
 	StartTime      string `json:"start_time,omitempty" mapstructure:"start_time"`
-	ctxt           context.Context
-	conn           *ApiConnection
 }
 
 type SnapshotPolicies struct {
 	Path string
-	ctxt context.Context
-	conn *ApiConnection
 }
 
 type SnapshotPoliciesCreateRequest struct {
-	Name           string `json:"name,omitempty" mapstructure:"name"`
-	Interval       string `json:"interval,omitempty" mapstructure:"interval"`
-	RetentionCount string `json:"retention_count,omitempty" mapstructure:"retention_count"`
-	StartTime      string `json:"start_time,omitempty" mapstructure:"start_time"`
+	Ctxt           context.Context `json:"-"`
+	Name           string          `json:"name,omitempty" mapstructure:"name"`
+	Interval       string          `json:"interval,omitempty" mapstructure:"interval"`
+	RetentionCount string          `json:"retention_count,omitempty" mapstructure:"retention_count"`
+	StartTime      string          `json:"start_time,omitempty" mapstructure:"start_time"`
 }
 
 type SnapshotPoliciesCreateResponse SnapshotPolicy
 
-func newSnapshotPolicies(ctxt context.Context, conn *ApiConnection, path string) *SnapshotPolicies {
+func newSnapshotPolicies(path string) *SnapshotPolicies {
 	return &SnapshotPolicies{
 		Path: _path.Join(path, "snapshot_policies"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 func (e *SnapshotPolicies) Create(ro *SnapshotPoliciesCreateRequest) (*SnapshotPoliciesCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -50,12 +45,11 @@ func (e *SnapshotPolicies) Create(ro *SnapshotPoliciesCreateRequest) (*SnapshotP
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type SnapshotPoliciesListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -65,7 +59,7 @@ func (e *SnapshotPolicies) List(ro *SnapshotPoliciesListRequest) (*SnapshotPolic
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -78,14 +72,11 @@ func (e *SnapshotPolicies) List(ro *SnapshotPoliciesListRequest) (*SnapshotPolic
 		}
 		resp = append(resp, *elem)
 	}
-	for _, init := range resp {
-		init.conn = e.conn
-		init.ctxt = e.ctxt
-	}
 	return &resp, nil
 }
 
 type SnapshotPoliciesGetRequest struct {
+	Ctxt context.Context `json:"-"`
 	Name string
 }
 
@@ -93,7 +84,7 @@ type SnapshotPoliciesGetResponse SnapshotPolicy
 
 func (e *SnapshotPolicies) Get(ro *SnapshotPoliciesGetRequest) (*SnapshotPoliciesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Name), gro)
+	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -101,22 +92,21 @@ func (e *SnapshotPolicies) Get(ro *SnapshotPoliciesGetRequest) (*SnapshotPolicie
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type SnapshotPolicySetRequest struct {
-	Interval       string `json:"name,omitempty" mapstructure:"name"`
-	RetentionCount int    `json:"retention_count,omitempty" mapstructure:"retention_count"`
-	StartTime      string `json:"start_time,omitempty" mapstructure:"start_time"`
+	Ctxt           context.Context `json:"-"`
+	Interval       string          `json:"name,omitempty" mapstructure:"name"`
+	RetentionCount int             `json:"retention_count,omitempty" mapstructure:"retention_count"`
+	StartTime      string          `json:"start_time,omitempty" mapstructure:"start_time"`
 }
 
 type SnapshotPolicySetResponse SnapshotPolicy
 
 func (e *SnapshotPolicy) Set(ro *SnapshotPolicySetRequest) (*SnapshotPolicySetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -124,20 +114,19 @@ func (e *SnapshotPolicy) Set(ro *SnapshotPolicySetRequest) (*SnapshotPolicySetRe
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 
 }
 
 type SnapshotPolicyDeleteRequest struct {
-	Id string `json:"id,omitempty" mapstructure:"id"`
+	Ctxt context.Context `json:"-"`
+	Id   string          `json:"id,omitempty" mapstructure:"id"`
 }
 
 type SnapshotPolicyDeleteResponse SnapshotPolicy
 
 func (e *SnapshotPolicy) Delete(ro *SnapshotPolicyDeleteRequest) (*SnapshotPolicyDeleteResponse, error) {
-	rs, err := e.conn.Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +134,5 @@ func (e *SnapshotPolicy) Delete(ro *SnapshotPolicyDeleteRequest) (*SnapshotPolic
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }

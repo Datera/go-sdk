@@ -17,35 +17,30 @@ type Tenant struct {
 	Quota            Quota             `json:"quota,omitempty" mapstructure:"quota"`
 	QuotaStatus      QuotaStatus       `json:"quota_status,omitempty" mapstructure:"quota_status"`
 	Subtenants       []Tenant          `json:"subtenants,omitempty" mapstructure:"subtenants"`
-	ctxt             context.Context
-	conn             *ApiConnection
 }
 
 type Tenants struct {
 	Path string
-	ctxt context.Context
-	conn *ApiConnection
 }
 
 type TenantsCreateRequest struct {
-	Id    string `json:"id,omitempty" mapstructure:"id"`
-	Name  string `json:"name,omitempty" mapstructure:"name"`
-	Force bool   `json:"force,omitempty" mapstructure:"force"`
+	Ctxt  context.Context `json:"-"`
+	Id    string          `json:"id,omitempty" mapstructure:"id"`
+	Name  string          `json:"name,omitempty" mapstructure:"name"`
+	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
 type TenantsCreateResponse Tenant
 
-func newTenants(ctxt context.Context, conn *ApiConnection, path string) *Tenants {
+func newTenants(path string) *Tenants {
 	return &Tenants{
 		Path: _path.Join(path, "tenants"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 func (e *Tenants) Create(ro *TenantsCreateRequest) (*TenantsCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -53,12 +48,11 @@ func (e *Tenants) Create(ro *TenantsCreateRequest) (*TenantsCreateResponse, erro
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type TenantsListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -68,7 +62,7 @@ func (e *Tenants) List(ro *TenantsListRequest) (*TenantsListResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -81,14 +75,11 @@ func (e *Tenants) List(ro *TenantsListRequest) (*TenantsListResponse, error) {
 		}
 		resp = append(resp, *elem)
 	}
-	for _, init := range resp {
-		init.conn = e.conn
-		init.ctxt = e.ctxt
-	}
 	return &resp, nil
 }
 
 type TenantsGetRequest struct {
+	Ctxt context.Context `json:"-"`
 	Path string
 }
 
@@ -96,7 +87,7 @@ type TenantsGetResponse Tenant
 
 func (e *Tenants) Get(ro *TenantsGetRequest) (*TenantsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Path), gro)
+	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Path), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -104,28 +95,27 @@ func (e *Tenants) Get(ro *TenantsGetRequest) (*TenantsGetResponse, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type TenantSetRequest struct {
-	Path             string      `json:"path,omitempty" mapstructure:"path"`
-	Descr            string      `json:"descr,omitempty" mapstructure:"descr"`
-	InitiatorListSrc string      `json:"initiator_list_src,omitempty" mapstructure:"initiator_list_src"`
-	MgmtIps          []string    `json:"mgmt_ips,omitempty" mapstructure:"mgmt_ips"`
-	Name             string      `json:"name,omitempty" mapstructure:"name"`
-	ParentPath       string      `json:"parent_path,omitempty" mapstructure:"parent_path"`
-	Quota            Quota       `json:"quota,omitempty" mapstructure:"quota"`
-	QuotaStatus      QuotaStatus `json:"quota_status,omitempty" mapstructure:"quota_status"`
-	Subtenants       []Tenant    `json:"subtenants,omitempty" mapstructure:"subtenants"`
+	Ctxt             context.Context `json:"-"`
+	Path             string          `json:"path,omitempty" mapstructure:"path"`
+	Descr            string          `json:"descr,omitempty" mapstructure:"descr"`
+	InitiatorListSrc string          `json:"initiator_list_src,omitempty" mapstructure:"initiator_list_src"`
+	MgmtIps          []string        `json:"mgmt_ips,omitempty" mapstructure:"mgmt_ips"`
+	Name             string          `json:"name,omitempty" mapstructure:"name"`
+	ParentPath       string          `json:"parent_path,omitempty" mapstructure:"parent_path"`
+	Quota            Quota           `json:"quota,omitempty" mapstructure:"quota"`
+	QuotaStatus      QuotaStatus     `json:"quota_status,omitempty" mapstructure:"quota_status"`
+	Subtenants       []Tenant        `json:"subtenants,omitempty" mapstructure:"subtenants"`
 }
 
 type TenantSetResponse Tenant
 
 func (e *Tenant) Set(ro *TenantSetRequest) (*TenantSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -133,19 +123,18 @@ func (e *Tenant) Set(ro *TenantSetRequest) (*TenantSetResponse, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 
 }
 
 type TenantDeleteRequest struct {
+	Ctxt context.Context `json:"-"`
 }
 
 type TenantDeleteResponse Tenant
 
 func (e *Tenant) Delete(ro *TenantDeleteRequest) (*TenantDeleteResponse, error) {
-	rs, err := e.conn.Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +142,5 @@ func (e *Tenant) Delete(ro *TenantDeleteRequest) (*TenantDeleteResponse, error) 
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }

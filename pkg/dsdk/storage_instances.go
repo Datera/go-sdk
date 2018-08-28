@@ -26,17 +26,14 @@ type StorageInstance struct {
 	Uuid                 string               `json:"uuid,omitempty" mapstructure:"uuid"`
 	Volumes              []*Volume            `json:"volumes,omitempty" mapstructure:"volumes"`
 	VolumesEp            *Volumes             `json:"-"`
-	ctxt                 context.Context
-	conn                 *ApiConnection
 }
 
 type StorageInstances struct {
 	Path string
-	ctxt context.Context
-	conn *ApiConnection
 }
 
 type StorageInstancesCreateRequest struct {
+	Ctxt                 context.Context      `json:"-"`
 	AccessControlMode    string               `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
 	AclPolicy            *AclPolicy           `json:"acl_policy,omitempty" mapstructure:"acl_policy"`
 	AdminState           string               `json:"admin_state,omitempty" mapstructure:"admin_state"`
@@ -49,17 +46,15 @@ type StorageInstancesCreateRequest struct {
 
 type StorageInstancesCreateResponse StorageInstance
 
-func newStorageInstances(ctxt context.Context, conn *ApiConnection, path string) *StorageInstances {
+func newStorageInstances(path string) *StorageInstances {
 	return &StorageInstances{
 		Path: _path.Join(path, "storage_instances"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 func (e *StorageInstances) Create(ro *StorageInstancesCreateRequest) (*StorageInstancesCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -67,13 +62,12 @@ func (e *StorageInstances) Create(ro *StorageInstancesCreateRequest) (*StorageIn
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.VolumesEp = newVolumes(e.ctxt, e.conn, e.Path)
+	resp.VolumesEp = newVolumes(e.Path)
 	return resp, nil
 }
 
 type StorageInstancesListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -83,7 +77,7 @@ func (e *StorageInstances) List(ro *StorageInstancesListRequest) (*StorageInstan
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -97,14 +91,13 @@ func (e *StorageInstances) List(ro *StorageInstancesListRequest) (*StorageInstan
 		resp = append(resp, *elem)
 	}
 	for _, r := range resp {
-		r.conn = e.conn
-		r.ctxt = e.ctxt
-		r.VolumesEp = newVolumes(e.ctxt, e.conn, e.Path)
+		r.VolumesEp = newVolumes(e.Path)
 	}
 	return &resp, nil
 }
 
 type StorageInstancesGetRequest struct {
+	Ctxt context.Context `json:"-"`
 	Name string
 }
 
@@ -112,7 +105,7 @@ type StorageInstancesGetResponse StorageInstance
 
 func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstancesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Name), gro)
+	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -120,13 +113,12 @@ func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstance
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.VolumesEp = newVolumes(e.ctxt, e.conn, e.Path)
+	resp.VolumesEp = newVolumes(e.Path)
 	return resp, nil
 }
 
 type StorageInstanceSetRequest struct {
+	Ctxt              context.Context      `json:"-"`
 	AccessControlMode string               `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
 	AclPolicy         *AclPolicy           `json:"acl_policy,omitempty" mapstructure:"acl_policy"`
 	AdminState        string               `json:"admin_state,omitempty" mapstructure:"admin_state"`
@@ -140,7 +132,7 @@ type StorageInstanceSetResponse StorageInstance
 
 func (e *StorageInstance) Set(ro *StorageInstanceSetRequest) (*StorageInstanceSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -148,21 +140,20 @@ func (e *StorageInstance) Set(ro *StorageInstanceSetRequest) (*StorageInstanceSe
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.VolumesEp = newVolumes(e.ctxt, e.conn, e.Path)
+	resp.VolumesEp = newVolumes(e.Path)
 	return resp, nil
 
 }
 
 type StorageInstanceDeleteRequest struct {
-	Force bool `json:"force,omitempty" mapstructure:"force"`
+	Ctxt  context.Context `json:"-"`
+	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
 type StorageInstanceDeleteResponse StorageInstance
 
 func (e *StorageInstance) Delete(ro *StorageInstanceDeleteRequest) (*StorageInstanceDeleteResponse, error) {
-	rs, err := e.conn.Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -170,8 +161,6 @@ func (e *StorageInstance) Delete(ro *StorageInstanceDeleteRequest) (*StorageInst
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.VolumesEp = newVolumes(e.ctxt, e.conn, e.Path)
+	resp.VolumesEp = newVolumes(e.Path)
 	return resp, nil
 }

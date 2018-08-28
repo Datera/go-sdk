@@ -16,37 +16,32 @@ type VolumeTemplate struct {
 	Size               int               `json:"size,omitempty" mapstructure:"size"`
 	StoragePool        []StoragePool     `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 	SnapshotPoliciesEp *SnapshotPolicies `json:"-"`
-	ctxt               context.Context
-	conn               *ApiConnection
 }
 
 type VolumeTemplates struct {
 	Path string
-	ctxt context.Context
-	conn *ApiConnection
 }
 
 type VolumeTemplatesCreateRequest struct {
-	Name            string `json:"name,omitempty" mapstructure:"name"`
-	ReplicaCount    int    `json:"replica_count,omitempty" mapstructure:"replica_count"`
-	Size            int    `json:"size,omitempty" mapstructure:"size"`
-	PlacementMode   string `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
-	PlacementPolicy string `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	Ctxt            context.Context `json:"-"`
+	Name            string          `json:"name,omitempty" mapstructure:"name"`
+	ReplicaCount    int             `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int             `json:"size,omitempty" mapstructure:"size"`
+	PlacementMode   string          `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy string          `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
 }
 
 type VolumeTemplatesCreateResponse VolumeTemplate
 
-func newVolumeTemplates(ctxt context.Context, conn *ApiConnection, path string) *VolumeTemplates {
+func newVolumeTemplates(path string) *VolumeTemplates {
 	return &VolumeTemplates{
 		Path: _path.Join(path, "volume_templates"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 func (e *VolumeTemplates) Create(ro *VolumeTemplatesCreateRequest) (*VolumeTemplatesCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -54,13 +49,12 @@ func (e *VolumeTemplates) Create(ro *VolumeTemplatesCreateRequest) (*VolumeTempl
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.ctxt, e.conn, e.Path)
+	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.Path)
 	return resp, nil
 }
 
 type VolumeTemplatesListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -70,7 +64,7 @@ func (e *VolumeTemplates) List(ro *VolumeTemplatesListRequest) (*VolumeTemplates
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -84,14 +78,13 @@ func (e *VolumeTemplates) List(ro *VolumeTemplatesListRequest) (*VolumeTemplates
 		resp = append(resp, *elem)
 	}
 	for _, r := range resp {
-		r.conn = e.conn
-		r.ctxt = e.ctxt
-		r.SnapshotPoliciesEp = newSnapshotPolicies(e.ctxt, e.conn, e.Path)
+		r.SnapshotPoliciesEp = newSnapshotPolicies(e.Path)
 	}
 	return &resp, nil
 }
 
 type VolumeTemplatesGetRequest struct {
+	Ctxt context.Context `json:"-"`
 	Name string
 }
 
@@ -99,7 +92,7 @@ type VolumeTemplatesGetResponse VolumeTemplate
 
 func (e *VolumeTemplates) Get(ro *VolumeTemplatesGetRequest) (*VolumeTemplatesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Name), gro)
+	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -107,25 +100,24 @@ func (e *VolumeTemplates) Get(ro *VolumeTemplatesGetRequest) (*VolumeTemplatesGe
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.ctxt, e.conn, e.Path)
+	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.Path)
 	return resp, nil
 }
 
 type VolumeTemplateSetRequest struct {
-	PlacementMode   string        `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
-	PlacementPolicy string        `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
-	ReplicaCount    int           `json:"replica_count,omitempty" mapstructure:"replica_count"`
-	Size            int           `json:"size,omitempty" mapstructure:"size"`
-	StoragePool     []StoragePool `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
+	Ctxt            context.Context `json:"-"`
+	PlacementMode   string          `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy string          `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	ReplicaCount    int             `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int             `json:"size,omitempty" mapstructure:"size"`
+	StoragePool     []StoragePool   `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 }
 
 type VolumeTemplateSetResponse VolumeTemplate
 
 func (e *VolumeTemplate) Set(ro *VolumeTemplateSetRequest) (*VolumeTemplateSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -133,20 +125,19 @@ func (e *VolumeTemplate) Set(ro *VolumeTemplateSetRequest) (*VolumeTemplateSetRe
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.ctxt, e.conn, e.Path)
+	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.Path)
 	return resp, nil
 
 }
 
 type VolumeTemplateDeleteRequest struct {
+	Ctxt context.Context `json:"-"`
 }
 
 type VolumeTemplateDeleteResponse VolumeTemplate
 
 func (e *VolumeTemplate) Delete(ro *VolumeTemplateDeleteRequest) (*VolumeTemplateDeleteResponse, error) {
-	rs, err := e.conn.Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -154,8 +145,6 @@ func (e *VolumeTemplate) Delete(ro *VolumeTemplateDeleteRequest) (*VolumeTemplat
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.ctxt, e.conn, e.Path)
+	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.Path)
 	return resp, nil
 }

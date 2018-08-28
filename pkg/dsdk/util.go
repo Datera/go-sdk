@@ -2,6 +2,7 @@ package dsdk
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -229,6 +230,10 @@ func (f *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
 	level := entry.Level
 	t := entry.Time
 	return []byte(fmt.Sprintf("%s %s %s", t.Format(time.RFC3339), strings.ToUpper(level.String()), string(msg))), nil
+}
+
+func GetConn(ctxt context.Context) *ApiConnection {
+	return ctxt.Value("conn").(*ApiConnection)
 }
 
 func init() {

@@ -22,35 +22,30 @@ type Snapshot struct {
 	EffectiveSize   int               `json:"effective_size,omitempty" mapstructure:"effective_size"`
 	Local           bool              `json:"local,omitempty" mapstructure:"local"`
 	AppStructure    string            `json:"app_structure,omitempty" mapstructure:"app_structure"`
-	ctxt            context.Context
-	conn            *ApiConnection
 }
 
 type Snapshots struct {
 	Path string
-	ctxt context.Context
-	conn *ApiConnection
 }
 
 type SnapshotsCreateRequest struct {
-	Uuid               string `json:"uuid,omitempty" mapstructure:"uuid"`
-	RemoteProviderUuid string `json:"remote_provider_uuid,omitempty" mapstructure:"remote_provider_uuid"`
-	Type               string `json:"type,omitempty" mapstructure:"type"`
+	Ctxt               context.Context `json:"-"`
+	Uuid               string          `json:"uuid,omitempty" mapstructure:"uuid"`
+	RemoteProviderUuid string          `json:"remote_provider_uuid,omitempty" mapstructure:"remote_provider_uuid"`
+	Type               string          `json:"type,omitempty" mapstructure:"type"`
 }
 
 type SnapshotsCreateResponse Snapshot
 
-func newSnapshots(ctxt context.Context, conn *ApiConnection, path string) *Snapshots {
+func newSnapshots(path string) *Snapshots {
 	return &Snapshots{
 		Path: _path.Join(path, "snapshots"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 func (e *Snapshots) Create(ro *SnapshotsCreateRequest) (*SnapshotsCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -58,12 +53,11 @@ func (e *Snapshots) Create(ro *SnapshotsCreateRequest) (*SnapshotsCreateResponse
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type SnapshotsListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -73,7 +67,7 @@ func (e *Snapshots) List(ro *SnapshotsListRequest) (*SnapshotsListResponse, erro
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -86,14 +80,11 @@ func (e *Snapshots) List(ro *SnapshotsListRequest) (*SnapshotsListResponse, erro
 		}
 		resp = append(resp, *elem)
 	}
-	for _, init := range resp {
-		init.conn = e.conn
-		init.ctxt = e.ctxt
-	}
 	return &resp, nil
 }
 
 type SnapshotsGetRequest struct {
+	Ctxt      context.Context `json:"-"`
 	Timestamp string
 }
 
@@ -101,7 +92,7 @@ type SnapshotsGetResponse Snapshot
 
 func (e *Snapshots) Get(ro *SnapshotsGetRequest) (*SnapshotsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Timestamp), gro)
+	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Timestamp), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -109,19 +100,18 @@ func (e *Snapshots) Get(ro *SnapshotsGetRequest) (*SnapshotsGetResponse, error) 
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type SnapshotDeleteRequest struct {
-	RemoteProviderUuid string `json:"remote_provider_uuid,omitempty" mapstructure:"remote_provider_uuid"`
+	Ctxt               context.Context `json:"-"`
+	RemoteProviderUuid string          `json:"remote_provider_uuid,omitempty" mapstructure:"remote_provider_uuid"`
 }
 
 type SnapshotDeleteResponse Snapshot
 
 func (e *Snapshot) Delete(ro *SnapshotDeleteRequest) (*SnapshotDeleteResponse, error) {
-	rs, err := e.conn.Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +119,5 @@ func (e *Snapshot) Delete(ro *SnapshotDeleteRequest) (*SnapshotDeleteResponse, e
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }

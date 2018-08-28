@@ -15,32 +15,29 @@ type PerformancePolicy struct {
 	WriteBandwidthMax int    `json:"write_bandwidth_max,omitempty" mapstructure:"write_bandwidth_max"`
 	ReadBandwidthMax  int    `json:"read_bandwidth_max,omitempty" mapstructure:"read_bandwidth_max"`
 	TotalBandwidthMax int    `json:"total_bandwidth_max,omitempty" mapstructure:"total_bandwidth_max"`
-	ctxt              context.Context
-	conn              *ApiConnection
 }
 
 type PerformancePolicyCreateRequest struct {
-	WriteIopsMax      int `json:"write_iops_max,omitempty" mapstructure:"write_iops_max"`
-	ReadIopsMax       int `json:"read_iops_max,omitempty" mapstructure:"read_iops_max"`
-	TotalIopsMax      int `json:"total_iops_max,omitempty" mapstructure:"total_iops_max"`
-	WriteBandwidthMax int `json:"write_bandwidth_max,omitempty" mapstructure:"write_bandwidth_max"`
-	ReadBandwidthMax  int `json:"read_bandwidth_max,omitempty" mapstructure:"read_bandwidth_max"`
-	TotalBandwidthMax int `json:"total_bandwidth_max,omitempty" mapstructure:"total_bandwidth_max"`
+	Ctxt              context.Context `json:"-"`
+	WriteIopsMax      int             `json:"write_iops_max,omitempty" mapstructure:"write_iops_max"`
+	ReadIopsMax       int             `json:"read_iops_max,omitempty" mapstructure:"read_iops_max"`
+	TotalIopsMax      int             `json:"total_iops_max,omitempty" mapstructure:"total_iops_max"`
+	WriteBandwidthMax int             `json:"write_bandwidth_max,omitempty" mapstructure:"write_bandwidth_max"`
+	ReadBandwidthMax  int             `json:"read_bandwidth_max,omitempty" mapstructure:"read_bandwidth_max"`
+	TotalBandwidthMax int             `json:"total_bandwidth_max,omitempty" mapstructure:"total_bandwidth_max"`
 }
 
 type PerformancePolicyCreateResponse PerformancePolicy
 
-func newPerformancePolicy(ctxt context.Context, conn *ApiConnection, path string) *PerformancePolicy {
+func newPerformancePolicy(path string) *PerformancePolicy {
 	return &PerformancePolicy{
 		Path: _path.Join(path, "performance_policy"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 func (e *PerformancePolicy) Create(ro *PerformancePolicyCreateRequest) (*PerformancePolicyCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -48,12 +45,11 @@ func (e *PerformancePolicy) Create(ro *PerformancePolicyCreateRequest) (*Perform
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type PerformancePolicyListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -63,7 +59,7 @@ func (e *PerformancePolicy) List(ro *PerformancePolicyListRequest) (*Performance
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -76,21 +72,18 @@ func (e *PerformancePolicy) List(ro *PerformancePolicyListRequest) (*Performance
 		}
 		resp = append(resp, *elem)
 	}
-	for _, init := range resp {
-		init.conn = e.conn
-		init.ctxt = e.ctxt
-	}
 	return &resp, nil
 }
 
 type PerformancePolicyGetRequest struct {
+	Ctxt context.Context `json:"-"`
 }
 
 type PerformancePolicyGetResponse PerformancePolicy
 
 func (e *PerformancePolicy) Get(ro *PerformancePolicyGetRequest) (*PerformancePolicyGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Get(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -98,25 +91,24 @@ func (e *PerformancePolicy) Get(ro *PerformancePolicyGetRequest) (*PerformancePo
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type PerformancePolicySetRequest struct {
-	WriteIopsMax      int `json:"write_iops_max,omitempty" mapstructure:"write_iops_max"`
-	ReadIopsMax       int `json:"read_iops_max,omitempty" mapstructure:"read_iops_max"`
-	TotalIopsMax      int `json:"total_iops_max,omitempty" mapstructure:"total_iops_max"`
-	WriteBandwidthMax int `json:"write_bandwidth_max,omitempty" mapstructure:"write_bandwidth_max"`
-	ReadBandwidthMax  int `json:"read_bandwidth_max,omitempty" mapstructure:"read_bandwidth_max"`
-	TotalBandwidthMax int `json:"total_bandwidth_max,omitempty" mapstructure:"total_bandwidth_max"`
+	Ctxt              context.Context `json:"-"`
+	WriteIopsMax      int             `json:"write_iops_max,omitempty" mapstructure:"write_iops_max"`
+	ReadIopsMax       int             `json:"read_iops_max,omitempty" mapstructure:"read_iops_max"`
+	TotalIopsMax      int             `json:"total_iops_max,omitempty" mapstructure:"total_iops_max"`
+	WriteBandwidthMax int             `json:"write_bandwidth_max,omitempty" mapstructure:"write_bandwidth_max"`
+	ReadBandwidthMax  int             `json:"read_bandwidth_max,omitempty" mapstructure:"read_bandwidth_max"`
+	TotalBandwidthMax int             `json:"total_bandwidth_max,omitempty" mapstructure:"total_bandwidth_max"`
 }
 
 type PerformancePolicySetResponse PerformancePolicy
 
 func (e *PerformancePolicy) Set(ro *PerformancePolicySetRequest) (*PerformancePolicySetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -124,19 +116,18 @@ func (e *PerformancePolicy) Set(ro *PerformancePolicySetRequest) (*PerformancePo
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 
 }
 
 type PerformancePolicyDeleteRequest struct {
+	Ctxt context.Context `json:"-"`
 }
 
 type PerformancePolicyDeleteResponse PerformancePolicy
 
 func (e *PerformancePolicy) Delete(ro *PerformancePolicyDeleteRequest) (*PerformancePolicyDeleteResponse, error) {
-	rs, err := e.conn.Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +135,5 @@ func (e *PerformancePolicy) Delete(ro *PerformancePolicyDeleteRequest) (*Perform
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }

@@ -54,25 +54,20 @@ type StorageNode struct {
 	Vendor              string             `json:"vendor,omitempty" mapstructure:"vendor"`
 	Volumes             []*Volume          `json:"volumes,omitempty" mapstructure:"volumes"`
 	BootDrivesEp        *BootDrives
-	ctxt                context.Context
-	conn                *ApiConnection
 }
 
 type StorageNodes struct {
 	Path string
-	ctxt context.Context
-	conn *ApiConnection
 }
 
-func newStorageNodes(ctxt context.Context, conn *ApiConnection, path string) *StorageNodes {
+func newStorageNodes(path string) *StorageNodes {
 	return &StorageNodes{
 		Path: _path.Join(path, "storage_nodes"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 type StorageNodesListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -82,7 +77,7 @@ func (e *StorageNodes) List(ro *StorageNodesListRequest) (*StorageNodesListRespo
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -95,14 +90,11 @@ func (e *StorageNodes) List(ro *StorageNodesListRequest) (*StorageNodesListRespo
 		}
 		resp = append(resp, *elem)
 	}
-	for _, init := range resp {
-		init.conn = e.conn
-		init.ctxt = e.ctxt
-	}
 	return &resp, nil
 }
 
 type StorageNodesGetRequest struct {
+	Ctxt context.Context `json:"-"`
 	Uuid string
 }
 
@@ -110,7 +102,7 @@ type StorageNodesGetResponse StorageNode
 
 func (e *StorageNodes) Get(ro *StorageNodesGetRequest) (*StorageNodesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Uuid), gro)
+	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Uuid), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -118,21 +110,20 @@ func (e *StorageNodes) Get(ro *StorageNodesGetRequest) (*StorageNodesGetResponse
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type StorageNodeSetRequest struct {
-	AdminState  string `json:"admin_state,omitempty" mapstructure:"admin_state"`
-	MediaPolicy string `json:"media_policy,omitempty" mapstructure:"media_policy"`
+	Ctxt        context.Context `json:"-"`
+	AdminState  string          `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	MediaPolicy string          `json:"media_policy,omitempty" mapstructure:"media_policy"`
 }
 
 type StorageNodeSetResponse StorageNode
 
 func (e *StorageNode) Set(ro *StorageNodeSetRequest) (*StorageNodeSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -140,8 +131,6 @@ func (e *StorageNode) Set(ro *StorageNodeSetRequest) (*StorageNodeSetResponse, e
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 
 }

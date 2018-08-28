@@ -8,7 +8,7 @@ import (
 )
 
 func testStorageNodes(sdk *dsdk.SDK) error {
-	resp, err := sdk.StorageNodes.List(&dsdk.StorageNodesListRequest{})
+	resp, err := sdk.StorageNodes.List(&dsdk.StorageNodesListRequest{Ctxt: sdk.Context()})
 	if err != nil {
 		return err
 	}
@@ -20,7 +20,7 @@ func testStorageNodes(sdk *dsdk.SDK) error {
 }
 
 func testIpPools(sdk *dsdk.SDK) error {
-	resp, err := sdk.AccessNetworkIpPools.List(&dsdk.AccessNetworkIpPoolsListRequest{})
+	resp, err := sdk.AccessNetworkIpPools.List(&dsdk.AccessNetworkIpPoolsListRequest{Ctxt: sdk.Context()})
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func testIpPools(sdk *dsdk.SDK) error {
 }
 
 func testStoragePools(sdk *dsdk.SDK) error {
-	resp, err := sdk.StoragePools.List(&dsdk.StoragePoolsListRequest{})
+	resp, err := sdk.StoragePools.List(&dsdk.StoragePoolsListRequest{Ctxt: sdk.Context()})
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func testStoragePools(sdk *dsdk.SDK) error {
 }
 
 func testInitiators(sdk *dsdk.SDK) error {
-	resp, err := sdk.Initiators.List(&dsdk.InitiatorsListRequest{})
+	resp, err := sdk.Initiators.List(&dsdk.InitiatorsListRequest{Ctxt: sdk.Context()})
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func testInitiators(sdk *dsdk.SDK) error {
 }
 
 func testInitiatorGroups(sdk *dsdk.SDK) error {
-	resp, err := sdk.InitiatorGroups.List(&dsdk.InitiatorGroupsListRequest{})
+	resp, err := sdk.InitiatorGroups.List(&dsdk.InitiatorGroupsListRequest{Ctxt: sdk.Context()})
 	if err != nil {
 		return err
 	}
@@ -79,6 +79,7 @@ func createAi(sdk *dsdk.SDK) (*dsdk.AppInstance, error) {
 		Volumes: []*dsdk.Volume{vol},
 	}
 	aiReq := dsdk.AppInstancesCreateRequest{
+		Ctxt:             sdk.Context(),
 		Name:             "my-test-ai",
 		StorageInstances: []*dsdk.StorageInstance{si},
 	}
@@ -98,32 +99,34 @@ func testAclPolicy(sdk *dsdk.SDK) error {
 	}
 	defer func() {
 		_, err = ai.Set(&dsdk.AppInstanceSetRequest{
+			Ctxt:       sdk.Context(),
 			AdminState: "offline",
 		})
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		_, err := ai.Delete(&dsdk.AppInstanceDeleteRequest{})
+		_, err := ai.Delete(&dsdk.AppInstanceDeleteRequest{Ctxt: sdk.Context()})
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 	}()
 	time.Sleep(time.Second / 2)
-	fmt.Printf("\nAI: %#v\n", ai)
-	// si := ai.StorageInstances[0]
-	// resp, err := si.AclPolicy.Get(&dsdk.AclPolicyGetRequest{})
-	// if err != nil {
-	// 	return err
-	// }
-	// acl := dsdk.AclPolicy(*resp)
-	// fmt.Println(acl)
+
+	si := ai.StorageInstances[0]
+	fmt.Printf("\nACL Policy: %#v\n", si.AclPolicy)
+	resp, err := si.AclPolicy.Get(&dsdk.AclPolicyGetRequest{Ctxt: sdk.Context()})
+	if err != nil {
+		return err
+	}
+	acl := dsdk.AclPolicy(*resp)
+	fmt.Println(acl)
 	return nil
 }
 
 func testTenants(sdk *dsdk.SDK) error {
-	resp, err := sdk.Tenants.List(&dsdk.TenantsListRequest{})
+	resp, err := sdk.Tenants.List(&dsdk.TenantsListRequest{Ctxt: sdk.Context()})
 	if err != nil {
 		return err
 	}

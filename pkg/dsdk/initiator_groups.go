@@ -11,35 +11,30 @@ type InitiatorGroup struct {
 	Path    string      `json:"path,omitempty" mapstructure:"path"`
 	Name    string      `json:"name,omitempty" mapstructure:"name"`
 	Members []Initiator `json:"members,omitempty" mapstructure:"members"`
-	ctxt    context.Context
-	conn    *ApiConnection
 }
 
 type InitiatorGroups struct {
 	Path string
-	ctxt context.Context
-	conn *ApiConnection
 }
 
 type InitiatorGroupsCreateRequest struct {
-	Id    string `json:"id,omitempty" mapstructure:"id"`
-	Name  string `json:"name,omitempty" mapstructure:"name"`
-	Force bool   `json:"force,omitempty" mapstructure:"force"`
+	Ctxt  context.Context `json:"-"`
+	Id    string          `json:"id,omitempty" mapstructure:"id"`
+	Name  string          `json:"name,omitempty" mapstructure:"name"`
+	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
 type InitiatorGroupsCreateResponse InitiatorGroup
 
-func newInitiatorGroups(ctxt context.Context, conn *ApiConnection, path string) *InitiatorGroups {
+func newInitiatorGroups(path string) *InitiatorGroups {
 	return &InitiatorGroups{
 		Path: _path.Join(path, "initiator_groups"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 func (e *InitiatorGroups) Create(ro *InitiatorGroupsCreateRequest) (*InitiatorGroupsCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -47,12 +42,11 @@ func (e *InitiatorGroups) Create(ro *InitiatorGroupsCreateRequest) (*InitiatorGr
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type InitiatorGroupsListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -62,7 +56,7 @@ func (e *InitiatorGroups) List(ro *InitiatorGroupsListRequest) (*InitiatorGroups
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -75,14 +69,11 @@ func (e *InitiatorGroups) List(ro *InitiatorGroupsListRequest) (*InitiatorGroups
 		}
 		resp = append(resp, *elem)
 	}
-	for _, init := range resp {
-		init.conn = e.conn
-		init.ctxt = e.ctxt
-	}
 	return &resp, nil
 }
 
 type InitiatorGroupsGetRequest struct {
+	Ctxt context.Context `json:"-"`
 	Name string
 }
 
@@ -90,7 +81,7 @@ type InitiatorGroupsGetResponse InitiatorGroup
 
 func (e *InitiatorGroups) Get(ro *InitiatorGroupsGetRequest) (*InitiatorGroupsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Name), gro)
+	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -98,20 +89,19 @@ func (e *InitiatorGroups) Get(ro *InitiatorGroupsGetRequest) (*InitiatorGroupsGe
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }
 
 type InitiatorGroupSetRequest struct {
-	Members []Initiator `json:"members,omitempty" mapstructure:"members"`
+	Ctxt    context.Context `json:"-"`
+	Members []Initiator     `json:"members,omitempty" mapstructure:"members"`
 }
 
 type InitiatorGroupSetResponse InitiatorGroup
 
 func (e *InitiatorGroup) Set(ro *InitiatorGroupSetRequest) (*InitiatorGroupSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -119,20 +109,19 @@ func (e *InitiatorGroup) Set(ro *InitiatorGroupSetRequest) (*InitiatorGroupSetRe
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 
 }
 
 type InitiatorGroupDeleteRequest struct {
-	Id string `json:"id,omitempty" mapstructure:"id"`
+	Ctxt context.Context `json:"-"`
+	Id   string          `json:"id,omitempty" mapstructure:"id"`
 }
 
 type InitiatorGroupDeleteResponse InitiatorGroup
 
 func (e *InitiatorGroup) Delete(ro *InitiatorGroupDeleteRequest) (*InitiatorGroupDeleteResponse, error) {
-	rs, err := e.conn.Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +129,5 @@ func (e *InitiatorGroup) Delete(ro *InitiatorGroupDeleteRequest) (*InitiatorGrou
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
 	return resp, nil
 }

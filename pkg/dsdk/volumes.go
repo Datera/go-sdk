@@ -34,38 +34,33 @@ type Volume struct {
 	Uuid                string             `json:"uuid,omitempty" mapstructure:"uuid"`
 	SnapshotsEp         *Snapshots         `json:"-"`
 	PerformancePolicyEp *PerformancePolicy `json:"-"`
-	ctxt                context.Context
-	conn                *ApiConnection
 }
 
 type Volumes struct {
 	Path string
-	ctxt context.Context
-	conn *ApiConnection
 }
 
 type VolumesCreateRequest struct {
-	Name            string `json:"name,omitempty" mapstructure:"name"`
-	ReplicaCount    int    `json:"replica_count,omitempty" mapstructure:"replica_count"`
-	Size            int    `json:"size,omitempty" mapstructure:"size"`
-	PlacementMode   string `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
-	PlacementPolicy string `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
-	Force           bool   `json:"force,omitempty" mapstructure:"force"`
+	Ctxt            context.Context `json:"-"`
+	Name            string          `json:"name,omitempty" mapstructure:"name"`
+	ReplicaCount    int             `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int             `json:"size,omitempty" mapstructure:"size"`
+	PlacementMode   string          `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy string          `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	Force           bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
 type VolumesCreateResponse Volume
 
-func newVolumes(ctxt context.Context, conn *ApiConnection, path string) *Volumes {
+func newVolumes(path string) *Volumes {
 	return &Volumes{
 		Path: _path.Join(path, "volumes"),
-		ctxt: ctxt,
-		conn: conn,
 	}
 }
 
 func (e *Volumes) Create(ro *VolumesCreateRequest) (*VolumesCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -73,13 +68,12 @@ func (e *Volumes) Create(ro *VolumesCreateRequest) (*VolumesCreateResponse, erro
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.SnapshotsEp = newSnapshots(e.ctxt, e.conn, e.Path)
+	resp.SnapshotsEp = newSnapshots(e.Path)
 	return resp, nil
 }
 
 type VolumesListRequest struct {
+	Ctxt   context.Context `json:"-"`
 	Params map[string]string
 }
 
@@ -89,7 +83,7 @@ func (e *Volumes) List(ro *VolumesListRequest) (*VolumesListResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := e.conn.GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -103,22 +97,21 @@ func (e *Volumes) List(ro *VolumesListRequest) (*VolumesListResponse, error) {
 		resp = append(resp, *elem)
 	}
 	for _, r := range resp {
-		r.conn = e.conn
-		r.ctxt = e.ctxt
-		r.SnapshotsEp = newSnapshots(e.ctxt, e.conn, e.Path)
+		r.SnapshotsEp = newSnapshots(e.Path)
 	}
 	return &resp, nil
 }
 
 type VolumesGetRequest struct {
-	Name string `json:"name,omitempty" mapstructure:"name"`
+	Ctxt context.Context `json:"-"`
+	Name string          `json:"name,omitempty" mapstructure:"name"`
 }
 
 type VolumesGetResponse Volume
 
 func (e *Volumes) Get(ro *VolumesGetRequest) (*VolumesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Get(_path.Join(e.Path, ro.Name), gro)
+	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -126,26 +119,25 @@ func (e *Volumes) Get(ro *VolumesGetRequest) (*VolumesGetResponse, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.SnapshotsEp = newSnapshots(e.ctxt, e.conn, e.Path)
+	resp.SnapshotsEp = newSnapshots(e.Path)
 	return resp, nil
 }
 
 type VolumeSetRequest struct {
-	ReplicaCount    int            `json:"replica_count,omitempty" mapstructure:"replica_count"`
-	Size            int            `json:"size,omitempty" mapstructure:"size"`
-	PlacementMode   string         `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
-	PlacementPolicy string         `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
-	RestorePoint    string         `json:"restore_point,omitempty" mapstructure:"restore_point"`
-	StoragePool     []*StoragePool `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
+	Ctxt            context.Context `json:"-"`
+	ReplicaCount    int             `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int             `json:"size,omitempty" mapstructure:"size"`
+	PlacementMode   string          `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy string          `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	RestorePoint    string          `json:"restore_point,omitempty" mapstructure:"restore_point"`
+	StoragePool     []*StoragePool  `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 }
 
 type VolumeSetResponse Volume
 
 func (e *Volume) Set(ro *VolumeSetRequest) (*VolumeSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := e.conn.Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -153,20 +145,19 @@ func (e *Volume) Set(ro *VolumeSetRequest) (*VolumeSetResponse, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.SnapshotsEp = newSnapshots(e.ctxt, e.conn, e.Path)
+	resp.SnapshotsEp = newSnapshots(e.Path)
 	return resp, nil
 
 }
 
 type VolumeDeleteRequest struct {
+	Ctxt context.Context `json:"-"`
 }
 
 type VolumeDeleteResponse Volume
 
 func (e *Volume) Delete(ro *VolumeDeleteRequest) (*VolumeDeleteResponse, error) {
-	rs, err := e.conn.Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -174,8 +165,6 @@ func (e *Volume) Delete(ro *VolumeDeleteRequest) (*VolumeDeleteResponse, error) 
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.conn = e.conn
-	resp.ctxt = e.ctxt
-	resp.SnapshotsEp = newSnapshots(e.ctxt, e.conn, e.Path)
+	resp.SnapshotsEp = newSnapshots(e.Path)
 	return resp, nil
 }
