@@ -15,7 +15,7 @@ func TestApiVersions(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	Conn := dsdk.NewApiConnection(context.Background(), c, false)
+	conn := dsdk.NewApiConnection(c, false)
 	apiv := conn.ApiVersions()
 	if len(apiv) != 3 {
 		t.Errorf("%d", len(apiv))
@@ -27,8 +27,8 @@ func TestConnAuth(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	Conn := dsdk.NewApiConnection(context.Background(), c, false)
-	err = conn.Login()
+	conn := dsdk.NewApiConnection(c, false)
+	err = conn.Login(context.Background())
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -39,8 +39,8 @@ func TestConnReAuth(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	Conn := dsdk.NewApiConnection(context.Background(), c, false)
-	_, err = conn.GetList("app_instances", nil)
+	conn := dsdk.NewApiConnection(c, false)
+	_, err = conn.GetList(context.Background(), "app_instances", nil)
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -51,7 +51,7 @@ func TestCreateInitiator(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	Conn := dsdk.NewApiConnection(context.Background(), c, false)
+	conn := dsdk.NewApiConnection(c, false)
 	id := fmt.Sprintf("iqn.1993-08.org.debian:01:%s", dsdk.RandString(12))
 	ro := &greq.RequestOptions{
 		Data: map[string]string{
@@ -60,12 +60,12 @@ func TestCreateInitiator(t *testing.T) {
 			"force": "true",
 		},
 	}
-	_, err = conn.Post("initiators", ro)
+	_, err = conn.Post(context.Background(), "initiators", ro)
 	if err != nil {
 		t.Errorf("%s", err)
 	}
 	ro = &greq.RequestOptions{}
-	_, err = conn.Delete(fmt.Sprintf("initiators/%s", id), ro)
+	_, err = conn.Delete(context.Background(), fmt.Sprintf("initiators/%s", id), ro)
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -76,7 +76,7 @@ func TestCreateAi(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s", err)
 	}
-	Conn := dsdk.NewApiConnection(context.Background(), c, false)
+	conn := dsdk.NewApiConnection(c, false)
 	ro := &greq.RequestOptions{
 		Data: map[string]string{
 			"id":    fmt.Sprintf("iqn.1993-08.org.debian:01:%s", dsdk.RandString(12)),
@@ -84,7 +84,7 @@ func TestCreateAi(t *testing.T) {
 			"force": "true",
 		},
 	}
-	_, err = conn.Post("initiators", ro)
+	_, err = conn.Post(context.Background(), "initiators", ro)
 	if err != nil {
 		t.Errorf("%s", err)
 	}

@@ -67,7 +67,7 @@ func (c SDK) Context(kv *map[string]string) context.Context {
 // Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under
 // the currently configured tenant
 func (c SDK) HealthCheck() error {
-	resp, err := c.StorageNodes.List(&StorageNodesListRequest{})
+	resp, err := c.StorageNodes.List(&StorageNodesListRequest{Ctxt: c.Context(nil)})
 	if err != nil {
 		return err
 	}

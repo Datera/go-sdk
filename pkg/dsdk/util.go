@@ -9,6 +9,7 @@ import (
 	"text/template"
 	"time"
 
+	structs "github.com/fatih/structs"
 	mapstructure "github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 )
@@ -222,6 +223,10 @@ func FillStruct(m map[string]interface{}, s interface{}) error {
 	return mapstructure.Decode(m, s)
 }
 
+func ToMap(s interface{}) map[string]interface{} {
+	return structs.Map(s)
+}
+
 type LogFormatter struct {
 }
 
@@ -233,12 +238,12 @@ func (f *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
 }
 
 func GetConn(ctxt context.Context) *ApiConnection {
-	conn, ok := ctxt.Value("conn").(*ApiConnection)
-	if ok != true {
+	conn := ctxt.Value("conn")
+	if conn.(*ApiConnection) == nil {
 		panic("You MUST provide a context object containing a *ApiConnection for requests." +
 			"Use sdk.Context() to obtain the context object")
 	}
-	return conn
+	return conn.(*ApiConnection)
 }
 
 func init() {
