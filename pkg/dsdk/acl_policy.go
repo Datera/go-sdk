@@ -8,9 +8,9 @@ import (
 )
 
 type AclPolicy struct {
-	Path            string            `json:"path,omitempty" mapstructure:"path"`
-	Initiators      []Initiator       `json:"initiators,omitempty" mapstructure:"initiators"`
-	InitiatorGroups []InitiatorGroups `json:"initiator_groups,omitempty" mapstructure:"initiator_groups"`
+	Path            string             `json:"path,omitempty" mapstructure:"path"`
+	Initiators      []*Initiator       `json:"initiators,omitempty" mapstructure:"initiators"`
+	InitiatorGroups []*InitiatorGroups `json:"initiator_groups,omitempty" mapstructure:"initiator_groups"`
 }
 
 func newAclPolicy(path string) *AclPolicy {
@@ -27,7 +27,7 @@ type AclPolicyGetResponse AclPolicy
 
 func (e *AclPolicy) Get(ro *AclPolicyGetRequest) (*AclPolicyGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -39,16 +39,16 @@ func (e *AclPolicy) Get(ro *AclPolicyGetRequest) (*AclPolicyGetResponse, error) 
 }
 
 type AclPolicySetRequest struct {
-	Ctxt            context.Context   `json:"-"`
-	Initiators      []Initiator       `json:"initiators,omitempty" mapstructure:"initiators"`
-	InitiatorGroups []InitiatorGroups `json:"initiator_groups,omitempty" mapstructure:"initiator_groups"`
+	Ctxt            context.Context    `json:"-"`
+	Initiators      []*Initiator       `json:"initiators,omitempty" mapstructure:"initiators"`
+	InitiatorGroups []*InitiatorGroups `json:"initiator_groups,omitempty" mapstructure:"initiator_groups"`
 }
 
 type AclPolicySetResponse AclPolicy
 
 func (e *AclPolicy) Set(ro *AclPolicySetRequest) (*AclPolicySetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}

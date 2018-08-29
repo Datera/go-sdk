@@ -60,7 +60,7 @@ func newVolumes(path string) *Volumes {
 
 func (e *Volumes) Create(ro *VolumesCreateRequest) (*VolumesCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (e *Volumes) List(ro *VolumesListRequest) (*VolumesListResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ type VolumesGetResponse Volume
 
 func (e *Volumes) Get(ro *VolumesGetRequest) (*VolumesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Name), gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ type VolumeSetResponse Volume
 
 func (e *Volume) Set(ro *VolumeSetRequest) (*VolumeSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ type VolumeDeleteRequest struct {
 type VolumeDeleteResponse Volume
 
 func (e *Volume) Delete(ro *VolumeDeleteRequest) (*VolumeDeleteResponse, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -45,7 +45,7 @@ func newSnapshots(path string) *Snapshots {
 
 func (e *Snapshots) Create(ro *SnapshotsCreateRequest) (*SnapshotsCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (e *Snapshots) List(ro *SnapshotsListRequest) (*SnapshotsListResponse, erro
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ type SnapshotsGetResponse Snapshot
 
 func (e *Snapshots) Get(ro *SnapshotsGetRequest) (*SnapshotsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Timestamp), gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Timestamp), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ type SnapshotDeleteRequest struct {
 type SnapshotDeleteResponse Snapshot
 
 func (e *Snapshot) Delete(ro *SnapshotDeleteRequest) (*SnapshotDeleteResponse, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}

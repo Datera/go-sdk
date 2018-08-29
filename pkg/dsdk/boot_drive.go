@@ -38,7 +38,7 @@ func (e *BootDrives) List(ro *BootDrivesListRequest) (*BootDrivesListResponse, e
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ type BootDrivesGetResponse BootDrive
 
 func (e *BootDrives) Get(ro *BootDrivesGetRequest) (*BootDrivesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Id), gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
 	if err != nil {
 		return nil, err
 	}

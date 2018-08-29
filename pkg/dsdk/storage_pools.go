@@ -33,7 +33,7 @@ func newStoragePools(path string) *StoragePools {
 
 func (e *StoragePools) Create(ro *StoragePoolsCreateRequest) (*StoragePoolsCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (e *StoragePools) List(ro *StoragePoolsListRequest) (*StoragePoolsListRespo
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ type StoragePoolsGetResponse StoragePool
 
 func (e *StoragePools) Get(ro *StoragePoolsGetRequest) (*StoragePoolsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Uuid), gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Uuid), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ type StoragePoolSetResponse StoragePool
 
 func (e *StoragePool) Set(ro *StoragePoolSetRequest) (*StoragePoolSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ type StoragePoolDeleteRequest struct {
 type StoragePoolDeleteResponse StoragePool
 
 func (e *StoragePool) Delete(ro *StoragePoolDeleteRequest) (*StoragePoolDeleteResponse, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}

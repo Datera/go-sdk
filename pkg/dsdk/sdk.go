@@ -4,6 +4,7 @@ import (
 	"context"
 
 	udc "github.com/Datera/go-udc/pkg/udc"
+	uuid "github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,11 +38,9 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 			return nil, err
 		}
 	}
-	ctxt := context.Background()
-	conn := NewApiConnection(ctxt, c, secure)
+	conn := NewApiConnection(c, secure)
 	return &SDK{
 		conf:                 c,
-		Ctxt:                 ctxt,
 		Conn:                 conn,
 		AccessNetworkIpPools: newAccessNetworkIpPools("/"),
 		AppInstances:         newAppInstances("/"),
@@ -54,9 +53,14 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 	}, nil
 }
 
-func (c SDK) Context() context.Context {
-	ctxt := context.WithValue(c.Ctxt, "conn", c.Conn)
-	ctxt = context.WithValue(ctxt, "tid", RandString(34))
+func (c SDK) Context(kv *map[string]string) context.Context {
+	ctxt := context.WithValue(context.Background(), "conn", c.Conn)
+	ctxt = context.WithValue(ctxt, "tid", uuid.Must(uuid.NewRandom()).String())
+	if kv != nil {
+		for k, v := range *kv {
+			ctxt = context.WithValue(ctxt, k, v)
+		}
+	}
 	return ctxt
 }
 

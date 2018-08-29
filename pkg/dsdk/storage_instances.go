@@ -54,7 +54,7 @@ func newStorageInstances(path string) *StorageInstances {
 
 func (e *StorageInstances) Create(ro *StorageInstancesCreateRequest) (*StorageInstancesCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (e *StorageInstances) List(ro *StorageInstancesListRequest) (*StorageInstan
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ type StorageInstancesGetResponse StorageInstance
 
 func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstancesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Name), gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ type StorageInstanceSetResponse StorageInstance
 
 func (e *StorageInstance) Set(ro *StorageInstanceSetRequest) (*StorageInstanceSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ type StorageInstanceDeleteRequest struct {
 type StorageInstanceDeleteResponse StorageInstance
 
 func (e *StorageInstance) Delete(ro *StorageInstanceDeleteRequest) (*StorageInstanceDeleteResponse, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}

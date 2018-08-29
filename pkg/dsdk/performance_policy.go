@@ -37,7 +37,7 @@ func newPerformancePolicy(path string) *PerformancePolicy {
 
 func (e *PerformancePolicy) Create(ro *PerformancePolicyCreateRequest) (*PerformancePolicyCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (e *PerformancePolicy) List(ro *PerformancePolicyListRequest) (*Performance
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ type PerformancePolicyGetResponse PerformancePolicy
 
 func (e *PerformancePolicy) Get(ro *PerformancePolicyGetRequest) (*PerformancePolicyGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ type PerformancePolicySetResponse PerformancePolicy
 
 func (e *PerformancePolicy) Set(ro *PerformancePolicySetRequest) (*PerformancePolicySetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ type PerformancePolicyDeleteRequest struct {
 type PerformancePolicyDeleteResponse PerformancePolicy
 
 func (e *PerformancePolicy) Delete(ro *PerformancePolicyDeleteRequest) (*PerformancePolicyDeleteResponse, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}

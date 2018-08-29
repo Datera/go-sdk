@@ -40,7 +40,7 @@ func newTenants(path string) *Tenants {
 
 func (e *Tenants) Create(ro *TenantsCreateRequest) (*TenantsCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (e *Tenants) List(ro *TenantsListRequest) (*TenantsListResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ type TenantsGetResponse Tenant
 
 func (e *Tenants) Get(ro *TenantsGetRequest) (*TenantsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Path), gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Path), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ type TenantSetResponse Tenant
 
 func (e *Tenant) Set(ro *TenantSetRequest) (*TenantSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ type TenantDeleteRequest struct {
 type TenantDeleteResponse Tenant
 
 func (e *Tenant) Delete(ro *TenantDeleteRequest) (*TenantDeleteResponse, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}

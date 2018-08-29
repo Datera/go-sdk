@@ -29,7 +29,6 @@ var (
 )
 
 type ApiConnection struct {
-	ctxt       context.Context
 	username   string
 	password   string
 	apiVersion string
@@ -117,16 +116,10 @@ func checkResponse(resp *greq.Response, err error, retry bool) (*ErrorResponse, 
 	return nil, nil
 }
 
-func (c *ApiConnection) do(method, url string, ro *greq.RequestOptions, rs interface{}, retry, sensitive bool) error {
+func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, retry, sensitive bool) error {
 	gurl := *c.baseUrl
 	gurl.Path = path.Join(gurl.Path, url)
-	reqId, err := uuid.NewRandom()
-	var sreqId string
-	if err != nil {
-		log.Errorf("Couldn't generate a uuid4 id: %s", err)
-	} else {
-		sreqId = reqId.String()
-	}
+	reqId := uuid.Must(uuid.NewRandom()).String()
 	sdata, err := json.Marshal(ro.JSON)
 	if err != nil {
 		log.Errorf("Couldn't stringify data, %s", ro.JSON)
@@ -138,13 +131,17 @@ func (c *ApiConnection) do(method, url string, ro *greq.RequestOptions, rs inter
 	if err != nil {
 		log.Errorf("Couldn't stringify headers, %s", ro.Headers)
 	}
+	tid, ok := ctxt.Value("tid").(string)
+	if !ok {
+		tid = "nil"
+	}
 	log.Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
 		"Datera Request ID: %s",
 		"Datera Request URL: %s",
 		"Datera Request Method: %s",
 		"Datera Request Payload: %s",
 		"Datera Request Headers: %s\n"}, "\n"),
-		"nil", sreqId, gurl.String(), method, string(sdata), sheaders)
+		tid, reqId, gurl.String(), method, string(sdata), sheaders)
 	t1 := time.Now()
 	resp, err := greq.DoRegularRequest(method, gurl.String(), ro)
 	t2 := time.Now()
@@ -155,15 +152,15 @@ func (c *ApiConnection) do(method, url string, ro *greq.RequestOptions, rs inter
 		"Datera Response URL: %s",
 		"Datera Response Payload: %s",
 		"Datera Response Object: %s\n"}, "\n"),
-		"nil", sreqId, tDelta.Seconds(), gurl.String(), resp.String(), "nil")
+		tid, reqId, tDelta.Seconds(), gurl.String(), resp.String(), "nil")
 	eresp, err := checkResponse(resp, err, retry)
 	if err == badStatus[RetryRequestAfterLogin] {
-		if err2 := c.Login(); err2 != nil {
+		if err2 := c.Login(ctxt); err2 != nil {
 			log.Errorf("%s", err)
 			log.Errorf("%s", err2)
 			return err2
 		}
-		return c.do(method, url, ro, rs, false, sensitive)
+		return c.do(ctxt, method, url, ro, rs, false, sensitive)
 	}
 	if err != nil || eresp != nil {
 		log.Error(err)
@@ -178,27 +175,26 @@ func (c *ApiConnection) do(method, url string, ro *greq.RequestOptions, rs inter
 	return nil
 }
 
-func (c *ApiConnection) doWithAuth(method, url string, ro *greq.RequestOptions, rs interface{}) error {
+func (c *ApiConnection) doWithAuth(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}) error {
 	if ro == nil {
 		ro = &greq.RequestOptions{}
 	}
 	if c.apikey == "" {
-		if err := c.Login(); err != nil {
+		if err := c.Login(ctxt); err != nil {
 			log.Errorf("Login failure: %s", err)
 			return err
 		}
 	}
 	ro.Headers = map[string]string{"tenant": c.tenant, "Auth-Token": c.apikey}
-	return c.do(method, url, ro, rs, true, false)
+	return c.do(ctxt, method, url, ro, rs, true, false)
 }
 
-func NewApiConnection(ctxt context.Context, c *udc.UDC, secure bool) *ApiConnection {
+func NewApiConnection(c *udc.UDC, secure bool) *ApiConnection {
 	url, err := makeBaseUrl(c.MgmtIp, c.ApiVersion, secure)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
 	return &ApiConnection{
-		ctxt:       ctxt,
 		username:   c.Username,
 		password:   c.Password,
 		apiVersion: c.ApiVersion,
@@ -208,34 +204,34 @@ func NewApiConnection(ctxt context.Context, c *udc.UDC, secure bool) *ApiConnect
 	}
 }
 
-func (c *ApiConnection) Get(url string, ro *greq.RequestOptions) (*ApiOuter, error) {
+func (c *ApiConnection) Get(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, error) {
 	rs := &ApiOuter{}
-	err := c.doWithAuth("GET", url, ro, rs)
+	err := c.doWithAuth(ctxt, "GET", url, ro, rs)
 	return rs, err
 }
 
-func (c *ApiConnection) GetList(url string, ro *greq.RequestOptions) (*ApiListOuter, error) {
+func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiListOuter, error) {
 	rs := &ApiListOuter{}
 	// TODO:(_alastor_) handle pulling paged entries
-	err := c.doWithAuth("GET", url, ro, rs)
+	err := c.doWithAuth(ctxt, "GET", url, ro, rs)
 	return rs, err
 }
 
-func (c *ApiConnection) Put(url string, ro *greq.RequestOptions) (*ApiOuter, error) {
+func (c *ApiConnection) Put(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, error) {
 	rs := &ApiOuter{}
-	err := c.doWithAuth("PUT", url, ro, rs)
+	err := c.doWithAuth(ctxt, "PUT", url, ro, rs)
 	return rs, err
 }
 
-func (c *ApiConnection) Post(url string, ro *greq.RequestOptions) (*ApiOuter, error) {
+func (c *ApiConnection) Post(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, error) {
 	rs := &ApiOuter{}
-	err := c.doWithAuth("POST", url, ro, rs)
+	err := c.doWithAuth(ctxt, "POST", url, ro, rs)
 	return rs, err
 }
 
-func (c *ApiConnection) Delete(url string, ro *greq.RequestOptions) (*ApiOuter, error) {
+func (c *ApiConnection) Delete(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, error) {
 	rs := &ApiOuter{}
-	err := c.doWithAuth("DELETE", url, ro, rs)
+	err := c.doWithAuth(ctxt, "DELETE", url, ro, rs)
 	return rs, err
 }
 
@@ -251,12 +247,12 @@ func (c *ApiConnection) ApiVersions() []string {
 	return apiv.ApiVersions
 }
 
-func (c *ApiConnection) Login() error {
+func (c *ApiConnection) Login(ctxt context.Context) error {
 	login := &ApiLogin{}
 	ro := &greq.RequestOptions{
 		Data: map[string]string{"name": "admin", "password": "password"},
 	}
-	err := c.do("PUT", "login", ro, login, false, true)
+	err := c.do(ctxt, "PUT", "login", ro, login, false, true)
 	c.apikey = login.Key
 	return err
 }

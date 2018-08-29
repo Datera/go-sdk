@@ -64,7 +64,7 @@ func newAppInstances(path string) *AppInstances {
 
 func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstancesCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (e *AppInstances) List(ro *AppInstancesListRequest) (*AppInstancesListRespo
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ type AppInstancesGetResponse AppInstance
 
 func (e *AppInstances) Get(ro *AppInstancesGetRequest) (*AppInstancesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Id), gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ type AppInstanceSetResponse AppInstance
 
 func (e *AppInstance) Set(ro *AppInstanceSetRequest) (*AppInstanceSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ type AppInstanceDeleteRequest struct {
 type AppInstanceDeleteResponse AppInstance
 
 func (e *AppInstance) Delete(ro *AppInstanceDeleteRequest) (*AppInstanceDeleteResponse, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}

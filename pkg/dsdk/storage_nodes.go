@@ -77,7 +77,7 @@ func (e *StorageNodes) List(ro *StorageNodesListRequest) (*StorageNodesListRespo
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ type StorageNodesGetResponse StorageNode
 
 func (e *StorageNodes) Get(ro *StorageNodesGetRequest) (*StorageNodesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Uuid), gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Uuid), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ type StorageNodeSetResponse StorageNode
 
 func (e *StorageNode) Set(ro *StorageNodeSetRequest) (*StorageNodeSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}

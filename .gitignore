@@ -9,4 +9,5 @@ golang.org/*
 gopkg.in/*
 *.log
 *.txt
-
+tags
+cached_api

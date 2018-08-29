@@ -40,7 +40,7 @@ func newAppTemplates(path string) *AppTemplates {
 
 func (e *AppTemplates) Create(ro *AppTemplatesCreateRequest) (*AppTemplatesCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (e *AppTemplates) List(ro *AppTemplatesListRequest) (*AppTemplatesListRespo
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ type AppTemplatesGetResponse AppTemplate
 
 func (e *AppTemplates) Get(ro *AppTemplatesGetRequest) (*AppTemplatesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Name), gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ type AppTemplateSetResponse AppTemplate
 
 func (e *AppTemplate) Set(ro *AppTemplateSetRequest) (*AppTemplateSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +135,7 @@ type AppTemplateDeleteRequest struct {
 type AppTemplateDeleteResponse AppTemplate
 
 func (e *AppTemplate) Delete(ro *AppTemplateDeleteRequest) (*AppTemplateDeleteResponse, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}

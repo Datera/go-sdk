@@ -41,7 +41,7 @@ func newStorageTemplates(path string) *StorageTemplates {
 
 func (e *StorageTemplates) Create(ro *StorageTemplatesCreateRequest) (*StorageTemplatesCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (e *StorageTemplates) List(ro *StorageTemplatesListRequest) (*StorageTempla
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ type StorageTemplatesGetResponse StorageTemplate
 
 func (e *StorageTemplates) Get(ro *StorageTemplatesGetRequest) (*StorageTemplatesGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Name), gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ type StorageTemplateSetResponse StorageTemplate
 
 func (e *StorageTemplate) Set(ro *StorageTemplateSetRequest) (*StorageTemplateSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ type StorageTemplateDeleteRequest struct {
 type StorageTemplateDeleteResponse StorageTemplate
 
 func (e *StorageTemplate) Delete(ro *StorageTemplateDeleteRequest) (*StorageTemplateDeleteResponse, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}

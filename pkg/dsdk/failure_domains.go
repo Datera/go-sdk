@@ -33,7 +33,7 @@ func newFailureDomains(path string) *FailureDomains {
 
 func (e *FailureDomains) Create(ro *FailureDomainsCreateRequest) (*FailureDomainsCreateResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (e *FailureDomains) List(ro *FailureDomainsListRequest) (*FailureDomainsLis
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ type FailureDomainsGetResponse FailureDomain
 
 func (e *FailureDomains) Get(ro *FailureDomainsGetRequest) (*FailureDomainsGetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(_path.Join(e.Path, ro.Id), gro)
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ type FailureDomainSetResponse FailureDomain
 
 func (e *FailureDomain) Set(ro *FailureDomainSetRequest) (*FailureDomainSetResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(e.Path, gro)
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ type FailureDomainDeleteRequest struct {
 type FailureDomainDeleteResponse FailureDomain
 
 func (e *FailureDomain) Delete(ro *FailureDomainDeleteRequest) (*FailureDomainDeleteResponse, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(e.Path, nil)
+	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
