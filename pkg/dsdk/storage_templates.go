@@ -13,8 +13,15 @@ type StorageTemplate struct {
 	Name                 string               `json:"name,omitempty" mapstructure:"name"`
 	IpPool               *AccessNetworkIpPool `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
 	ServiceConfiguration string               `json:"service_configuration,omitempty" mapstructure:"service_configuration"`
-	VolumeTemplates      []VolumeTemplates    `json:"volume_templates,omitempty" mapstructure:"volume_templates"`
+	VolumeTemplates      []*VolumeTemplate    `json:"volume_templates,omitempty" mapstructure:"volume_templates"`
 	VolumeTemplatesEp    *VolumeTemplates     `json:"-"`
+}
+
+func RegisterStorageTemplateEndpoints(a *StorageTemplate) {
+	a.VolumeTemplatesEp = newVolumeTemplates(a.Path)
+	for _, si := range a.VolumeTemplates {
+		RegisterVolumeTemplateEndpoints(si)
+	}
 }
 
 type StorageTemplates struct {
@@ -47,6 +54,7 @@ func (e *StorageTemplates) Create(ro *StorageTemplatesCreateRequest) (*StorageTe
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterStorageTemplateEndpoints(resp)
 	return resp, nil
 }
 
@@ -70,6 +78,7 @@ func (e *StorageTemplates) List(ro *StorageTemplatesListRequest) ([]*StorageTemp
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
+		RegisterStorageTemplateEndpoints(elem)
 		resp = append(resp, elem)
 	}
 	return resp, nil
@@ -90,6 +99,7 @@ func (e *StorageTemplates) Get(ro *StorageTemplatesGetRequest) (*StorageTemplate
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterStorageTemplateEndpoints(resp)
 	return resp, nil
 }
 
@@ -110,6 +120,7 @@ func (e *StorageTemplate) Set(ro *StorageTemplateSetRequest) (*StorageTemplate, 
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterStorageTemplateEndpoints(resp)
 	return resp, nil
 
 }
@@ -128,5 +139,6 @@ func (e *StorageTemplate) Delete(ro *StorageTemplateDeleteRequest) (*StorageTemp
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterStorageTemplateEndpoints(resp)
 	return resp, nil
 }

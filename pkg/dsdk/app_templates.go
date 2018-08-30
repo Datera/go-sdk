@@ -17,6 +17,16 @@ type AppTemplate struct {
 	StorageTemplatesEp *StorageTemplates  `json:"-"`
 }
 
+func RegisterAppTemplateEndpoints(a *AppTemplate) {
+	a.StorageTemplatesEp = newStorageTemplates(a.Path)
+	for _, si := range a.AppInstances {
+		RegisterAppInstanceEndpoints(si)
+	}
+	for _, si := range a.StorageTemplates {
+		RegisterStorageTemplateEndpoints(si)
+	}
+}
+
 type AppTemplates struct {
 	Path string
 }
@@ -47,6 +57,7 @@ func (e *AppTemplates) Create(ro *AppTemplatesCreateRequest) (*AppTemplate, erro
 		return nil, err
 	}
 	resp.StorageTemplatesEp = newStorageTemplates(e.Path)
+	RegisterAppTemplateEndpoints(resp)
 	return resp, nil
 }
 
@@ -70,6 +81,7 @@ func (e *AppTemplates) List(ro *AppTemplatesListRequest) ([]*AppTemplate, error)
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
+		RegisterAppTemplateEndpoints(elem)
 		resp = append(resp, elem)
 	}
 	return resp, nil
@@ -90,6 +102,7 @@ func (e *AppTemplates) Get(ro *AppTemplatesGetRequest) (*AppTemplate, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterAppTemplateEndpoints(resp)
 	return resp, nil
 }
 
@@ -110,7 +123,7 @@ func (e *AppTemplate) Set(ro *AppTemplateSetRequest) (*AppTemplate, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.StorageTemplatesEp = newStorageTemplates(e.Path)
+	RegisterAppTemplateEndpoints(resp)
 	return resp, nil
 
 }
@@ -129,6 +142,6 @@ func (e *AppTemplate) Delete(ro *AppTemplateDeleteRequest) (*AppTemplate, error)
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.StorageTemplatesEp = newStorageTemplates(e.Path)
+	RegisterAppTemplateEndpoints(resp)
 	return resp, nil
 }

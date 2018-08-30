@@ -28,6 +28,13 @@ type StorageInstance struct {
 	VolumesEp            *Volumes             `json:"-"`
 }
 
+func RegisterStorageInstanceEndpoints(a *StorageInstance) {
+	a.VolumesEp = newVolumes(a.Path)
+	for _, si := range a.Volumes {
+		RegisterVolumeEndpoints(si)
+	}
+}
+
 type StorageInstances struct {
 	Path string
 }
@@ -60,6 +67,7 @@ func (e *StorageInstances) Create(ro *StorageInstancesCreateRequest) (*StorageIn
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterStorageInstanceEndpoints(resp)
 	return resp, nil
 }
 
@@ -83,6 +91,7 @@ func (e *StorageInstances) List(ro *StorageInstancesListRequest) ([]*StorageInst
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
+		RegisterStorageInstanceEndpoints(elem)
 		resp = append(resp, elem)
 	}
 	return resp, nil
@@ -103,6 +112,7 @@ func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstance
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterStorageInstanceEndpoints(resp)
 	return resp, nil
 }
 
@@ -127,6 +137,7 @@ func (e *StorageInstance) Set(ro *StorageInstanceSetRequest) (*StorageInstance, 
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterStorageInstanceEndpoints(resp)
 	return resp, nil
 
 }
@@ -145,5 +156,6 @@ func (e *StorageInstance) Delete(ro *StorageInstanceDeleteRequest) (*StorageInst
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterStorageInstanceEndpoints(resp)
 	return resp, nil
 }

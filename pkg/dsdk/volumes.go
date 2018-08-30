@@ -36,9 +36,9 @@ type Volume struct {
 	PerformancePolicy  *PerformancePolicy `json:"-"`
 }
 
-func RegisterVolumeEndpoints(v *Volume) {
-	v.SnapshotsEp = newSnapshots(v.Path)
-	v.PerformancePolicy = newPerformancePolicy(v.Path)
+func RegisterVolumeEndpoints(a *Volume) {
+	a.SnapshotsEp = newSnapshots(a.Path)
+	a.PerformancePolicy = newPerformancePolicy(a.Path)
 }
 
 type Volumes struct {
@@ -71,6 +71,7 @@ func (e *Volumes) Create(ro *VolumesCreateRequest) (*Volume, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterVolumeEndpoints(resp)
 	return resp, nil
 }
 
@@ -94,6 +95,7 @@ func (e *Volumes) List(ro *VolumesListRequest) ([]*Volume, error) {
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
+		RegisterVolumeEndpoints(elem)
 		resp = append(resp, elem)
 	}
 	return resp, nil
@@ -114,6 +116,7 @@ func (e *Volumes) Get(ro *VolumesGetRequest) (*Volume, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterVolumeEndpoints(resp)
 	return resp, nil
 }
 
@@ -137,6 +140,7 @@ func (e *Volume) Set(ro *VolumeSetRequest) (*Volume, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterVolumeEndpoints(resp)
 	return resp, nil
 }
 
@@ -153,5 +157,6 @@ func (e *Volume) Delete(ro *VolumeDeleteRequest) (*Volume, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterVolumeEndpoints(resp)
 	return resp, nil
 }

@@ -34,6 +34,13 @@ type AppInstance struct {
 	StorageInstancesEp      *StorageInstances  `json:"-"`
 }
 
+func RegisterAppInstanceEndpoints(a *AppInstance) {
+	a.StorageInstancesEp = newStorageInstances(a.Path)
+	for _, si := range a.StorageInstances {
+		RegisterStorageInstanceEndpoints(si)
+	}
+}
+
 type AppInstances struct {
 	Path string
 }
@@ -70,6 +77,7 @@ func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstance, erro
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterAppInstanceEndpoints(resp)
 	return resp, nil
 }
 
@@ -93,6 +101,7 @@ func (e *AppInstances) List(ro *AppInstancesListRequest) ([]*AppInstance, error)
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
+		RegisterAppInstanceEndpoints(elem)
 		resp = append(resp, elem)
 	}
 	return resp, nil
@@ -113,6 +122,7 @@ func (e *AppInstances) Get(ro *AppInstancesGetRequest) (*AppInstance, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterAppInstanceEndpoints(resp)
 	return resp, nil
 }
 
@@ -142,6 +152,7 @@ func (e *AppInstance) Set(ro *AppInstanceSetRequest) (*AppInstance, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterAppInstanceEndpoints(resp)
 	return resp, nil
 
 }
@@ -160,5 +171,6 @@ func (e *AppInstance) Delete(ro *AppInstanceDeleteRequest) (*AppInstance, error)
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterAppInstanceEndpoints(resp)
 	return resp, nil
 }

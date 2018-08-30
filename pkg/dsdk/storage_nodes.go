@@ -56,6 +56,16 @@ type StorageNode struct {
 	BootDrivesEp        *BootDrives
 }
 
+func RegisterStorageNodeEndpoints(a *StorageNode) {
+	a.BootDrivesEp = newBootDrives(a.Path)
+	for _, si := range a.StorageInstances {
+		RegisterStorageInstanceEndpoints(si)
+	}
+	for _, vol := range a.Volumes {
+		RegisterVolumeEndpoints(vol)
+	}
+}
+
 type StorageNodes struct {
 	Path string
 }
@@ -87,6 +97,7 @@ func (e *StorageNodes) List(ro *StorageNodesListRequest) ([]*StorageNode, error)
 			return nil, err
 		}
 		resp = append(resp, elem)
+		RegisterStorageNodeEndpoints(elem)
 	}
 	return resp, nil
 }
@@ -106,6 +117,7 @@ func (e *StorageNodes) Get(ro *StorageNodesGetRequest) (*StorageNode, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterStorageNodeEndpoints(resp)
 	return resp, nil
 }
 
@@ -125,6 +137,7 @@ func (e *StorageNode) Set(ro *StorageNodeSetRequest) (*StorageNode, error) {
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterStorageNodeEndpoints(resp)
 	return resp, nil
 
 }

@@ -18,6 +18,10 @@ type VolumeTemplate struct {
 	SnapshotPoliciesEp *SnapshotPolicies `json:"-"`
 }
 
+func RegisterVolumeTemplateEndpoints(a *VolumeTemplate) {
+	a.SnapshotPoliciesEp = newSnapshotPolicies(a.Path)
+}
+
 type VolumeTemplates struct {
 	Path string
 }
@@ -47,6 +51,7 @@ func (e *VolumeTemplates) Create(ro *VolumeTemplatesCreateRequest) (*VolumeTempl
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
+	RegisterVolumeTemplateEndpoints(resp)
 	return resp, nil
 }
 
@@ -70,6 +75,7 @@ func (e *VolumeTemplates) List(ro *VolumeTemplatesListRequest) ([]*VolumeTemplat
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
+		RegisterVolumeTemplateEndpoints(elem)
 		resp = append(resp, elem)
 	}
 	return resp, nil
@@ -90,7 +96,7 @@ func (e *VolumeTemplates) Get(ro *VolumeTemplatesGetRequest) (*VolumeTemplate, e
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.Path)
+	RegisterVolumeTemplateEndpoints(resp)
 	return resp, nil
 }
 
@@ -113,7 +119,7 @@ func (e *VolumeTemplate) Set(ro *VolumeTemplateSetRequest) (*VolumeTemplate, err
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.Path)
+	RegisterVolumeTemplateEndpoints(resp)
 	return resp, nil
 
 }
@@ -131,6 +137,6 @@ func (e *VolumeTemplate) Delete(ro *VolumeTemplateDeleteRequest) (*VolumeTemplat
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.Path)
+	RegisterVolumeTemplateEndpoints(resp)
 	return resp, nil
 }
