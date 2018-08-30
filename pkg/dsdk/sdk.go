@@ -67,13 +67,12 @@ func (c SDK) Context(kv *map[string]string) context.Context {
 // Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under
 // the currently configured tenant
 func (c SDK) HealthCheck() error {
-	resp, err := c.StorageNodes.List(&StorageNodesListRequest{Ctxt: c.Context(nil)})
+	sns, err := c.StorageNodes.List(&StorageNodesListRequest{Ctxt: c.Context(nil)})
 	if err != nil {
 		return err
 	}
 	log.Debugf("Connected to cluster: %s with tenant %s.\n", c.conf.MgmtIp, c.conf.Tenant)
-	for _, r := range *resp {
-		sn := StorageNode(r)
+	for _, sn := range sns {
 		log.Debugf("Found Storage Node: %s\n", sn.Uuid)
 	}
 	return nil

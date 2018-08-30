@@ -27,21 +27,19 @@ type SnapshotPoliciesCreateRequest struct {
 	StartTime      string          `json:"start_time,omitempty" mapstructure:"start_time"`
 }
 
-type SnapshotPoliciesCreateResponse SnapshotPolicy
-
 func newSnapshotPolicies(path string) *SnapshotPolicies {
 	return &SnapshotPolicies{
 		Path: _path.Join(path, "snapshot_policies"),
 	}
 }
 
-func (e *SnapshotPolicies) Create(ro *SnapshotPoliciesCreateRequest) (*SnapshotPoliciesCreateResponse, error) {
+func (e *SnapshotPolicies) Create(ro *SnapshotPoliciesCreateRequest) (*SnapshotPolicy, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &SnapshotPoliciesCreateResponse{}
+	resp := &SnapshotPolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -53,9 +51,7 @@ type SnapshotPoliciesListRequest struct {
 	Params map[string]string
 }
 
-type SnapshotPoliciesListResponse []SnapshotPolicy
-
-func (e *SnapshotPolicies) List(ro *SnapshotPoliciesListRequest) (*SnapshotPoliciesListResponse, error) {
+func (e *SnapshotPolicies) List(ro *SnapshotPoliciesListRequest) ([]*SnapshotPolicy, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -63,16 +59,16 @@ func (e *SnapshotPolicies) List(ro *SnapshotPoliciesListRequest) (*SnapshotPolic
 	if err != nil {
 		return nil, err
 	}
-	resp := SnapshotPoliciesListResponse{}
+	resp := []*SnapshotPolicy{}
 	for _, data := range rs.Data {
 		elem := &SnapshotPolicy{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	return &resp, nil
+	return resp, nil
 }
 
 type SnapshotPoliciesGetRequest struct {
@@ -80,15 +76,13 @@ type SnapshotPoliciesGetRequest struct {
 	Name string
 }
 
-type SnapshotPoliciesGetResponse SnapshotPolicy
-
-func (e *SnapshotPolicies) Get(ro *SnapshotPoliciesGetRequest) (*SnapshotPoliciesGetResponse, error) {
+func (e *SnapshotPolicies) Get(ro *SnapshotPoliciesGetRequest) (*SnapshotPolicy, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &SnapshotPoliciesGetResponse{}
+	resp := &SnapshotPolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -102,15 +96,13 @@ type SnapshotPolicySetRequest struct {
 	StartTime      string          `json:"start_time,omitempty" mapstructure:"start_time"`
 }
 
-type SnapshotPolicySetResponse SnapshotPolicy
-
-func (e *SnapshotPolicy) Set(ro *SnapshotPolicySetRequest) (*SnapshotPolicySetResponse, error) {
+func (e *SnapshotPolicy) Set(ro *SnapshotPolicySetRequest) (*SnapshotPolicy, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &SnapshotPolicySetResponse{}
+	resp := &SnapshotPolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -123,14 +115,12 @@ type SnapshotPolicyDeleteRequest struct {
 	Id   string          `json:"id,omitempty" mapstructure:"id"`
 }
 
-type SnapshotPolicyDeleteResponse SnapshotPolicy
-
-func (e *SnapshotPolicy) Delete(ro *SnapshotPolicyDeleteRequest) (*SnapshotPolicyDeleteResponse, error) {
+func (e *SnapshotPolicy) Delete(ro *SnapshotPolicyDeleteRequest) (*SnapshotPolicy, error) {
 	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &SnapshotPolicyDeleteResponse{}
+	resp := &SnapshotPolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}

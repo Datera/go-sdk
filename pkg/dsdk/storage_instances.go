@@ -44,25 +44,22 @@ type StorageInstancesCreateRequest struct {
 	Volumes              []*Volume            `json:"volumes,omitempty" mapstructure:"volumes"`
 }
 
-type StorageInstancesCreateResponse StorageInstance
-
 func newStorageInstances(path string) *StorageInstances {
 	return &StorageInstances{
 		Path: _path.Join(path, "storage_instances"),
 	}
 }
 
-func (e *StorageInstances) Create(ro *StorageInstancesCreateRequest) (*StorageInstancesCreateResponse, error) {
+func (e *StorageInstances) Create(ro *StorageInstancesCreateRequest) (*StorageInstance, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StorageInstancesCreateResponse{}
+	resp := &StorageInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.VolumesEp = newVolumes(e.Path)
 	return resp, nil
 }
 
@@ -71,9 +68,7 @@ type StorageInstancesListRequest struct {
 	Params map[string]string
 }
 
-type StorageInstancesListResponse []StorageInstance
-
-func (e *StorageInstances) List(ro *StorageInstancesListRequest) (*StorageInstancesListResponse, error) {
+func (e *StorageInstances) List(ro *StorageInstancesListRequest) ([]*StorageInstance, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -81,19 +76,16 @@ func (e *StorageInstances) List(ro *StorageInstancesListRequest) (*StorageInstan
 	if err != nil {
 		return nil, err
 	}
-	resp := StorageInstancesListResponse{}
+	resp := []*StorageInstance{}
 	for _, data := range rs.Data {
 		elem := &StorageInstance{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	for _, r := range resp {
-		r.VolumesEp = newVolumes(e.Path)
-	}
-	return &resp, nil
+	return resp, nil
 }
 
 type StorageInstancesGetRequest struct {
@@ -101,19 +93,16 @@ type StorageInstancesGetRequest struct {
 	Name string
 }
 
-type StorageInstancesGetResponse StorageInstance
-
-func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstancesGetResponse, error) {
+func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstance, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StorageInstancesGetResponse{}
+	resp := &StorageInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.VolumesEp = newVolumes(e.Path)
 	return resp, nil
 }
 
@@ -128,19 +117,16 @@ type StorageInstanceSetRequest struct {
 	Volumes           []*Volume            `json:"volumes,omitempty" mapstructure:"volumes"`
 }
 
-type StorageInstanceSetResponse StorageInstance
-
-func (e *StorageInstance) Set(ro *StorageInstanceSetRequest) (*StorageInstanceSetResponse, error) {
+func (e *StorageInstance) Set(ro *StorageInstanceSetRequest) (*StorageInstance, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StorageInstanceSetResponse{}
+	resp := &StorageInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.VolumesEp = newVolumes(e.Path)
 	return resp, nil
 
 }
@@ -150,17 +136,14 @@ type StorageInstanceDeleteRequest struct {
 	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
-type StorageInstanceDeleteResponse StorageInstance
-
-func (e *StorageInstance) Delete(ro *StorageInstanceDeleteRequest) (*StorageInstanceDeleteResponse, error) {
+func (e *StorageInstance) Delete(ro *StorageInstanceDeleteRequest) (*StorageInstance, error) {
 	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StorageInstanceDeleteResponse{}
+	resp := &StorageInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.VolumesEp = newVolumes(e.Path)
 	return resp, nil
 }

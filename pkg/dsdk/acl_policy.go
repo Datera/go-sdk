@@ -23,15 +23,14 @@ type AclPolicyGetRequest struct {
 	Ctxt context.Context `json:"-"`
 }
 
-type AclPolicyGetResponse AclPolicy
 
-func (e *AclPolicy) Get(ro *AclPolicyGetRequest) (*AclPolicyGetResponse, error) {
+func (e *AclPolicy) Get(ro *AclPolicyGetRequest) (*AclPolicy, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &AclPolicyGetResponse{}
+	resp := &AclPolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -44,15 +43,14 @@ type AclPolicySetRequest struct {
 	InitiatorGroups []*InitiatorGroups `json:"initiator_groups,omitempty" mapstructure:"initiator_groups"`
 }
 
-type AclPolicySetResponse AclPolicy
 
-func (e *AclPolicy) Set(ro *AclPolicySetRequest) (*AclPolicySetResponse, error) {
+func (e *AclPolicy) Set(ro *AclPolicySetRequest) (*AclPolicy, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &AclPolicySetResponse{}
+	resp := &AclPolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}

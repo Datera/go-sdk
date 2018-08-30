@@ -23,21 +23,19 @@ type FailureDomainsCreateRequest struct {
 	StorageNodes []StorageNode   `json:"storage_nodes,omitempty" mapstructure:"storage_nodes"`
 }
 
-type FailureDomainsCreateResponse FailureDomain
-
 func newFailureDomains(path string) *FailureDomains {
 	return &FailureDomains{
 		Path: _path.Join(path, "failure_domains"),
 	}
 }
 
-func (e *FailureDomains) Create(ro *FailureDomainsCreateRequest) (*FailureDomainsCreateResponse, error) {
+func (e *FailureDomains) Create(ro *FailureDomainsCreateRequest) (*FailureDomain, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &FailureDomainsCreateResponse{}
+	resp := &FailureDomain{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -49,9 +47,7 @@ type FailureDomainsListRequest struct {
 	Params map[string]string
 }
 
-type FailureDomainsListResponse []FailureDomain
-
-func (e *FailureDomains) List(ro *FailureDomainsListRequest) (*FailureDomainsListResponse, error) {
+func (e *FailureDomains) List(ro *FailureDomainsListRequest) ([]*FailureDomain, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -59,16 +55,16 @@ func (e *FailureDomains) List(ro *FailureDomainsListRequest) (*FailureDomainsLis
 	if err != nil {
 		return nil, err
 	}
-	resp := FailureDomainsListResponse{}
+	resp := []*FailureDomain{}
 	for _, data := range rs.Data {
 		elem := &FailureDomain{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	return &resp, nil
+	return resp, nil
 }
 
 type FailureDomainsGetRequest struct {
@@ -76,15 +72,13 @@ type FailureDomainsGetRequest struct {
 	Id   string
 }
 
-type FailureDomainsGetResponse FailureDomain
-
-func (e *FailureDomains) Get(ro *FailureDomainsGetRequest) (*FailureDomainsGetResponse, error) {
+func (e *FailureDomains) Get(ro *FailureDomainsGetRequest) (*FailureDomain, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &FailureDomainsGetResponse{}
+	resp := &FailureDomain{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -96,15 +90,13 @@ type FailureDomainSetRequest struct {
 	StorageNodes []StorageNode   `json:"storage_nodes,omitempty" mapstructure:"storage_nodes"`
 }
 
-type FailureDomainSetResponse FailureDomain
-
-func (e *FailureDomain) Set(ro *FailureDomainSetRequest) (*FailureDomainSetResponse, error) {
+func (e *FailureDomain) Set(ro *FailureDomainSetRequest) (*FailureDomain, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &FailureDomainSetResponse{}
+	resp := &FailureDomain{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -117,14 +109,12 @@ type FailureDomainDeleteRequest struct {
 	Name string          `json:"id,omitempty" mapstructure:"id"`
 }
 
-type FailureDomainDeleteResponse FailureDomain
-
-func (e *FailureDomain) Delete(ro *FailureDomainDeleteRequest) (*FailureDomainDeleteResponse, error) {
+func (e *FailureDomain) Delete(ro *FailureDomainDeleteRequest) (*FailureDomain, error) {
 	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &FailureDomainDeleteResponse{}
+	resp := &FailureDomain{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}

@@ -54,25 +54,22 @@ type AppInstancesCreateRequest struct {
 	TemplateOverride map[string]interface{} `json:"template_override,omitempty" mapstructure:"template_override"`
 }
 
-type AppInstancesCreateResponse AppInstance
-
 func newAppInstances(path string) *AppInstances {
 	return &AppInstances{
 		Path: _path.Join(path, "app_instances"),
 	}
 }
 
-func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstancesCreateResponse, error) {
+func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstance, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &AppInstancesCreateResponse{}
+	resp := &AppInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.StorageInstancesEp = newStorageInstances(e.Path)
 	return resp, nil
 }
 
@@ -81,9 +78,7 @@ type AppInstancesListRequest struct {
 	Params map[string]string
 }
 
-type AppInstancesListResponse []AppInstance
-
-func (e *AppInstances) List(ro *AppInstancesListRequest) (*AppInstancesListResponse, error) {
+func (e *AppInstances) List(ro *AppInstancesListRequest) ([]*AppInstance, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -91,19 +86,16 @@ func (e *AppInstances) List(ro *AppInstancesListRequest) (*AppInstancesListRespo
 	if err != nil {
 		return nil, err
 	}
-	resp := AppInstancesListResponse{}
+	resp := []*AppInstance{}
 	for _, data := range rs.Data {
 		elem := &AppInstance{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	for _, r := range resp {
-		r.StorageInstancesEp = newStorageInstances(e.Path)
-	}
-	return &resp, nil
+	return resp, nil
 }
 
 type AppInstancesGetRequest struct {
@@ -111,19 +103,16 @@ type AppInstancesGetRequest struct {
 	Id   string
 }
 
-type AppInstancesGetResponse AppInstance
-
-func (e *AppInstances) Get(ro *AppInstancesGetRequest) (*AppInstancesGetResponse, error) {
+func (e *AppInstances) Get(ro *AppInstancesGetRequest) (*AppInstance, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &AppInstancesGetResponse{}
+	resp := &AppInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.StorageInstancesEp = newStorageInstances(e.Path)
 	return resp, nil
 }
 
@@ -143,19 +132,16 @@ type AppInstanceSetRequest struct {
 	StoragePool        []*StoragePool     `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 }
 
-type AppInstanceSetResponse AppInstance
-
-func (e *AppInstance) Set(ro *AppInstanceSetRequest) (*AppInstanceSetResponse, error) {
+func (e *AppInstance) Set(ro *AppInstanceSetRequest) (*AppInstance, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &AppInstanceSetResponse{}
+	resp := &AppInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.StorageInstancesEp = newStorageInstances(e.Path)
 	return resp, nil
 
 }
@@ -165,17 +151,14 @@ type AppInstanceDeleteRequest struct {
 	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
-type AppInstanceDeleteResponse AppInstance
-
-func (e *AppInstance) Delete(ro *AppInstanceDeleteRequest) (*AppInstanceDeleteResponse, error) {
+func (e *AppInstance) Delete(ro *AppInstanceDeleteRequest) (*AppInstance, error) {
 	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &AppInstanceDeleteResponse{}
+	resp := &AppInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.StorageInstancesEp = newStorageInstances(e.Path)
 	return resp, nil
 }

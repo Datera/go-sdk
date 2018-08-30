@@ -36,6 +36,11 @@ type Volume struct {
 	PerformancePolicy  *PerformancePolicy `json:"-"`
 }
 
+func RegisterVolumeEndpoints(v *Volume) {
+	v.SnapshotsEp = newSnapshots(v.Path)
+	v.PerformancePolicy = newPerformancePolicy(v.Path)
+}
+
 type Volumes struct {
 	Path string
 }
@@ -50,25 +55,22 @@ type VolumesCreateRequest struct {
 	Force           bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
-type VolumesCreateResponse Volume
-
 func newVolumes(path string) *Volumes {
 	return &Volumes{
 		Path: _path.Join(path, "volumes"),
 	}
 }
 
-func (e *Volumes) Create(ro *VolumesCreateRequest) (*VolumesCreateResponse, error) {
+func (e *Volumes) Create(ro *VolumesCreateRequest) (*Volume, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &VolumesCreateResponse{}
+	resp := &Volume{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.SnapshotsEp = newSnapshots(e.Path)
 	return resp, nil
 }
 
@@ -77,9 +79,7 @@ type VolumesListRequest struct {
 	Params map[string]string
 }
 
-type VolumesListResponse []Volume
-
-func (e *Volumes) List(ro *VolumesListRequest) (*VolumesListResponse, error) {
+func (e *Volumes) List(ro *VolumesListRequest) ([]*Volume, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -87,19 +87,16 @@ func (e *Volumes) List(ro *VolumesListRequest) (*VolumesListResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp := VolumesListResponse{}
+	resp := []*Volume{}
 	for _, data := range rs.Data {
 		elem := &Volume{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	for _, r := range resp {
-		r.SnapshotsEp = newSnapshots(e.Path)
-	}
-	return &resp, nil
+	return resp, nil
 }
 
 type VolumesGetRequest struct {
@@ -107,19 +104,16 @@ type VolumesGetRequest struct {
 	Name string          `json:"name,omitempty" mapstructure:"name"`
 }
 
-type VolumesGetResponse Volume
-
-func (e *Volumes) Get(ro *VolumesGetRequest) (*VolumesGetResponse, error) {
+func (e *Volumes) Get(ro *VolumesGetRequest) (*Volume, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &VolumesGetResponse{}
+	resp := &Volume{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.SnapshotsEp = newSnapshots(e.Path)
 	return resp, nil
 }
 
@@ -133,38 +127,31 @@ type VolumeSetRequest struct {
 	StoragePool     []*StoragePool  `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 }
 
-type VolumeSetResponse Volume
-
-func (e *Volume) Set(ro *VolumeSetRequest) (*VolumeSetResponse, error) {
+func (e *Volume) Set(ro *VolumeSetRequest) (*Volume, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &VolumeSetResponse{}
+	resp := &Volume{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.SnapshotsEp = newSnapshots(e.Path)
 	return resp, nil
-
 }
 
 type VolumeDeleteRequest struct {
 	Ctxt context.Context `json:"-"`
 }
 
-type VolumeDeleteResponse Volume
-
-func (e *Volume) Delete(ro *VolumeDeleteRequest) (*VolumeDeleteResponse, error) {
+func (e *Volume) Delete(ro *VolumeDeleteRequest) (*Volume, error) {
 	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &VolumeDeleteResponse{}
+	resp := &Volume{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.SnapshotsEp = newSnapshots(e.Path)
 	return resp, nil
 }

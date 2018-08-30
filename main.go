@@ -33,7 +33,7 @@ func createAi(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.AppInstance, error) {
 }
 
 func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, error) {
-	resp, err := sdk.Initiators.Create(&dsdk.InitiatorsCreateRequest{
+	init, err := sdk.Initiators.Create(&dsdk.InitiatorsCreateRequest{
 		Ctxt: ctxt,
 		Name: "my-test-init",
 		Id:   "iqn.1993-08.org.debian:01:58cc6c30e338",
@@ -41,66 +41,60 @@ func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, erro
 	if err != nil {
 		return nil, err
 	}
-	init := dsdk.Initiator(*resp)
-	return &init, nil
+	return init, nil
 }
 
 func testStorageNodes(sdk *dsdk.SDK) error {
-	resp, err := sdk.StorageNodes.List(&dsdk.StorageNodesListRequest{Ctxt: sdk.Context(nil)})
+	sns, err := sdk.StorageNodes.List(&dsdk.StorageNodesListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}
-	for _, r := range *resp {
-		sn := dsdk.StorageNode(r)
+	for _, sn := range sns {
 		fmt.Printf("StorageNode: %s\n", sn.Uuid)
 	}
 	return nil
 }
 
 func testIpPools(sdk *dsdk.SDK) error {
-	resp, err := sdk.AccessNetworkIpPools.List(&dsdk.AccessNetworkIpPoolsListRequest{Ctxt: sdk.Context(nil)})
+	anips, err := sdk.AccessNetworkIpPools.List(&dsdk.AccessNetworkIpPoolsListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}
-	for _, r := range *resp {
-		sn := dsdk.AccessNetworkIpPool(r)
-		fmt.Printf("AccessNetworkIpPool: %s\n", sn.Name)
+	for _, anip := range anips {
+		fmt.Printf("AccessNetworkIpPool: %s\n", anip.Name)
 	}
 	return nil
 }
 
 func testStoragePools(sdk *dsdk.SDK) error {
-	resp, err := sdk.StoragePools.List(&dsdk.StoragePoolsListRequest{Ctxt: sdk.Context(nil)})
+	sps, err := sdk.StoragePools.List(&dsdk.StoragePoolsListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}
-	for _, r := range *resp {
-		sn := dsdk.StoragePool(r)
-		fmt.Printf("StoragePool: %s\n", sn.Name)
+	for _, sp := range sps {
+		fmt.Printf("StoragePool: %s\n", sp.Name)
 	}
 	return nil
 }
 
 func testInitiators(sdk *dsdk.SDK) error {
-	resp, err := sdk.Initiators.List(&dsdk.InitiatorsListRequest{Ctxt: sdk.Context(nil)})
+	inits, err := sdk.Initiators.List(&dsdk.InitiatorsListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}
-	for _, r := range *resp {
-		sn := dsdk.Initiator(r)
-		fmt.Printf("Initiator: %s\n", sn.Name)
+	for _, init := range inits {
+		fmt.Printf("Initiator: %s\n", init.Name)
 	}
 	return nil
 }
 
 func testInitiatorGroups(sdk *dsdk.SDK) error {
-	resp, err := sdk.InitiatorGroups.List(&dsdk.InitiatorGroupsListRequest{Ctxt: sdk.Context(nil)})
+	igs, err := sdk.InitiatorGroups.List(&dsdk.InitiatorGroupsListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}
-	for _, r := range *resp {
-		sn := dsdk.InitiatorGroup(r)
-		fmt.Printf("InitiatorGroup: %s\n", sn.Name)
+	for _, ig := range igs {
+		fmt.Printf("InitiatorGroup: %s\n", ig.Name)
 	}
 	return nil
 }
@@ -158,13 +152,12 @@ func testAclPolicy(sdk *dsdk.SDK) error {
 }
 
 func testTenants(sdk *dsdk.SDK) error {
-	resp, err := sdk.Tenants.List(&dsdk.TenantsListRequest{Ctxt: sdk.Context(nil)})
+	tnts, err := sdk.Tenants.List(&dsdk.TenantsListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}
-	for _, r := range *resp {
-		sn := dsdk.Tenant(r)
-		fmt.Printf("Tenant: %s\n", sn.Name)
+	for _, tnt := range tnts {
+		fmt.Printf("Tenant: %s\n", tnt.Name)
 	}
 	return nil
 }

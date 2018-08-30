@@ -71,9 +71,7 @@ type StorageNodesListRequest struct {
 	Params map[string]string
 }
 
-type StorageNodesListResponse []StorageNode
-
-func (e *StorageNodes) List(ro *StorageNodesListRequest) (*StorageNodesListResponse, error) {
+func (e *StorageNodes) List(ro *StorageNodesListRequest) ([]*StorageNode, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -81,16 +79,16 @@ func (e *StorageNodes) List(ro *StorageNodesListRequest) (*StorageNodesListRespo
 	if err != nil {
 		return nil, err
 	}
-	resp := StorageNodesListResponse{}
+	resp := []*StorageNode{}
 	for _, data := range rs.Data {
 		elem := &StorageNode{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	return &resp, nil
+	return resp, nil
 }
 
 type StorageNodesGetRequest struct {
@@ -98,15 +96,13 @@ type StorageNodesGetRequest struct {
 	Uuid string
 }
 
-type StorageNodesGetResponse StorageNode
-
-func (e *StorageNodes) Get(ro *StorageNodesGetRequest) (*StorageNodesGetResponse, error) {
+func (e *StorageNodes) Get(ro *StorageNodesGetRequest) (*StorageNode, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Uuid), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StorageNodesGetResponse{}
+	resp := &StorageNode{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -119,15 +115,13 @@ type StorageNodeSetRequest struct {
 	MediaPolicy string          `json:"media_policy,omitempty" mapstructure:"media_policy"`
 }
 
-type StorageNodeSetResponse StorageNode
-
-func (e *StorageNode) Set(ro *StorageNodeSetRequest) (*StorageNodeSetResponse, error) {
+func (e *StorageNode) Set(ro *StorageNodeSetRequest) (*StorageNode, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StorageNodeSetResponse{}
+	resp := &StorageNode{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}

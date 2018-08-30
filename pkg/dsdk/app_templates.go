@@ -30,21 +30,19 @@ type AppTemplatesCreateRequest struct {
 	StorageTemplates []*StorageTemplate `json:"storage_templates,omitempty" mapstructure:"storage_templates"`
 }
 
-type AppTemplatesCreateResponse AppTemplate
-
 func newAppTemplates(path string) *AppTemplates {
 	return &AppTemplates{
 		Path: _path.Join(path, "app_templates"),
 	}
 }
 
-func (e *AppTemplates) Create(ro *AppTemplatesCreateRequest) (*AppTemplatesCreateResponse, error) {
+func (e *AppTemplates) Create(ro *AppTemplatesCreateRequest) (*AppTemplate, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &AppTemplatesCreateResponse{}
+	resp := &AppTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -57,9 +55,7 @@ type AppTemplatesListRequest struct {
 	Params map[string]string
 }
 
-type AppTemplatesListResponse []AppTemplate
-
-func (e *AppTemplates) List(ro *AppTemplatesListRequest) (*AppTemplatesListResponse, error) {
+func (e *AppTemplates) List(ro *AppTemplatesListRequest) ([]*AppTemplate, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -67,19 +63,16 @@ func (e *AppTemplates) List(ro *AppTemplatesListRequest) (*AppTemplatesListRespo
 	if err != nil {
 		return nil, err
 	}
-	resp := AppTemplatesListResponse{}
+	resp := []*AppTemplate{}
 	for _, data := range rs.Data {
 		elem := &AppTemplate{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	for _, r := range resp {
-		r.StorageTemplatesEp = newStorageTemplates(e.Path)
-	}
-	return &resp, nil
+	return resp, nil
 }
 
 type AppTemplatesGetRequest struct {
@@ -87,19 +80,16 @@ type AppTemplatesGetRequest struct {
 	Name string
 }
 
-type AppTemplatesGetResponse AppTemplate
-
-func (e *AppTemplates) Get(ro *AppTemplatesGetRequest) (*AppTemplatesGetResponse, error) {
+func (e *AppTemplates) Get(ro *AppTemplatesGetRequest) (*AppTemplate, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &AppTemplatesGetResponse{}
+	resp := &AppTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.StorageTemplatesEp = newStorageTemplates(e.Path)
 	return resp, nil
 }
 
@@ -110,15 +100,13 @@ type AppTemplateSetRequest struct {
 	StorageTemplates []*StorageTemplate `json:"storage_templates,omitempty" mapstructure:"storage_templates"`
 }
 
-type AppTemplateSetResponse AppTemplate
-
-func (e *AppTemplate) Set(ro *AppTemplateSetRequest) (*AppTemplateSetResponse, error) {
+func (e *AppTemplate) Set(ro *AppTemplateSetRequest) (*AppTemplate, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &AppTemplateSetResponse{}
+	resp := &AppTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -132,14 +120,12 @@ type AppTemplateDeleteRequest struct {
 	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
-type AppTemplateDeleteResponse AppTemplate
-
-func (e *AppTemplate) Delete(ro *AppTemplateDeleteRequest) (*AppTemplateDeleteResponse, error) {
+func (e *AppTemplate) Delete(ro *AppTemplateDeleteRequest) (*AppTemplate, error) {
 	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &AppTemplateDeleteResponse{}
+	resp := &AppTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}

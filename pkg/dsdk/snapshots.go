@@ -35,21 +35,19 @@ type SnapshotsCreateRequest struct {
 	Type               string          `json:"type,omitempty" mapstructure:"type"`
 }
 
-type SnapshotsCreateResponse Snapshot
-
 func newSnapshots(path string) *Snapshots {
 	return &Snapshots{
 		Path: _path.Join(path, "snapshots"),
 	}
 }
 
-func (e *Snapshots) Create(ro *SnapshotsCreateRequest) (*SnapshotsCreateResponse, error) {
+func (e *Snapshots) Create(ro *SnapshotsCreateRequest) (*Snapshot, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &SnapshotsCreateResponse{}
+	resp := &Snapshot{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -61,9 +59,7 @@ type SnapshotsListRequest struct {
 	Params map[string]string
 }
 
-type SnapshotsListResponse []Snapshot
-
-func (e *Snapshots) List(ro *SnapshotsListRequest) (*SnapshotsListResponse, error) {
+func (e *Snapshots) List(ro *SnapshotsListRequest) ([]*Snapshot, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -71,16 +67,16 @@ func (e *Snapshots) List(ro *SnapshotsListRequest) (*SnapshotsListResponse, erro
 	if err != nil {
 		return nil, err
 	}
-	resp := SnapshotsListResponse{}
+	resp := []*Snapshot{}
 	for _, data := range rs.Data {
 		elem := &Snapshot{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	return &resp, nil
+	return resp, nil
 }
 
 type SnapshotsGetRequest struct {
@@ -88,15 +84,13 @@ type SnapshotsGetRequest struct {
 	Timestamp string
 }
 
-type SnapshotsGetResponse Snapshot
-
-func (e *Snapshots) Get(ro *SnapshotsGetRequest) (*SnapshotsGetResponse, error) {
+func (e *Snapshots) Get(ro *SnapshotsGetRequest) (*Snapshot, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Timestamp), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &SnapshotsGetResponse{}
+	resp := &Snapshot{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -108,14 +102,12 @@ type SnapshotDeleteRequest struct {
 	RemoteProviderUuid string          `json:"remote_provider_uuid,omitempty" mapstructure:"remote_provider_uuid"`
 }
 
-type SnapshotDeleteResponse Snapshot
-
-func (e *Snapshot) Delete(ro *SnapshotDeleteRequest) (*SnapshotDeleteResponse, error) {
+func (e *Snapshot) Delete(ro *SnapshotDeleteRequest) (*Snapshot, error) {
 	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &SnapshotDeleteResponse{}
+	resp := &Snapshot{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}

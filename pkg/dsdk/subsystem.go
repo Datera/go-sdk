@@ -33,9 +33,7 @@ type SubsystemsListRequest struct {
 	Params map[string]string
 }
 
-type SubsystemsListResponse []Subsystem
-
-func (e *Subsystems) List(ro *SubsystemsListRequest) (*SubsystemsListResponse, error) {
+func (e *Subsystems) List(ro *SubsystemsListRequest) ([]*Subsystem, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -43,16 +41,16 @@ func (e *Subsystems) List(ro *SubsystemsListRequest) (*SubsystemsListResponse, e
 	if err != nil {
 		return nil, err
 	}
-	resp := SubsystemsListResponse{}
+	resp := []*Subsystem{}
 	for _, data := range rs.Data {
 		elem := &Subsystem{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	return &resp, nil
+	return resp, nil
 }
 
 type SubsystemsGetRequest struct {
@@ -60,15 +58,13 @@ type SubsystemsGetRequest struct {
 	Id   string
 }
 
-type SubsystemsGetResponse Subsystem
-
-func (e *Subsystems) Get(ro *SubsystemsGetRequest) (*SubsystemsGetResponse, error) {
+func (e *Subsystems) Get(ro *SubsystemsGetRequest) (*Subsystem, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &SubsystemsGetResponse{}
+	resp := &Subsystem{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}

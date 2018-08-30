@@ -24,21 +24,19 @@ type InitiatorsCreateRequest struct {
 	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
-type InitiatorsCreateResponse Initiator
-
 func newInitiators(path string) *Initiators {
 	return &Initiators{
 		Path: _path.Join(path, "initiators"),
 	}
 }
 
-func (e *Initiators) Create(ro *InitiatorsCreateRequest) (*InitiatorsCreateResponse, error) {
+func (e *Initiators) Create(ro *InitiatorsCreateRequest) (*Initiator, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &InitiatorsCreateResponse{}
+	resp := &Initiator{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -50,9 +48,7 @@ type InitiatorsListRequest struct {
 	Params map[string]string
 }
 
-type InitiatorsListResponse []Initiator
-
-func (e *Initiators) List(ro *InitiatorsListRequest) (*InitiatorsListResponse, error) {
+func (e *Initiators) List(ro *InitiatorsListRequest) ([]*Initiator, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -60,16 +56,16 @@ func (e *Initiators) List(ro *InitiatorsListRequest) (*InitiatorsListResponse, e
 	if err != nil {
 		return nil, err
 	}
-	resp := InitiatorsListResponse{}
+	resp := []*Initiator{}
 	for _, data := range rs.Data {
 		elem := &Initiator{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	return &resp, nil
+	return resp, nil
 }
 
 type InitiatorsGetRequest struct {
@@ -77,15 +73,13 @@ type InitiatorsGetRequest struct {
 	Id   string
 }
 
-type InitiatorsGetResponse Initiator
-
-func (e *Initiators) Get(ro *InitiatorsGetRequest) (*InitiatorsGetResponse, error) {
+func (e *Initiators) Get(ro *InitiatorsGetRequest) (*Initiator, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &InitiatorsGetResponse{}
+	resp := &Initiator{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -97,15 +91,13 @@ type InitiatorSetRequest struct {
 	Name string          `json:"name,omitempty" mapstructure:"name"`
 }
 
-type InitiatorSetResponse Initiator
-
-func (e *Initiator) Set(ro *InitiatorSetRequest) (*InitiatorSetResponse, error) {
+func (e *Initiator) Set(ro *InitiatorSetRequest) (*Initiator, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &InitiatorSetResponse{}
+	resp := &Initiator{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -118,14 +110,12 @@ type InitiatorDeleteRequest struct {
 	Id   string          `json:"id,omitempty" mapstructure:"id"`
 }
 
-type InitiatorDeleteResponse Initiator
-
-func (e *Initiator) Delete(ro *InitiatorDeleteRequest) (*InitiatorDeleteResponse, error) {
+func (e *Initiator) Delete(ro *InitiatorDeleteRequest) (*Initiator, error) {
 	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &InitiatorDeleteResponse{}
+	resp := &Initiator{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}

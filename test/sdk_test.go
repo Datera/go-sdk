@@ -32,11 +32,10 @@ func TestSDKInitiatorCreate(t *testing.T) {
 		Id:   fmt.Sprintf("iqn.1993-08.org.debian:01:%s", dsdk.RandString(12)),
 		Name: dsdk.RandString(12),
 	}
-	var resp *dsdk.InitiatorsCreateResponse
-	if resp, err = sdk.Initiators.Create(ro); err != nil {
+	var init *dsdk.Initiator
+	if init, err = sdk.Initiators.Create(ro); err != nil {
 		t.Errorf("%s", err)
 	}
-	init := dsdk.Initiator(*resp)
 	if _, err = init.Delete(nil); err != nil {
 		t.Errorf("%s", err)
 	}

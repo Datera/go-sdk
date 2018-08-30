@@ -31,25 +31,22 @@ type VolumeTemplatesCreateRequest struct {
 	PlacementPolicy string          `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
 }
 
-type VolumeTemplatesCreateResponse VolumeTemplate
-
 func newVolumeTemplates(path string) *VolumeTemplates {
 	return &VolumeTemplates{
 		Path: _path.Join(path, "volume_templates"),
 	}
 }
 
-func (e *VolumeTemplates) Create(ro *VolumeTemplatesCreateRequest) (*VolumeTemplatesCreateResponse, error) {
+func (e *VolumeTemplates) Create(ro *VolumeTemplatesCreateRequest) (*VolumeTemplate, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &VolumeTemplatesCreateResponse{}
+	resp := &VolumeTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.SnapshotPoliciesEp = newSnapshotPolicies(e.Path)
 	return resp, nil
 }
 
@@ -58,9 +55,7 @@ type VolumeTemplatesListRequest struct {
 	Params map[string]string
 }
 
-type VolumeTemplatesListResponse []VolumeTemplate
-
-func (e *VolumeTemplates) List(ro *VolumeTemplatesListRequest) (*VolumeTemplatesListResponse, error) {
+func (e *VolumeTemplates) List(ro *VolumeTemplatesListRequest) ([]*VolumeTemplate, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -68,19 +63,16 @@ func (e *VolumeTemplates) List(ro *VolumeTemplatesListRequest) (*VolumeTemplates
 	if err != nil {
 		return nil, err
 	}
-	resp := VolumeTemplatesListResponse{}
+	resp := []*VolumeTemplate{}
 	for _, data := range rs.Data {
 		elem := &VolumeTemplate{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	for _, r := range resp {
-		r.SnapshotPoliciesEp = newSnapshotPolicies(e.Path)
-	}
-	return &resp, nil
+	return resp, nil
 }
 
 type VolumeTemplatesGetRequest struct {
@@ -88,15 +80,13 @@ type VolumeTemplatesGetRequest struct {
 	Name string
 }
 
-type VolumeTemplatesGetResponse VolumeTemplate
-
-func (e *VolumeTemplates) Get(ro *VolumeTemplatesGetRequest) (*VolumeTemplatesGetResponse, error) {
+func (e *VolumeTemplates) Get(ro *VolumeTemplatesGetRequest) (*VolumeTemplate, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &VolumeTemplatesGetResponse{}
+	resp := &VolumeTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -113,15 +103,13 @@ type VolumeTemplateSetRequest struct {
 	StoragePool     []StoragePool   `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 }
 
-type VolumeTemplateSetResponse VolumeTemplate
-
-func (e *VolumeTemplate) Set(ro *VolumeTemplateSetRequest) (*VolumeTemplateSetResponse, error) {
+func (e *VolumeTemplate) Set(ro *VolumeTemplateSetRequest) (*VolumeTemplate, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &VolumeTemplateSetResponse{}
+	resp := &VolumeTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -134,14 +122,12 @@ type VolumeTemplateDeleteRequest struct {
 	Ctxt context.Context `json:"-"`
 }
 
-type VolumeTemplateDeleteResponse VolumeTemplate
-
-func (e *VolumeTemplate) Delete(ro *VolumeTemplateDeleteRequest) (*VolumeTemplateDeleteResponse, error) {
+func (e *VolumeTemplate) Delete(ro *VolumeTemplateDeleteRequest) (*VolumeTemplate, error) {
 	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &VolumeTemplateDeleteResponse{}
+	resp := &VolumeTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}

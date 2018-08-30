@@ -31,25 +31,22 @@ type StorageTemplatesCreateRequest struct {
 	Force           bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
-type StorageTemplatesCreateResponse StorageTemplate
-
 func newStorageTemplates(path string) *StorageTemplates {
 	return &StorageTemplates{
 		Path: _path.Join(path, "storage_templates"),
 	}
 }
 
-func (e *StorageTemplates) Create(ro *StorageTemplatesCreateRequest) (*StorageTemplatesCreateResponse, error) {
+func (e *StorageTemplates) Create(ro *StorageTemplatesCreateRequest) (*StorageTemplate, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StorageTemplatesCreateResponse{}
+	resp := &StorageTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.VolumeTemplatesEp = newVolumeTemplates(e.Path)
 	return resp, nil
 }
 
@@ -58,9 +55,7 @@ type StorageTemplatesListRequest struct {
 	Params map[string]string
 }
 
-type StorageTemplatesListResponse []StorageTemplate
-
-func (e *StorageTemplates) List(ro *StorageTemplatesListRequest) (*StorageTemplatesListResponse, error) {
+func (e *StorageTemplates) List(ro *StorageTemplatesListRequest) ([]*StorageTemplate, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -68,19 +63,16 @@ func (e *StorageTemplates) List(ro *StorageTemplatesListRequest) (*StorageTempla
 	if err != nil {
 		return nil, err
 	}
-	resp := StorageTemplatesListResponse{}
+	resp := []*StorageTemplate{}
 	for _, data := range rs.Data {
 		elem := &StorageTemplate{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	for _, r := range resp {
-		r.VolumeTemplatesEp = newVolumeTemplates(e.Path)
-	}
-	return &resp, nil
+	return resp, nil
 }
 
 type StorageTemplatesGetRequest struct {
@@ -88,19 +80,16 @@ type StorageTemplatesGetRequest struct {
 	Name string
 }
 
-type StorageTemplatesGetResponse StorageTemplate
-
-func (e *StorageTemplates) Get(ro *StorageTemplatesGetRequest) (*StorageTemplatesGetResponse, error) {
+func (e *StorageTemplates) Get(ro *StorageTemplatesGetRequest) (*StorageTemplate, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StorageTemplatesGetResponse{}
+	resp := &StorageTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.VolumeTemplatesEp = newVolumeTemplates(e.Path)
 	return resp, nil
 }
 
@@ -111,19 +100,16 @@ type StorageTemplateSetRequest struct {
 	VolumeTemplates []VolumeTemplates   `json:"volume_templates,omitempty" mapstructure:"volume_templates"`
 }
 
-type StorageTemplateSetResponse StorageTemplate
-
-func (e *StorageTemplate) Set(ro *StorageTemplateSetRequest) (*StorageTemplateSetResponse, error) {
+func (e *StorageTemplate) Set(ro *StorageTemplateSetRequest) (*StorageTemplate, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StorageTemplateSetResponse{}
+	resp := &StorageTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.VolumeTemplatesEp = newVolumeTemplates(e.Path)
 	return resp, nil
 
 }
@@ -133,17 +119,14 @@ type StorageTemplateDeleteRequest struct {
 	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
-type StorageTemplateDeleteResponse StorageTemplate
-
-func (e *StorageTemplate) Delete(ro *StorageTemplateDeleteRequest) (*StorageTemplateDeleteResponse, error) {
+func (e *StorageTemplate) Delete(ro *StorageTemplateDeleteRequest) (*StorageTemplate, error) {
 	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StorageTemplateDeleteResponse{}
+	resp := &StorageTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
-	resp.VolumeTemplatesEp = newVolumeTemplates(e.Path)
 	return resp, nil
 }

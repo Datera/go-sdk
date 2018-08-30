@@ -23,21 +23,19 @@ type StoragePoolsCreateRequest struct {
 	Name    string          `json:"name,omitempty" mapstructure:"name"`
 }
 
-type StoragePoolsCreateResponse StoragePool
-
 func newStoragePools(path string) *StoragePools {
 	return &StoragePools{
 		Path: _path.Join(path, "storage_pools"),
 	}
 }
 
-func (e *StoragePools) Create(ro *StoragePoolsCreateRequest) (*StoragePoolsCreateResponse, error) {
+func (e *StoragePools) Create(ro *StoragePoolsCreateRequest) (*StoragePool, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StoragePoolsCreateResponse{}
+	resp := &StoragePool{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -49,9 +47,7 @@ type StoragePoolsListRequest struct {
 	Params map[string]string
 }
 
-type StoragePoolsListResponse []StoragePool
-
-func (e *StoragePools) List(ro *StoragePoolsListRequest) (*StoragePoolsListResponse, error) {
+func (e *StoragePools) List(ro *StoragePoolsListRequest) ([]*StoragePool, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
@@ -59,16 +55,16 @@ func (e *StoragePools) List(ro *StoragePoolsListRequest) (*StoragePoolsListRespo
 	if err != nil {
 		return nil, err
 	}
-	resp := StoragePoolsListResponse{}
+	resp := []*StoragePool{}
 	for _, data := range rs.Data {
 		elem := &StoragePool{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, err
 		}
-		resp = append(resp, *elem)
+		resp = append(resp, elem)
 	}
-	return &resp, nil
+	return resp, nil
 }
 
 type StoragePoolsGetRequest struct {
@@ -76,15 +72,13 @@ type StoragePoolsGetRequest struct {
 	Uuid string          `json:"id,omitempty" mapstructure:"id"`
 }
 
-type StoragePoolsGetResponse StoragePool
-
-func (e *StoragePools) Get(ro *StoragePoolsGetRequest) (*StoragePoolsGetResponse, error) {
+func (e *StoragePools) Get(ro *StoragePoolsGetRequest) (*StoragePool, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Uuid), gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StoragePoolsGetResponse{}
+	resp := &StoragePool{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -96,15 +90,13 @@ type StoragePoolSetRequest struct {
 	Members []*StorageNode  `json:"members,omitempty" mapstructure:"members"`
 }
 
-type StoragePoolSetResponse StoragePool
-
-func (e *StoragePool) Set(ro *StoragePoolSetRequest) (*StoragePoolSetResponse, error) {
+func (e *StoragePool) Set(ro *StoragePoolSetRequest) (*StoragePool, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StoragePoolSetResponse{}
+	resp := &StoragePool{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
@@ -116,14 +108,12 @@ type StoragePoolDeleteRequest struct {
 	Ctxt context.Context `json:"-"`
 }
 
-type StoragePoolDeleteResponse StoragePool
-
-func (e *StoragePool) Delete(ro *StoragePoolDeleteRequest) (*StoragePoolDeleteResponse, error) {
+func (e *StoragePool) Delete(ro *StoragePoolDeleteRequest) (*StoragePool, error) {
 	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp := &StoragePoolDeleteResponse{}
+	resp := &StoragePool{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, err
 	}
