@@ -9,7 +9,6 @@ import (
 	"text/template"
 	"time"
 
-	structs "github.com/fatih/structs"
 	mapstructure "github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 )
@@ -221,10 +220,6 @@ func RandString(n int) string {
 
 func FillStruct(m map[string]interface{}, s interface{}) error {
 	return mapstructure.Decode(m, s)
-}
-
-func ToMap(s interface{}) map[string]interface{} {
-	return structs.Map(s)
 }
 
 type LogFormatter struct {

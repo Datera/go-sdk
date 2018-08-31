@@ -154,7 +154,6 @@ func (e *AppInstance) Set(ro *AppInstanceSetRequest) (*AppInstance, error) {
 	}
 	RegisterAppInstanceEndpoints(resp)
 	return resp, nil
-
 }
 
 type AppInstanceDeleteRequest struct {
@@ -172,5 +171,42 @@ func (e *AppInstance) Delete(ro *AppInstanceDeleteRequest) (*AppInstance, error)
 		return nil, err
 	}
 	RegisterAppInstanceEndpoints(resp)
+	return resp, nil
+}
+
+type AppInstanceMetadata map[string]string
+
+type AppInstanceMetadataGetRequest struct {
+	Ctxt context.Context
+}
+
+func (e *AppInstance) GetMetadata(ro *AppInstanceMetadataGetRequest) (*AppInstanceMetadata, error) {
+	gro := &greq.RequestOptions{JSON: ro}
+	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, "metadata"), gro)
+	if err != nil {
+		return nil, err
+	}
+	resp := &AppInstanceMetadata{}
+	for k, v := range rs.Data {
+		(*resp)[k] = v.(string)
+	}
+	return resp, nil
+}
+
+type AppInstanceMetadataSetRequest struct {
+	Ctxt     context.Context
+	Metadata map[string]string
+}
+
+func (e *AppInstance) SetMetadata(ro *AppInstanceMetadataSetRequest) (*AppInstanceMetadata, error) {
+	gro := &greq.RequestOptions{JSON: ro.Metadata}
+	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, _path.Join(e.Path, "metadata"), gro)
+	if err != nil {
+		return nil, err
+	}
+	resp := &AppInstanceMetadata{}
+	for k, v := range rs.Data {
+		(*resp)[k] = v.(string)
+	}
 	return resp, nil
 }
