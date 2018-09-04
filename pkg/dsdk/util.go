@@ -233,12 +233,16 @@ func (f *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
 }
 
 func GetConn(ctxt context.Context) *ApiConnection {
+	defer recoverConn()
 	conn := ctxt.Value("conn")
-	if conn.(*ApiConnection) == nil {
+	return conn.(*ApiConnection)
+}
+
+func recoverConn() {
+	if r := recover(); r != nil {
 		panic("You MUST provide a context object containing a *ApiConnection for requests." +
 			"Use sdk.Context() to obtain the context object")
 	}
-	return conn.(*ApiConnection)
 }
 
 func init() {
