@@ -3,6 +3,7 @@ package dsdk
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -243,6 +244,11 @@ func recoverConn() {
 		panic("You MUST provide a context object containing a *ApiConnection for requests." +
 			"Use sdk.Context() to obtain the context object")
 	}
+}
+
+func Pretty(i interface{}) string {
+	s, _ := json.MarshalIndent(i, "", "\t")
+	return string(s)
 }
 
 func init() {

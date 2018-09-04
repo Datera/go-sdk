@@ -110,7 +110,6 @@ func checkResponse(resp *greq.Response, err error, retry bool) (*ErrorResponse, 
 	if !resp.Ok {
 		eresp := &ErrorResponse{}
 		resp.JSON(eresp)
-		log.Errorf("Error recieved: %#v", eresp)
 		return eresp, badStatus[resp.StatusCode]
 	}
 	return nil, nil
@@ -162,10 +161,13 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		}
 		return c.do(ctxt, method, url, ro, rs, false, sensitive)
 	}
-	if err != nil || eresp != nil {
-		log.Error(err)
-		log.Errorf("%#v", eresp)
+	if err != nil {
+		log.Error("Error during checkResponse: %s", err)
 		return err
+	}
+	if eresp != nil {
+		log.Errorf("Recieved API Error %s", Pretty(eresp))
+		return fmt.Errorf(Pretty(eresp))
 	}
 	err = resp.JSON(rs)
 	if err != nil {
