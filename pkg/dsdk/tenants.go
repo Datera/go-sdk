@@ -36,17 +36,20 @@ func newTenants(path string) *Tenants {
 	}
 }
 
-func (e *Tenants) Create(ro *TenantsCreateRequest) (*Tenant, error) {
+func (e *Tenants) Create(ro *TenantsCreateRequest) (*Tenant, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &Tenant{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type TenantsListRequest struct {
@@ -54,24 +57,27 @@ type TenantsListRequest struct {
 	Params map[string]string
 }
 
-func (e *Tenants) List(ro *TenantsListRequest) ([]*Tenant, error) {
+func (e *Tenants) List(ro *TenantsListRequest) ([]*Tenant, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := []*Tenant{}
 	for _, data := range rs.Data {
 		elem := &Tenant{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		resp = append(resp, elem)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type TenantsGetRequest struct {
@@ -79,17 +85,20 @@ type TenantsGetRequest struct {
 	Path string
 }
 
-func (e *Tenants) Get(ro *TenantsGetRequest) (*Tenant, error) {
+func (e *Tenants) Get(ro *TenantsGetRequest) (*Tenant, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Path), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Path), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &Tenant{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type TenantSetRequest struct {
@@ -105,17 +114,20 @@ type TenantSetRequest struct {
 	Subtenants       []Tenant        `json:"subtenants,omitempty" mapstructure:"subtenants"`
 }
 
-func (e *Tenant) Set(ro *TenantSetRequest) (*Tenant, error) {
+func (e *Tenant) Set(ro *TenantSetRequest) (*Tenant, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &Tenant{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 
 }
 
@@ -123,14 +135,17 @@ type TenantDeleteRequest struct {
 	Ctxt context.Context `json:"-"`
 }
 
-func (e *Tenant) Delete(ro *TenantDeleteRequest) (*Tenant, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+func (e *Tenant) Delete(ro *TenantDeleteRequest) (*Tenant, *ApiErrorResponse, error) {
+	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &Tenant{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }

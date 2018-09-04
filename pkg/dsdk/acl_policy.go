@@ -23,18 +23,20 @@ type AclPolicyGetRequest struct {
 	Ctxt context.Context `json:"-"`
 }
 
-
-func (e *AclPolicy) Get(ro *AclPolicyGetRequest) (*AclPolicy, error) {
+func (e *AclPolicy) Get(ro *AclPolicyGetRequest) (*AclPolicy, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AclPolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type AclPolicySetRequest struct {
@@ -43,17 +45,19 @@ type AclPolicySetRequest struct {
 	InitiatorGroups []*InitiatorGroups `json:"initiator_groups,omitempty" mapstructure:"initiator_groups"`
 }
 
-
-func (e *AclPolicy) Set(ro *AclPolicySetRequest) (*AclPolicy, error) {
+func (e *AclPolicy) Set(ro *AclPolicySetRequest) (*AclPolicy, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AclPolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 
 }

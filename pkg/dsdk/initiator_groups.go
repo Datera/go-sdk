@@ -30,17 +30,20 @@ func newInitiatorGroups(path string) *InitiatorGroups {
 	}
 }
 
-func (e *InitiatorGroups) Create(ro *InitiatorGroupsCreateRequest) (*InitiatorGroup, error) {
+func (e *InitiatorGroups) Create(ro *InitiatorGroupsCreateRequest) (*InitiatorGroup, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &InitiatorGroup{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type InitiatorGroupsListRequest struct {
@@ -48,24 +51,27 @@ type InitiatorGroupsListRequest struct {
 	Params map[string]string
 }
 
-func (e *InitiatorGroups) List(ro *InitiatorGroupsListRequest) ([]*InitiatorGroup, error) {
+func (e *InitiatorGroups) List(ro *InitiatorGroupsListRequest) ([]*InitiatorGroup, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := []*InitiatorGroup{}
 	for _, data := range rs.Data {
 		elem := &InitiatorGroup{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		resp = append(resp, elem)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type InitiatorGroupsGetRequest struct {
@@ -73,17 +79,20 @@ type InitiatorGroupsGetRequest struct {
 	Name string
 }
 
-func (e *InitiatorGroups) Get(ro *InitiatorGroupsGetRequest) (*InitiatorGroup, error) {
+func (e *InitiatorGroups) Get(ro *InitiatorGroupsGetRequest) (*InitiatorGroup, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &InitiatorGroup{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type InitiatorGroupSetRequest struct {
@@ -91,17 +100,20 @@ type InitiatorGroupSetRequest struct {
 	Members []Initiator     `json:"members,omitempty" mapstructure:"members"`
 }
 
-func (e *InitiatorGroup) Set(ro *InitiatorGroupSetRequest) (*InitiatorGroup, error) {
+func (e *InitiatorGroup) Set(ro *InitiatorGroupSetRequest) (*InitiatorGroup, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &InitiatorGroup{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 
 }
 
@@ -110,14 +122,17 @@ type InitiatorGroupDeleteRequest struct {
 	Id   string          `json:"id,omitempty" mapstructure:"id"`
 }
 
-func (e *InitiatorGroup) Delete(ro *InitiatorGroupDeleteRequest) (*InitiatorGroup, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+func (e *InitiatorGroup) Delete(ro *InitiatorGroupDeleteRequest) (*InitiatorGroup, *ApiErrorResponse, error) {
+	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &InitiatorGroup{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }

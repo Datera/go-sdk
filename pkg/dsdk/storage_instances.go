@@ -57,18 +57,21 @@ func newStorageInstances(path string) *StorageInstances {
 	}
 }
 
-func (e *StorageInstances) Create(ro *StorageInstancesCreateRequest) (*StorageInstance, error) {
+func (e *StorageInstances) Create(ro *StorageInstancesCreateRequest) (*StorageInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &StorageInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterStorageInstanceEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type StorageInstancesListRequest struct {
@@ -76,25 +79,28 @@ type StorageInstancesListRequest struct {
 	Params map[string]string
 }
 
-func (e *StorageInstances) List(ro *StorageInstancesListRequest) ([]*StorageInstance, error) {
+func (e *StorageInstances) List(ro *StorageInstancesListRequest) ([]*StorageInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := []*StorageInstance{}
 	for _, data := range rs.Data {
 		elem := &StorageInstance{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		RegisterStorageInstanceEndpoints(elem)
 		resp = append(resp, elem)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type StorageInstancesGetRequest struct {
@@ -102,18 +108,21 @@ type StorageInstancesGetRequest struct {
 	Name string
 }
 
-func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstance, error) {
+func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &StorageInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterStorageInstanceEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type StorageInstanceSetRequest struct {
@@ -127,18 +136,21 @@ type StorageInstanceSetRequest struct {
 	Volumes           []*Volume            `json:"volumes,omitempty" mapstructure:"volumes"`
 }
 
-func (e *StorageInstance) Set(ro *StorageInstanceSetRequest) (*StorageInstance, error) {
+func (e *StorageInstance) Set(ro *StorageInstanceSetRequest) (*StorageInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &StorageInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterStorageInstanceEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 
 }
 
@@ -147,15 +159,18 @@ type StorageInstanceDeleteRequest struct {
 	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
-func (e *StorageInstance) Delete(ro *StorageInstanceDeleteRequest) (*StorageInstance, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+func (e *StorageInstance) Delete(ro *StorageInstanceDeleteRequest) (*StorageInstance, *ApiErrorResponse, error) {
+	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &StorageInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterStorageInstanceEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }

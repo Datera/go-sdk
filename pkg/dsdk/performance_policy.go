@@ -33,17 +33,20 @@ func newPerformancePolicy(path string) *PerformancePolicy {
 	}
 }
 
-func (e *PerformancePolicy) Create(ro *PerformancePolicyCreateRequest) (*PerformancePolicy, error) {
+func (e *PerformancePolicy) Create(ro *PerformancePolicyCreateRequest) (*PerformancePolicy, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &PerformancePolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type PerformancePolicyListRequest struct {
@@ -51,41 +54,47 @@ type PerformancePolicyListRequest struct {
 	Params map[string]string
 }
 
-func (e *PerformancePolicy) List(ro *PerformancePolicyListRequest) ([]*PerformancePolicy, error) {
+func (e *PerformancePolicy) List(ro *PerformancePolicyListRequest) ([]*PerformancePolicy, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := []*PerformancePolicy{}
 	for _, data := range rs.Data {
 		elem := &PerformancePolicy{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		resp = append(resp, elem)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type PerformancePolicyGetRequest struct {
 	Ctxt context.Context `json:"-"`
 }
 
-func (e *PerformancePolicy) Get(ro *PerformancePolicyGetRequest) (*PerformancePolicy, error) {
+func (e *PerformancePolicy) Get(ro *PerformancePolicyGetRequest) (*PerformancePolicy, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &PerformancePolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type PerformancePolicySetRequest struct {
@@ -98,17 +107,20 @@ type PerformancePolicySetRequest struct {
 	TotalBandwidthMax int             `json:"total_bandwidth_max,omitempty" mapstructure:"total_bandwidth_max"`
 }
 
-func (e *PerformancePolicy) Set(ro *PerformancePolicySetRequest) (*PerformancePolicy, error) {
+func (e *PerformancePolicy) Set(ro *PerformancePolicySetRequest) (*PerformancePolicy, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &PerformancePolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 
 }
 
@@ -116,14 +128,17 @@ type PerformancePolicyDeleteRequest struct {
 	Ctxt context.Context `json:"-"`
 }
 
-func (e *PerformancePolicy) Delete(ro *PerformancePolicyDeleteRequest) (*PerformancePolicy, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+func (e *PerformancePolicy) Delete(ro *PerformancePolicyDeleteRequest) (*PerformancePolicy, *ApiErrorResponse, error) {
+	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &PerformancePolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }

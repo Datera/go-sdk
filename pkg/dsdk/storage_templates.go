@@ -44,18 +44,21 @@ func newStorageTemplates(path string) *StorageTemplates {
 	}
 }
 
-func (e *StorageTemplates) Create(ro *StorageTemplatesCreateRequest) (*StorageTemplate, error) {
+func (e *StorageTemplates) Create(ro *StorageTemplatesCreateRequest) (*StorageTemplate, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &StorageTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterStorageTemplateEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type StorageTemplatesListRequest struct {
@@ -63,25 +66,28 @@ type StorageTemplatesListRequest struct {
 	Params map[string]string
 }
 
-func (e *StorageTemplates) List(ro *StorageTemplatesListRequest) ([]*StorageTemplate, error) {
+func (e *StorageTemplates) List(ro *StorageTemplatesListRequest) ([]*StorageTemplate, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := []*StorageTemplate{}
 	for _, data := range rs.Data {
 		elem := &StorageTemplate{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		RegisterStorageTemplateEndpoints(elem)
 		resp = append(resp, elem)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type StorageTemplatesGetRequest struct {
@@ -89,18 +95,21 @@ type StorageTemplatesGetRequest struct {
 	Name string
 }
 
-func (e *StorageTemplates) Get(ro *StorageTemplatesGetRequest) (*StorageTemplate, error) {
+func (e *StorageTemplates) Get(ro *StorageTemplatesGetRequest) (*StorageTemplate, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &StorageTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterStorageTemplateEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type StorageTemplateSetRequest struct {
@@ -110,18 +119,21 @@ type StorageTemplateSetRequest struct {
 	VolumeTemplates []VolumeTemplates   `json:"volume_templates,omitempty" mapstructure:"volume_templates"`
 }
 
-func (e *StorageTemplate) Set(ro *StorageTemplateSetRequest) (*StorageTemplate, error) {
+func (e *StorageTemplate) Set(ro *StorageTemplateSetRequest) (*StorageTemplate, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &StorageTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterStorageTemplateEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 
 }
 
@@ -130,15 +142,18 @@ type StorageTemplateDeleteRequest struct {
 	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
-func (e *StorageTemplate) Delete(ro *StorageTemplateDeleteRequest) (*StorageTemplate, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+func (e *StorageTemplate) Delete(ro *StorageTemplateDeleteRequest) (*StorageTemplate, *ApiErrorResponse, error) {
+	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &StorageTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterStorageTemplateEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }

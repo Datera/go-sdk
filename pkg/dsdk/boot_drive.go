@@ -32,24 +32,27 @@ type BootDrivesListRequest struct {
 	Params map[string]string
 }
 
-func (e *BootDrives) List(ro *BootDrivesListRequest) ([]*BootDrive, error) {
+func (e *BootDrives) List(ro *BootDrivesListRequest) ([]*BootDrive, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := []*BootDrive{}
 	for _, data := range rs.Data {
 		elem := &BootDrive{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		resp = append(resp, elem)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type BootDrivesGetRequest struct {
@@ -57,15 +60,18 @@ type BootDrivesGetRequest struct {
 	Id   string
 }
 
-func (e *BootDrives) Get(ro *BootDrivesGetRequest) (*BootDrive, error) {
+func (e *BootDrives) Get(ro *BootDrivesGetRequest) (*BootDrive, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &BootDrive{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }

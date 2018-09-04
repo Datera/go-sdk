@@ -33,10 +33,10 @@ func TestSDKInitiatorCreate(t *testing.T) {
 		Name: dsdk.RandString(12),
 	}
 	var init *dsdk.Initiator
-	if init, err = sdk.Initiators.Create(ro); err != nil {
+	if init, _, err = sdk.Initiators.Create(ro); err != nil {
 		t.Errorf("%s", err)
 	}
-	if _, err = init.Delete(nil); err != nil {
+	if _, _, err = init.Delete(nil); err != nil {
 		t.Errorf("%s", err)
 	}
 }

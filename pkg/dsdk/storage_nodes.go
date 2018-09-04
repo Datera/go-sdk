@@ -81,25 +81,28 @@ type StorageNodesListRequest struct {
 	Params map[string]string
 }
 
-func (e *StorageNodes) List(ro *StorageNodesListRequest) ([]*StorageNode, error) {
+func (e *StorageNodes) List(ro *StorageNodesListRequest) ([]*StorageNode, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := []*StorageNode{}
 	for _, data := range rs.Data {
 		elem := &StorageNode{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		resp = append(resp, elem)
 		RegisterStorageNodeEndpoints(elem)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type StorageNodesGetRequest struct {
@@ -107,18 +110,21 @@ type StorageNodesGetRequest struct {
 	Uuid string
 }
 
-func (e *StorageNodes) Get(ro *StorageNodesGetRequest) (*StorageNode, error) {
+func (e *StorageNodes) Get(ro *StorageNodesGetRequest) (*StorageNode, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Uuid), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Uuid), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &StorageNode{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterStorageNodeEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type StorageNodeSetRequest struct {
@@ -127,17 +133,20 @@ type StorageNodeSetRequest struct {
 	MediaPolicy string          `json:"media_policy,omitempty" mapstructure:"media_policy"`
 }
 
-func (e *StorageNode) Set(ro *StorageNodeSetRequest) (*StorageNode, error) {
+func (e *StorageNode) Set(ro *StorageNodeSetRequest) (*StorageNode, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &StorageNode{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterStorageNodeEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 
 }

@@ -67,18 +67,21 @@ func newAppInstances(path string) *AppInstances {
 	}
 }
 
-func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstance, error) {
+func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AppInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterAppInstanceEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type AppInstancesListRequest struct {
@@ -86,25 +89,28 @@ type AppInstancesListRequest struct {
 	Params map[string]string
 }
 
-func (e *AppInstances) List(ro *AppInstancesListRequest) ([]*AppInstance, error) {
+func (e *AppInstances) List(ro *AppInstancesListRequest) ([]*AppInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := []*AppInstance{}
 	for _, data := range rs.Data {
 		elem := &AppInstance{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		RegisterAppInstanceEndpoints(elem)
 		resp = append(resp, elem)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type AppInstancesGetRequest struct {
@@ -112,18 +118,21 @@ type AppInstancesGetRequest struct {
 	Id   string
 }
 
-func (e *AppInstances) Get(ro *AppInstancesGetRequest) (*AppInstance, error) {
+func (e *AppInstances) Get(ro *AppInstancesGetRequest) (*AppInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AppInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterAppInstanceEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type AppInstanceSetRequest struct {
@@ -142,18 +151,21 @@ type AppInstanceSetRequest struct {
 	StoragePool        []*StoragePool     `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 }
 
-func (e *AppInstance) Set(ro *AppInstanceSetRequest) (*AppInstance, error) {
+func (e *AppInstance) Set(ro *AppInstanceSetRequest) (*AppInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AppInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterAppInstanceEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type AppInstanceDeleteRequest struct {
@@ -161,17 +173,20 @@ type AppInstanceDeleteRequest struct {
 	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
-func (e *AppInstance) Delete(ro *AppInstanceDeleteRequest) (*AppInstance, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+func (e *AppInstance) Delete(ro *AppInstanceDeleteRequest) (*AppInstance, *ApiErrorResponse, error) {
+	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AppInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterAppInstanceEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type AppInstanceMetadata map[string]string
@@ -180,17 +195,20 @@ type AppInstanceMetadataGetRequest struct {
 	Ctxt context.Context
 }
 
-func (e *AppInstance) GetMetadata(ro *AppInstanceMetadataGetRequest) (*AppInstanceMetadata, error) {
+func (e *AppInstance) GetMetadata(ro *AppInstanceMetadataGetRequest) (*AppInstanceMetadata, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, "metadata"), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, "metadata"), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AppInstanceMetadata{}
 	for k, v := range rs.Data {
 		(*resp)[k] = v.(string)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type AppInstanceMetadataSetRequest struct {
@@ -198,15 +216,18 @@ type AppInstanceMetadataSetRequest struct {
 	Metadata map[string]string
 }
 
-func (e *AppInstance) SetMetadata(ro *AppInstanceMetadataSetRequest) (*AppInstanceMetadata, error) {
+func (e *AppInstance) SetMetadata(ro *AppInstanceMetadataSetRequest) (*AppInstanceMetadata, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro.Metadata}
-	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, _path.Join(e.Path, "metadata"), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, _path.Join(e.Path, "metadata"), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AppInstanceMetadata{}
 	for k, v := range rs.Data {
 		(*resp)[k] = v.(string)
 	}
-	return resp, nil
+	return resp, nil, nil
 }

@@ -38,7 +38,7 @@ type ApiConnection struct {
 	apikey     string
 }
 
-type ErrorResponse struct {
+type ApiErrorResponse struct {
 	Name    string `json:"name"`
 	Code    int    `json:"code"`
 	Http    int    `json:"http"`
@@ -99,7 +99,7 @@ func makeBaseUrl(h, apiv string, secure bool) (*url.URL, error) {
 	return url.Parse(fmt.Sprintf("http://%s:7717/v%s", h, apiv))
 }
 
-func checkResponse(resp *greq.Response, err error, retry bool) (*ErrorResponse, error) {
+func checkResponse(resp *greq.Response, err error, retry bool) (*ApiErrorResponse, error) {
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -108,14 +108,14 @@ func checkResponse(resp *greq.Response, err error, retry bool) (*ErrorResponse, 
 		return nil, badStatus[RetryRequestAfterLogin]
 	}
 	if !resp.Ok {
-		eresp := &ErrorResponse{}
+		eresp := &ApiErrorResponse{}
 		resp.JSON(eresp)
 		return eresp, badStatus[resp.StatusCode]
 	}
 	return nil, nil
 }
 
-func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, retry, sensitive bool) error {
+func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, retry, sensitive bool) (*ApiErrorResponse, error) {
 	gurl := *c.baseUrl
 	gurl.Path = path.Join(gurl.Path, url)
 	reqId := uuid.Must(uuid.NewRandom()).String()
@@ -154,37 +154,37 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		tid, reqId, tDelta.Seconds(), gurl.String(), resp.String(), "nil")
 	eresp, err := checkResponse(resp, err, retry)
 	if err == badStatus[RetryRequestAfterLogin] {
-		if err2 := c.Login(ctxt); err2 != nil {
+		if apiresp, err2 := c.Login(ctxt); err2 != nil {
 			log.Errorf("%s", err)
 			log.Errorf("%s", err2)
-			return err2
+			return apiresp, err2
 		}
 		return c.do(ctxt, method, url, ro, rs, false, sensitive)
 	}
 	if err != nil {
 		log.Error("Error during checkResponse: %s", err)
-		return err
+		return nil, err
 	}
 	if eresp != nil {
 		log.Errorf("Recieved API Error %s", Pretty(eresp))
-		return fmt.Errorf(Pretty(eresp))
+		return eresp, nil
 	}
 	err = resp.JSON(rs)
 	if err != nil {
 		log.Errorf("Could not unpack response, %s", err)
-		return err
+		return nil, err
 	}
-	return nil
+	return nil, nil
 }
 
-func (c *ApiConnection) doWithAuth(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}) error {
+func (c *ApiConnection) doWithAuth(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}) (*ApiErrorResponse, error) {
 	if ro == nil {
 		ro = &greq.RequestOptions{}
 	}
 	if c.apikey == "" {
-		if err := c.Login(ctxt); err != nil {
-			log.Errorf("Login failure: %s", err)
-			return err
+		if apierr, err := c.Login(ctxt); err != nil {
+			log.Errorf("Login failure: %s, %s", Pretty(apierr), err)
+			return apierr, err
 		}
 	}
 	ro.Headers = map[string]string{"tenant": c.tenant, "Auth-Token": c.apikey}
@@ -206,35 +206,35 @@ func NewApiConnection(c *udc.UDC, secure bool) *ApiConnection {
 	}
 }
 
-func (c *ApiConnection) Get(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, error) {
+func (c *ApiConnection) Get(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, *ApiErrorResponse, error) {
 	rs := &ApiOuter{}
-	err := c.doWithAuth(ctxt, "GET", url, ro, rs)
-	return rs, err
+	apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
+	return rs, apiresp, err
 }
 
-func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiListOuter, error) {
+func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiListOuter, *ApiErrorResponse, error) {
 	rs := &ApiListOuter{}
 	// TODO:(_alastor_) handle pulling paged entries
-	err := c.doWithAuth(ctxt, "GET", url, ro, rs)
-	return rs, err
+	apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
+	return rs, apiresp, err
 }
 
-func (c *ApiConnection) Put(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, error) {
+func (c *ApiConnection) Put(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, *ApiErrorResponse, error) {
 	rs := &ApiOuter{}
-	err := c.doWithAuth(ctxt, "PUT", url, ro, rs)
-	return rs, err
+	apiresp, err := c.doWithAuth(ctxt, "PUT", url, ro, rs)
+	return rs, apiresp, err
 }
 
-func (c *ApiConnection) Post(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, error) {
+func (c *ApiConnection) Post(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, *ApiErrorResponse, error) {
 	rs := &ApiOuter{}
-	err := c.doWithAuth(ctxt, "POST", url, ro, rs)
-	return rs, err
+	apiresp, err := c.doWithAuth(ctxt, "POST", url, ro, rs)
+	return rs, apiresp, err
 }
 
-func (c *ApiConnection) Delete(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, error) {
+func (c *ApiConnection) Delete(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiOuter, *ApiErrorResponse, error) {
 	rs := &ApiOuter{}
-	err := c.doWithAuth(ctxt, "DELETE", url, ro, rs)
-	return rs, err
+	apiresp, err := c.doWithAuth(ctxt, "DELETE", url, ro, rs)
+	return rs, apiresp, err
 }
 
 func (c *ApiConnection) ApiVersions() []string {
@@ -249,12 +249,12 @@ func (c *ApiConnection) ApiVersions() []string {
 	return apiv.ApiVersions
 }
 
-func (c *ApiConnection) Login(ctxt context.Context) error {
+func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
 	login := &ApiLogin{}
 	ro := &greq.RequestOptions{
 		Data: map[string]string{"name": "admin", "password": "password"},
 	}
-	err := c.do(ctxt, "PUT", "login", ro, login, false, true)
+	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, false, true)
 	c.apikey = login.Key
-	return err
+	return apiresp, err
 }

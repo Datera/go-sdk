@@ -61,18 +61,21 @@ func newVolumes(path string) *Volumes {
 	}
 }
 
-func (e *Volumes) Create(ro *VolumesCreateRequest) (*Volume, error) {
+func (e *Volumes) Create(ro *VolumesCreateRequest) (*Volume, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &Volume{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterVolumeEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type VolumesListRequest struct {
@@ -80,25 +83,28 @@ type VolumesListRequest struct {
 	Params map[string]string
 }
 
-func (e *Volumes) List(ro *VolumesListRequest) ([]*Volume, error) {
+func (e *Volumes) List(ro *VolumesListRequest) ([]*Volume, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := []*Volume{}
 	for _, data := range rs.Data {
 		elem := &Volume{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		RegisterVolumeEndpoints(elem)
 		resp = append(resp, elem)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type VolumesGetRequest struct {
@@ -106,18 +112,21 @@ type VolumesGetRequest struct {
 	Name string          `json:"name,omitempty" mapstructure:"name"`
 }
 
-func (e *Volumes) Get(ro *VolumesGetRequest) (*Volume, error) {
+func (e *Volumes) Get(ro *VolumesGetRequest) (*Volume, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &Volume{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterVolumeEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type VolumeSetRequest struct {
@@ -130,33 +139,39 @@ type VolumeSetRequest struct {
 	StoragePool     []*StoragePool  `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 }
 
-func (e *Volume) Set(ro *VolumeSetRequest) (*Volume, error) {
+func (e *Volume) Set(ro *VolumeSetRequest) (*Volume, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &Volume{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterVolumeEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type VolumeDeleteRequest struct {
 	Ctxt context.Context `json:"-"`
 }
 
-func (e *Volume) Delete(ro *VolumeDeleteRequest) (*Volume, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+func (e *Volume) Delete(ro *VolumeDeleteRequest) (*Volume, *ApiErrorResponse, error) {
+	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &Volume{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterVolumeEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }

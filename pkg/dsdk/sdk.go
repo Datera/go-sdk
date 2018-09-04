@@ -2,6 +2,7 @@ package dsdk
 
 import (
 	"context"
+	"fmt"
 
 	udc "github.com/Datera/go-udc/pkg/udc"
 	uuid "github.com/google/uuid"
@@ -67,9 +68,12 @@ func (c SDK) Context(kv *map[string]string) context.Context {
 // Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under
 // the currently configured tenant
 func (c SDK) HealthCheck() error {
-	sns, err := c.StorageNodes.List(&StorageNodesListRequest{Ctxt: c.Context(nil)})
+	sns, apierr, err := c.StorageNodes.List(&StorageNodesListRequest{Ctxt: c.Context(nil)})
 	if err != nil {
 		return err
+	}
+	if apierr != nil {
+		return fmt.Errorf("ApiError: %s", Pretty(apierr))
 	}
 	log.Debugf("Connected to cluster: %s with tenant %s.\n", c.conf.MgmtIp, c.conf.Tenant)
 	for _, sn := range sns {

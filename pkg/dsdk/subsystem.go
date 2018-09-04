@@ -33,24 +33,27 @@ type SubsystemsListRequest struct {
 	Params map[string]string
 }
 
-func (e *Subsystems) List(ro *SubsystemsListRequest) ([]*Subsystem, error) {
+func (e *Subsystems) List(ro *SubsystemsListRequest) ([]*Subsystem, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := []*Subsystem{}
 	for _, data := range rs.Data {
 		elem := &Subsystem{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		resp = append(resp, elem)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type SubsystemsGetRequest struct {
@@ -58,15 +61,18 @@ type SubsystemsGetRequest struct {
 	Id   string
 }
 
-func (e *Subsystems) Get(ro *SubsystemsGetRequest) (*Subsystem, error) {
+func (e *Subsystems) Get(ro *SubsystemsGetRequest) (*Subsystem, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &Subsystem{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return resp, nil
+	return resp, nil, nil
 }

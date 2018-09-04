@@ -46,19 +46,22 @@ func newAppTemplates(path string) *AppTemplates {
 	}
 }
 
-func (e *AppTemplates) Create(ro *AppTemplatesCreateRequest) (*AppTemplate, error) {
+func (e *AppTemplates) Create(ro *AppTemplatesCreateRequest) (*AppTemplate, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AppTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp.StorageTemplatesEp = newStorageTemplates(e.Path)
 	RegisterAppTemplateEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type AppTemplatesListRequest struct {
@@ -66,25 +69,28 @@ type AppTemplatesListRequest struct {
 	Params map[string]string
 }
 
-func (e *AppTemplates) List(ro *AppTemplatesListRequest) ([]*AppTemplate, error) {
+func (e *AppTemplates) List(ro *AppTemplatesListRequest) ([]*AppTemplate, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
 		Params: ro.Params}
-	rs, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := []*AppTemplate{}
 	for _, data := range rs.Data {
 		elem := &AppTemplate{}
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		RegisterAppTemplateEndpoints(elem)
 		resp = append(resp, elem)
 	}
-	return resp, nil
+	return resp, nil, nil
 }
 
 type AppTemplatesGetRequest struct {
@@ -92,18 +98,21 @@ type AppTemplatesGetRequest struct {
 	Name string
 }
 
-func (e *AppTemplates) Get(ro *AppTemplatesGetRequest) (*AppTemplate, error) {
+func (e *AppTemplates) Get(ro *AppTemplatesGetRequest) (*AppTemplate, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AppTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterAppTemplateEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }
 
 type AppTemplateSetRequest struct {
@@ -113,18 +122,21 @@ type AppTemplateSetRequest struct {
 	StorageTemplates []*StorageTemplate `json:"storage_templates,omitempty" mapstructure:"storage_templates"`
 }
 
-func (e *AppTemplate) Set(ro *AppTemplateSetRequest) (*AppTemplate, error) {
+func (e *AppTemplate) Set(ro *AppTemplateSetRequest) (*AppTemplate, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AppTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterAppTemplateEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 
 }
 
@@ -133,15 +145,18 @@ type AppTemplateDeleteRequest struct {
 	Force bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
-func (e *AppTemplate) Delete(ro *AppTemplateDeleteRequest) (*AppTemplate, error) {
-	rs, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+func (e *AppTemplate) Delete(ro *AppTemplateDeleteRequest) (*AppTemplate, *ApiErrorResponse, error) {
+	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+	if apierr != nil {
+		return nil, apierr, err
+	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	resp := &AppTemplate{}
 	if err = FillStruct(rs.Data, resp); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	RegisterAppTemplateEndpoints(resp)
-	return resp, nil
+	return resp, nil, nil
 }

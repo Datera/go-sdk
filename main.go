@@ -24,7 +24,7 @@ func createAi(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.AppInstance, error) {
 		Name:             "my-test-ai",
 		StorageInstances: []*dsdk.StorageInstance{si},
 	}
-	resp, err := sdk.AppInstances.Create(&aiReq)
+	resp, _, err := sdk.AppInstances.Create(&aiReq)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func createAi(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.AppInstance, error) {
 }
 
 func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, error) {
-	init, err := sdk.Initiators.Create(&dsdk.InitiatorsCreateRequest{
+	init, _, err := sdk.Initiators.Create(&dsdk.InitiatorsCreateRequest{
 		Ctxt: ctxt,
 		Name: "my-test-init",
 		Id:   "iqn.1993-08.org.debian:01:58cc6c30e338",
@@ -45,7 +45,7 @@ func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, erro
 }
 
 func testStorageNodes(sdk *dsdk.SDK) error {
-	sns, err := sdk.StorageNodes.List(&dsdk.StorageNodesListRequest{Ctxt: sdk.Context(nil)})
+	sns, _, err := sdk.StorageNodes.List(&dsdk.StorageNodesListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func testStorageNodes(sdk *dsdk.SDK) error {
 }
 
 func testIpPools(sdk *dsdk.SDK) error {
-	anips, err := sdk.AccessNetworkIpPools.List(&dsdk.AccessNetworkIpPoolsListRequest{Ctxt: sdk.Context(nil)})
+	anips, _, err := sdk.AccessNetworkIpPools.List(&dsdk.AccessNetworkIpPoolsListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func testIpPools(sdk *dsdk.SDK) error {
 }
 
 func testStoragePools(sdk *dsdk.SDK) error {
-	sps, err := sdk.StoragePools.List(&dsdk.StoragePoolsListRequest{Ctxt: sdk.Context(nil)})
+	sps, _, err := sdk.StoragePools.List(&dsdk.StoragePoolsListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func testStoragePools(sdk *dsdk.SDK) error {
 }
 
 func testInitiators(sdk *dsdk.SDK) error {
-	inits, err := sdk.Initiators.List(&dsdk.InitiatorsListRequest{Ctxt: sdk.Context(nil)})
+	inits, _, err := sdk.Initiators.List(&dsdk.InitiatorsListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func testInitiators(sdk *dsdk.SDK) error {
 }
 
 func testInitiatorGroups(sdk *dsdk.SDK) error {
-	igs, err := sdk.InitiatorGroups.List(&dsdk.InitiatorGroupsListRequest{Ctxt: sdk.Context(nil)})
+	igs, _, err := sdk.InitiatorGroups.List(&dsdk.InitiatorGroupsListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func testAclPolicy(sdk *dsdk.SDK) error {
 		return err
 	}
 	defer func() {
-		_, err = ai.Set(&dsdk.AppInstanceSetRequest{
+		_, _, err = ai.Set(&dsdk.AppInstanceSetRequest{
 			Ctxt:       ctxt,
 			AdminState: "offline",
 		})
@@ -118,13 +118,13 @@ func testAclPolicy(sdk *dsdk.SDK) error {
 			fmt.Println(err)
 			return
 		}
-		_, err := ai.Delete(&dsdk.AppInstanceDeleteRequest{Ctxt: ctxt})
+		_, _, err := ai.Delete(&dsdk.AppInstanceDeleteRequest{Ctxt: ctxt})
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		_, err = init.Delete(&dsdk.InitiatorDeleteRequest{Ctxt: ctxt})
+		_, _, err = init.Delete(&dsdk.InitiatorDeleteRequest{Ctxt: ctxt})
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -134,14 +134,14 @@ func testAclPolicy(sdk *dsdk.SDK) error {
 
 	si := ai.StorageInstances[0]
 	fmt.Printf("\nACL Policy: %#v\n", si.AclPolicy)
-	resp, err := si.AclPolicy.Get(&dsdk.AclPolicyGetRequest{Ctxt: ctxt})
+	resp, _, err := si.AclPolicy.Get(&dsdk.AclPolicyGetRequest{Ctxt: ctxt})
 	if err != nil {
 		return err
 	}
 	acl := dsdk.AclPolicy(*resp)
 	init.Name = ""
 	init.Id = ""
-	_, err = acl.Set(&dsdk.AclPolicySetRequest{
+	_, _, err = acl.Set(&dsdk.AclPolicySetRequest{
 		Ctxt:       ctxt,
 		Initiators: []*dsdk.Initiator{init},
 	})
@@ -152,7 +152,7 @@ func testAclPolicy(sdk *dsdk.SDK) error {
 }
 
 func testTenants(sdk *dsdk.SDK) error {
-	tnts, err := sdk.Tenants.List(&dsdk.TenantsListRequest{Ctxt: sdk.Context(nil)})
+	tnts, _, err := sdk.Tenants.List(&dsdk.TenantsListRequest{Ctxt: sdk.Context(nil)})
 	if err != nil {
 		return err
 	}

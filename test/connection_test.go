@@ -28,7 +28,7 @@ func TestConnAuth(t *testing.T) {
 		t.Errorf("%s", err)
 	}
 	conn := dsdk.NewApiConnection(c, false)
-	err = conn.Login(context.Background())
+	_, err = conn.Login(context.Background())
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -40,7 +40,7 @@ func TestConnReAuth(t *testing.T) {
 		t.Errorf("%s", err)
 	}
 	conn := dsdk.NewApiConnection(c, false)
-	_, err = conn.GetList(context.Background(), "app_instances", nil)
+	_, _, err = conn.GetList(context.Background(), "app_instances", nil)
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -60,12 +60,12 @@ func TestCreateInitiator(t *testing.T) {
 			"force": "true",
 		},
 	}
-	_, err = conn.Post(context.Background(), "initiators", ro)
+	_, _, err = conn.Post(context.Background(), "initiators", ro)
 	if err != nil {
 		t.Errorf("%s", err)
 	}
 	ro = &greq.RequestOptions{}
-	_, err = conn.Delete(context.Background(), fmt.Sprintf("initiators/%s", id), ro)
+	_, _, err = conn.Delete(context.Background(), fmt.Sprintf("initiators/%s", id), ro)
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -84,7 +84,7 @@ func TestCreateAi(t *testing.T) {
 			"force": "true",
 		},
 	}
-	_, err = conn.Post(context.Background(), "initiators", ro)
+	_, _, err = conn.Post(context.Background(), "initiators", ro)
 	if err != nil {
 		t.Errorf("%s", err)
 	}
