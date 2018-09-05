@@ -39,23 +39,21 @@ type ApiConnection struct {
 }
 
 type ApiErrorResponse struct {
-	Name    string `json:"name"`
-	Code    int    `json:"code"`
-	Http    int    `json:"http"`
-	Message string `json:"message"`
-	Ts      string `json:"ts"`
-	ApiReq  struct {
-		Version      string            `json:"version"`
-		Op           string            `json:"op"`
-		Tenant       string            `json:"tenant"`
-		Path         string            `json:"path"`
-		Params       map[string]string `json:"params"`
-		ConnInfo     map[string]string `json:"connInfo"`
-		ClientId     string            `json:"client_id"`
-		ClientType   string            `json:"client_type"`
-		Id           string            `json:"api_req_id"`
-		TenancyClass string            `json:"tenancy_class"`
-	}
+	Name         string            `json:"name"`
+	Code         int               `json:"code"`
+	Http         int               `json:"http"`
+	Message      string            `json:"message"`
+	Ts           string            `json:"ts"`
+	Version      string            `json:"version"`
+	Op           string            `json:"op"`
+	Tenant       string            `json:"tenant"`
+	Path         string            `json:"path"`
+	Params       map[string]string `json:"params"`
+	ConnInfo     map[string]string `json:"connInfo"`
+	ClientId     string            `json:"client_id"`
+	ClientType   string            `json:"client_type"`
+	Id           string            `json:"api_req_id"`
+	TenancyClass string            `json:"tenancy_class"`
 }
 
 type ApiLogin struct {

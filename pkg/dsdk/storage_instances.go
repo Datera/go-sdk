@@ -12,7 +12,7 @@ type StorageInstance struct {
 	Access               *Access              `json:"access,omitempty" mapstructure:"access"`
 	AccessControlMode    string               `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
 	AclPolicy            *AclPolicy           `json:"acl_policy,omitempty" mapstructure:"acl_policy"`
-	ActiveInitiators     []*Initiator         `json:"active_initiators,omitempty" mapstructure:"active_initiators"`
+	ActiveInitiators     []string             `json:"active_initiators,omitempty" mapstructure:"active_initiators"`
 	ActiveStorageNodes   []*StorageNode       `json:"active_storage_nodes,omitempty" mapstructure:"active_storage_nodes"`
 	AdminState           string               `json:"admin_state,omitempty" mapstructure:"admin_state"`
 	Auth                 *Auth                `json:"auth,omitempty" mapstructure:"auth"`
