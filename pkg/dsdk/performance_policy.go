@@ -19,12 +19,12 @@ type PerformancePolicy struct {
 
 type PerformancePolicyCreateRequest struct {
 	Ctxt              context.Context `json:"-"`
-	WriteIopsMax      int             `json:"write_iops_max,omitempty" mapstructure:"write_iops_max"`
-	ReadIopsMax       int             `json:"read_iops_max,omitempty" mapstructure:"read_iops_max"`
-	TotalIopsMax      int             `json:"total_iops_max,omitempty" mapstructure:"total_iops_max"`
-	WriteBandwidthMax int             `json:"write_bandwidth_max,omitempty" mapstructure:"write_bandwidth_max"`
-	ReadBandwidthMax  int             `json:"read_bandwidth_max,omitempty" mapstructure:"read_bandwidth_max"`
-	TotalBandwidthMax int             `json:"total_bandwidth_max,omitempty" mapstructure:"total_bandwidth_max"`
+	WriteIopsMax      int             `json:"write_iops_max" mapstructure:"write_iops_max"`
+	ReadIopsMax       int             `json:"read_iops_max" mapstructure:"read_iops_max"`
+	TotalIopsMax      int             `json:"total_iops_max" mapstructure:"total_iops_max"`
+	WriteBandwidthMax int             `json:"write_bandwidth_max" mapstructure:"write_bandwidth_max"`
+	ReadBandwidthMax  int             `json:"read_bandwidth_max" mapstructure:"read_bandwidth_max"`
+	TotalBandwidthMax int             `json:"total_bandwidth_max" mapstructure:"total_bandwidth_max"`
 }
 
 func newPerformancePolicy(path string) *PerformancePolicy {
@@ -99,12 +99,12 @@ func (e *PerformancePolicy) Get(ro *PerformancePolicyGetRequest) (*PerformancePo
 
 type PerformancePolicySetRequest struct {
 	Ctxt              context.Context `json:"-"`
-	WriteIopsMax      int             `json:"write_iops_max,omitempty" mapstructure:"write_iops_max"`
-	ReadIopsMax       int             `json:"read_iops_max,omitempty" mapstructure:"read_iops_max"`
-	TotalIopsMax      int             `json:"total_iops_max,omitempty" mapstructure:"total_iops_max"`
-	WriteBandwidthMax int             `json:"write_bandwidth_max,omitempty" mapstructure:"write_bandwidth_max"`
-	ReadBandwidthMax  int             `json:"read_bandwidth_max,omitempty" mapstructure:"read_bandwidth_max"`
-	TotalBandwidthMax int             `json:"total_bandwidth_max,omitempty" mapstructure:"total_bandwidth_max"`
+	WriteIopsMax      int             `json:"write_iops_max" mapstructure:"write_iops_max"`
+	ReadIopsMax       int             `json:"read_iops_max" mapstructure:"read_iops_max"`
+	TotalIopsMax      int             `json:"total_iops_max" mapstructure:"total_iops_max"`
+	WriteBandwidthMax int             `json:"write_bandwidth_max" mapstructure:"write_bandwidth_max"`
+	ReadBandwidthMax  int             `json:"read_bandwidth_max" mapstructure:"read_bandwidth_max"`
+	TotalBandwidthMax int             `json:"total_bandwidth_max" mapstructure:"total_bandwidth_max"`
 }
 
 func (e *PerformancePolicy) Set(ro *PerformancePolicySetRequest) (*PerformancePolicy, *ApiErrorResponse, error) {
