@@ -45,7 +45,7 @@ func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, erro
 }
 
 func testStorageNodes(sdk *dsdk.SDK) error {
-	sns, _, err := sdk.StorageNodes.List(&dsdk.StorageNodesListRequest{Ctxt: sdk.Context(nil)})
+	sns, _, err := sdk.StorageNodes.List(&dsdk.StorageNodesListRequest{Ctxt: sdk.NewContext()})
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func testStorageNodes(sdk *dsdk.SDK) error {
 }
 
 func testIpPools(sdk *dsdk.SDK) error {
-	anips, _, err := sdk.AccessNetworkIpPools.List(&dsdk.AccessNetworkIpPoolsListRequest{Ctxt: sdk.Context(nil)})
+	anips, _, err := sdk.AccessNetworkIpPools.List(&dsdk.AccessNetworkIpPoolsListRequest{Ctxt: sdk.NewContext()})
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func testIpPools(sdk *dsdk.SDK) error {
 }
 
 func testStoragePools(sdk *dsdk.SDK) error {
-	sps, _, err := sdk.StoragePools.List(&dsdk.StoragePoolsListRequest{Ctxt: sdk.Context(nil)})
+	sps, _, err := sdk.StoragePools.List(&dsdk.StoragePoolsListRequest{Ctxt: sdk.NewContext()})
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func testStoragePools(sdk *dsdk.SDK) error {
 }
 
 func testInitiators(sdk *dsdk.SDK) error {
-	inits, _, err := sdk.Initiators.List(&dsdk.InitiatorsListRequest{Ctxt: sdk.Context(nil)})
+	inits, _, err := sdk.Initiators.List(&dsdk.InitiatorsListRequest{Ctxt: sdk.NewContext()})
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func testInitiators(sdk *dsdk.SDK) error {
 }
 
 func testInitiatorGroups(sdk *dsdk.SDK) error {
-	igs, _, err := sdk.InitiatorGroups.List(&dsdk.InitiatorGroupsListRequest{Ctxt: sdk.Context(nil)})
+	igs, _, err := sdk.InitiatorGroups.List(&dsdk.InitiatorGroupsListRequest{Ctxt: sdk.NewContext()})
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func testInitiatorGroups(sdk *dsdk.SDK) error {
 }
 
 func testAclPolicy(sdk *dsdk.SDK) error {
-	ctxt := sdk.Context(nil)
+	ctxt := sdk.NewContext()
 	ai, err := createAi(ctxt, sdk)
 	if err != nil {
 		return err
@@ -152,7 +152,7 @@ func testAclPolicy(sdk *dsdk.SDK) error {
 }
 
 func testTenants(sdk *dsdk.SDK) error {
-	tnts, _, err := sdk.Tenants.List(&dsdk.TenantsListRequest{Ctxt: sdk.Context(nil)})
+	tnts, _, err := sdk.Tenants.List(&dsdk.TenantsListRequest{Ctxt: sdk.NewContext()})
 	if err != nil {
 		return err
 	}

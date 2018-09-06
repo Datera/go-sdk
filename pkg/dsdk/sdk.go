@@ -54,21 +54,20 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 	}, nil
 }
 
-func (c SDK) Context(kv *map[string]string) context.Context {
+func (c SDK) WithContext(ctxt context.Context) context.Context {
+	return context.WithValue(ctxt, "conn", c.Conn)
+}
+
+func (c SDK) NewContext() context.Context {
 	ctxt := context.WithValue(context.Background(), "conn", c.Conn)
 	ctxt = context.WithValue(ctxt, "tid", uuid.Must(uuid.NewRandom()).String())
-	if kv != nil {
-		for k, v := range *kv {
-			ctxt = context.WithValue(ctxt, k, v)
-		}
-	}
 	return ctxt
 }
 
 // Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under
 // the currently configured tenant
 func (c SDK) HealthCheck() error {
-	sns, apierr, err := c.StorageNodes.List(&StorageNodesListRequest{Ctxt: c.Context(nil)})
+	sns, apierr, err := c.StorageNodes.List(&StorageNodesListRequest{Ctxt: c.NewContext()})
 	if err != nil {
 		return err
 	}
