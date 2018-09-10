@@ -160,16 +160,16 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		return c.do(ctxt, method, url, ro, rs, false, sensitive)
 	}
 	if err != nil {
-		log.Error("Error during checkResponse: %s", err)
+		log.Errorf("Error during checkResponse: %s\n", err)
 		return nil, err
 	}
 	if eresp != nil {
-		log.Errorf("Recieved API Error %s", Pretty(eresp))
+		log.Errorf("Recieved API Error %s\n", Pretty(eresp))
 		return eresp, nil
 	}
 	err = resp.JSON(rs)
 	if err != nil {
-		log.Errorf("Could not unpack response, %s", err)
+		log.Errorf("Could not unpack response, %s\n", err)
 		return nil, err
 	}
 	return nil, nil
