@@ -162,6 +162,15 @@ func testTenants(sdk *dsdk.SDK) error {
 	return nil
 }
 
+func testSystem(sdk *dsdk.SDK) error {
+	sys, _, err := sdk.System.Get(&dsdk.SystemGetRequest{Ctxt: sdk.NewContext()})
+	if err != nil {
+		return err
+	}
+	fmt.Printf("System: %s\n", dsdk.Pretty(sys))
+	return nil
+}
+
 func main() {
 	fmt.Println("Running Datera Golang SDK smoketests")
 
@@ -190,6 +199,9 @@ func main() {
 	}
 	if err = testAclPolicy(sdk); err != nil {
 		fmt.Printf("\nAclPolicy ERROR: %s\n", err)
+	}
+	if err = testSystem(sdk); err != nil {
+		fmt.Printf("\nSystem ERROR: %s\n", err)
 	}
 
 }
