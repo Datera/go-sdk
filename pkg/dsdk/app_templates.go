@@ -66,13 +66,13 @@ func (e *AppTemplates) Create(ro *AppTemplatesCreateRequest) (*AppTemplate, *Api
 
 type AppTemplatesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params map[string]string
+	Params ListParams
 }
 
 func (e *AppTemplates) List(ro *AppTemplatesListRequest) ([]*AppTemplate, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
-		Params: ro.Params}
+		Params: ro.Params.ToMap()}
 	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if apierr != nil {
 		return nil, apierr, err

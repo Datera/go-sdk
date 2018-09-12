@@ -3,6 +3,7 @@ package dsdk
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	udc "github.com/Datera/go-udc/pkg/udc"
 	uuid "github.com/google/uuid"
@@ -15,6 +16,30 @@ const (
 		2.0.0 -- Revamped SDK to new directory structure, switched to using grequests and added UDC support
 	`
 )
+
+type ListParams struct {
+	Filter string `json:"filter,omitempty" mapstructure:"filter"`
+	Limit  int    `json:"limit,omitempty" mapstructure:"limit"`
+	Sort   string `json:"sort,omitempty" mapstructure:"sort"`
+	Offset int    `json:"offset,omitempty" mapstructure:"offset"`
+}
+
+func (s ListParams) ToMap() map[string]string {
+	r := map[string]string{}
+	if s.Filter != "" {
+		r["filter"] = s.Filter
+	}
+	if s.Limit != 0 {
+		r["limit"] = strconv.FormatInt(int64(s.Limit), 10)
+	}
+	if s.Sort != "" {
+		r["sort"] = s.Sort
+	}
+	if s.Offset != 0 {
+		r["offset"] = strconv.FormatInt(int64(s.Limit), 10)
+	}
+	return r
+}
 
 type SDK struct {
 	conf                 *udc.UDC

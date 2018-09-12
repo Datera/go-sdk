@@ -86,13 +86,13 @@ func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstance, *Api
 
 type AppInstancesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params map[string]string
+	Params ListParams
 }
 
 func (e *AppInstances) List(ro *AppInstancesListRequest) ([]*AppInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
-		Params: ro.Params}
+		Params: ro.Params.ToMap()}
 	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if apierr != nil {
 		return nil, apierr, err

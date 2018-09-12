@@ -54,13 +54,13 @@ func (e *Tenants) Create(ro *TenantsCreateRequest) (*Tenant, *ApiErrorResponse, 
 
 type TenantsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params map[string]string
+	Params ListParams
 }
 
 func (e *Tenants) List(ro *TenantsListRequest) ([]*Tenant, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
-		Params: ro.Params}
+		Params: ro.Params.ToMap()}
 	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if apierr != nil {
 		return nil, apierr, err

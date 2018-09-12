@@ -51,13 +51,13 @@ func (e *PerformancePolicy) Create(ro *PerformancePolicyCreateRequest) (*Perform
 
 type PerformancePolicyListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params map[string]string
+	Params ListParams
 }
 
 func (e *PerformancePolicy) List(ro *PerformancePolicyListRequest) ([]*PerformancePolicy, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
-		Params: ro.Params}
+		Params: ro.Params.ToMap()}
 	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if apierr != nil {
 		return nil, apierr, err

@@ -49,13 +49,13 @@ func (e *AccessNetworkIpPools) Create(ro *AccessNetworkIpPoolsCreateRequest) (*A
 
 type AccessNetworkIpPoolsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params map[string]string
+	Params ListParams
 }
 
 func (e *AccessNetworkIpPools) List(ro *AccessNetworkIpPoolsListRequest) ([]*AccessNetworkIpPool, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
-		Params: ro.Params}
+		Params: ro.Params.ToMap()}
 	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if apierr != nil {
 		return nil, apierr, err

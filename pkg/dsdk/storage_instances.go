@@ -76,13 +76,13 @@ func (e *StorageInstances) Create(ro *StorageInstancesCreateRequest) (*StorageIn
 
 type StorageInstancesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params map[string]string
+	Params ListParams
 }
 
 func (e *StorageInstances) List(ro *StorageInstancesListRequest) ([]*StorageInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
-		Params: ro.Params}
+		Params: ro.Params.ToMap()}
 	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if apierr != nil {
 		return nil, apierr, err

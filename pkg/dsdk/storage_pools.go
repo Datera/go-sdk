@@ -47,13 +47,13 @@ func (e *StoragePools) Create(ro *StoragePoolsCreateRequest) (*StoragePool, *Api
 
 type StoragePoolsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params map[string]string
+	Params ListParams
 }
 
 func (e *StoragePools) List(ro *StoragePoolsListRequest) ([]*StoragePool, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
-		Params: ro.Params}
+		Params: ro.Params.ToMap()}
 	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if apierr != nil {
 		return nil, apierr, err

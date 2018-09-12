@@ -48,13 +48,13 @@ func (e *Initiators) Create(ro *InitiatorsCreateRequest) (*Initiator, *ApiErrorR
 
 type InitiatorsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params map[string]string
+	Params ListParams
 }
 
 func (e *Initiators) List(ro *InitiatorsListRequest) ([]*Initiator, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
 		JSON:   ro,
-		Params: ro.Params}
+		Params: ro.Params.ToMap()}
 	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, e.Path, gro)
 	if apierr != nil {
 		return nil, apierr, err
