@@ -95,7 +95,7 @@ func (e *AppTemplates) List(ro *AppTemplatesListRequest) ([]*AppTemplate, *ApiEr
 
 type AppTemplatesGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Name string
+	Name string          `json:"-"`
 }
 
 func (e *AppTemplates) Get(ro *AppTemplatesGetRequest) (*AppTemplate, *ApiErrorResponse, error) {

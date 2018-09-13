@@ -105,7 +105,7 @@ func (e *StorageInstances) List(ro *StorageInstancesListRequest) ([]*StorageInst
 
 type StorageInstancesGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Name string
+	Name string          `json:"-"`
 }
 
 func (e *StorageInstances) Get(ro *StorageInstancesGetRequest) (*StorageInstance, *ApiErrorResponse, error) {

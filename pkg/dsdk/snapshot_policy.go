@@ -79,7 +79,7 @@ func (e *SnapshotPolicies) List(ro *SnapshotPoliciesListRequest) ([]*SnapshotPol
 
 type SnapshotPoliciesGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Name string
+	Name string          `json:"-"`
 }
 
 func (e *SnapshotPolicies) Get(ro *SnapshotPoliciesGetRequest) (*SnapshotPolicy, *ApiErrorResponse, error) {

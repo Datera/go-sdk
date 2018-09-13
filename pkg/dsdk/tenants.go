@@ -82,7 +82,7 @@ func (e *Tenants) List(ro *TenantsListRequest) ([]*Tenant, *ApiErrorResponse, er
 
 type TenantsGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Path string
+	Path string          `json:"-"`
 }
 
 func (e *Tenants) Get(ro *TenantsGetRequest) (*Tenant, *ApiErrorResponse, error) {

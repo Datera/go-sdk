@@ -77,7 +77,7 @@ func (e *AccessNetworkIpPools) List(ro *AccessNetworkIpPoolsListRequest) ([]*Acc
 
 type AccessNetworkIpPoolsGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Id   string
+	Id   string          `json:"-"`
 }
 
 func (e *AccessNetworkIpPools) Get(ro *AccessNetworkIpPoolsGetRequest) (*AccessNetworkIpPool, *ApiErrorResponse, error) {

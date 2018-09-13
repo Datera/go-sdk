@@ -107,7 +107,7 @@ func (e *StorageNodes) List(ro *StorageNodesListRequest) ([]*StorageNode, *ApiEr
 
 type StorageNodesGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Uuid string
+	Uuid string          `json:"-"`
 }
 
 func (e *StorageNodes) Get(ro *StorageNodesGetRequest) (*StorageNode, *ApiErrorResponse, error) {

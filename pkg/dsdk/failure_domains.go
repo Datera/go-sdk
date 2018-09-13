@@ -75,7 +75,7 @@ func (e *FailureDomains) List(ro *FailureDomainsListRequest) ([]*FailureDomain, 
 
 type FailureDomainsGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Id   string
+	Id   string          `json:"-"`
 }
 
 func (e *FailureDomains) Get(ro *FailureDomainsGetRequest) (*FailureDomain, *ApiErrorResponse, error) {

@@ -76,7 +76,7 @@ func (e *Initiators) List(ro *InitiatorsListRequest) ([]*Initiator, *ApiErrorRes
 
 type InitiatorsGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Id   string
+	Id   string          `json:"-"`
 }
 
 func (e *Initiators) Get(ro *InitiatorsGetRequest) (*Initiator, *ApiErrorResponse, error) {

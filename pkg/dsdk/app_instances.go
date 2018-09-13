@@ -115,7 +115,7 @@ func (e *AppInstances) List(ro *AppInstancesListRequest) ([]*AppInstance, *ApiEr
 
 type AppInstancesGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Id   string
+	Id   string          `json:"-"`
 }
 
 func (e *AppInstances) Get(ro *AppInstancesGetRequest) (*AppInstance, *ApiErrorResponse, error) {

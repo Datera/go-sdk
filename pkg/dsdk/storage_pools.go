@@ -75,7 +75,7 @@ func (e *StoragePools) List(ro *StoragePoolsListRequest) ([]*StoragePool, *ApiEr
 
 type StoragePoolsGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Uuid string          `json:"id,omitempty" mapstructure:"id"`
+	Uuid string          `json:"-"`
 }
 
 func (e *StoragePools) Get(ro *StoragePoolsGetRequest) (*StoragePool, *ApiErrorResponse, error) {

@@ -92,7 +92,7 @@ func (e *StorageTemplates) List(ro *StorageTemplatesListRequest) ([]*StorageTemp
 
 type StorageTemplatesGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Name string
+	Name string          `json:"-"`
 }
 
 func (e *StorageTemplates) Get(ro *StorageTemplatesGetRequest) (*StorageTemplate, *ApiErrorResponse, error) {

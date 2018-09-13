@@ -57,7 +57,7 @@ func (e *BootDrives) List(ro *BootDrivesListRequest) ([]*BootDrive, *ApiErrorRes
 
 type BootDrivesGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Id   string
+	Id   string          `json:"-"`
 }
 
 func (e *BootDrives) Get(ro *BootDrivesGetRequest) (*BootDrive, *ApiErrorResponse, error) {

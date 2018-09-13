@@ -109,7 +109,7 @@ func (e *Volumes) List(ro *VolumesListRequest) ([]*Volume, *ApiErrorResponse, er
 
 type VolumesGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Name string          `json:"name,omitempty" mapstructure:"name"`
+	Name string          `json:"-"`
 }
 
 func (e *Volumes) Get(ro *VolumesGetRequest) (*Volume, *ApiErrorResponse, error) {

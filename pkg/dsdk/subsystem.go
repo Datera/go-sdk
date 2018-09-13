@@ -58,7 +58,7 @@ func (e *Subsystems) List(ro *SubsystemsListRequest) ([]*Subsystem, *ApiErrorRes
 
 type SubsystemsGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Id   string
+	Id   string          `json:"-"`
 }
 
 func (e *Subsystems) Get(ro *SubsystemsGetRequest) (*Subsystem, *ApiErrorResponse, error) {

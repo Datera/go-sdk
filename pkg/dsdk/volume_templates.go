@@ -89,7 +89,7 @@ func (e *VolumeTemplates) List(ro *VolumeTemplatesListRequest) ([]*VolumeTemplat
 
 type VolumeTemplatesGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Name string
+	Name string          `json:"-"`
 }
 
 func (e *VolumeTemplates) Get(ro *VolumeTemplatesGetRequest) (*VolumeTemplate, *ApiErrorResponse, error) {

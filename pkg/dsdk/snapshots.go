@@ -87,7 +87,7 @@ func (e *Snapshots) List(ro *SnapshotsListRequest) ([]*Snapshot, *ApiErrorRespon
 
 type SnapshotsGetRequest struct {
 	Ctxt      context.Context `json:"-"`
-	Timestamp string
+	Timestamp string          `json:"-"`
 }
 
 func (e *Snapshots) Get(ro *SnapshotsGetRequest) (*Snapshot, *ApiErrorResponse, error) {
