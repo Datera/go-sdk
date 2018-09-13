@@ -170,6 +170,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	err = resp.JSON(rs)
 	if err != nil {
 		log.Errorf("Could not unpack response, %s\n", err)
+		log.Errorf("Response, %s\n", resp.String())
 		return nil, err
 	}
 	return nil, nil
