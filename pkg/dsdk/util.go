@@ -63,12 +63,15 @@ func parseTemplate(fstring string, args ...interface{}) (string, error) {
 // SETS
 
 type StringSet struct {
-	m    sync.Mutex
+	m    *sync.Mutex
 	data map[string]struct{}
 }
 
 func NewStringSet(size int, d ...string) *StringSet {
-	result := StringSet{data: make(map[string]struct{}, size)}
+	result := StringSet{
+		m:    &sync.Mutex{},
+		data: make(map[string]struct{}, size),
+	}
 	for _, i := range d {
 		result.data[i] = struct{}{}
 	}
@@ -95,15 +98,24 @@ func (s *StringSet) Delete(ns string) {
 }
 
 func (s *StringSet) Union(ss *StringSet) *StringSet {
-	result := *s
+	result := StringSet{
+		m:    &sync.Mutex{},
+		data: make(map[string]struct{}, len(s.data)+len(ss.data)),
+	}
+	for k := range s.data {
+		result.data[k] = struct{}{}
+	}
 	for k := range ss.data {
 		result.data[k] = struct{}{}
 	}
 	return &result
 }
 
-func (s *StringSet) Stringersection(ss *StringSet) *StringSet {
-	result := StringSet{}
+func (s *StringSet) Intersection(ss *StringSet) *StringSet {
+	result := StringSet{
+		m:    &sync.Mutex{},
+		data: make(map[string]struct{}, len(s.data)),
+	}
 	for k := range s.data {
 		if _, ok := ss.data[k]; ok {
 			result.data[k] = struct{}{}
@@ -113,7 +125,10 @@ func (s *StringSet) Stringersection(ss *StringSet) *StringSet {
 }
 
 func (s *StringSet) Difference(ss *StringSet) *StringSet {
-	result := *s
+	result := StringSet{
+		m:    &sync.Mutex{},
+		data: make(map[string]struct{}, len(s.data)),
+	}
 	for k := range s.data {
 		if _, ok := ss.data[k]; !ok {
 			result.data[k] = struct{}{}
@@ -123,7 +138,10 @@ func (s *StringSet) Difference(ss *StringSet) *StringSet {
 }
 
 func (s *StringSet) SymDifference(ss *StringSet) *StringSet {
-	result := *s
+	result := StringSet{
+		m:    &sync.Mutex{},
+		data: make(map[string]struct{}, len(s.data)),
+	}
 	for k := range s.data {
 		if _, ok := ss.data[k]; !ok {
 			result.data[k] = struct{}{}
@@ -148,12 +166,15 @@ func (s *StringSet) List() []string {
 }
 
 type IntSet struct {
-	m    sync.Mutex
+	m    *sync.Mutex
 	data map[int]struct{}
 }
 
 func NewIntSet(size int, d ...int) *IntSet {
-	result := IntSet{data: make(map[int]struct{}, size)}
+	result := IntSet{
+		m:    &sync.Mutex{},
+		data: make(map[int]struct{}, size),
+	}
 	for _, i := range d {
 		result.data[i] = struct{}{}
 	}
@@ -180,7 +201,13 @@ func (s *IntSet) Delete(ns int) {
 }
 
 func (s *IntSet) Union(ss *IntSet) *IntSet {
-	result := *s
+	result := IntSet{
+		m:    &sync.Mutex{},
+		data: make(map[int]struct{}, len(s.data)+len(ss.data)),
+	}
+	for k := range s.data {
+		result.data[k] = struct{}{}
+	}
 	for k := range ss.data {
 		result.data[k] = struct{}{}
 	}
@@ -188,7 +215,10 @@ func (s *IntSet) Union(ss *IntSet) *IntSet {
 }
 
 func (s *IntSet) Intersection(ss *IntSet) *IntSet {
-	result := IntSet{}
+	result := IntSet{
+		m:    &sync.Mutex{},
+		data: make(map[int]struct{}, len(s.data)),
+	}
 	for k := range s.data {
 		if _, ok := ss.data[k]; ok {
 			result.data[k] = struct{}{}
@@ -198,7 +228,10 @@ func (s *IntSet) Intersection(ss *IntSet) *IntSet {
 }
 
 func (s *IntSet) Difference(ss *IntSet) *IntSet {
-	result := *s
+	result := IntSet{
+		m:    &sync.Mutex{},
+		data: make(map[int]struct{}, len(s.data)),
+	}
 	for k := range s.data {
 		if _, ok := ss.data[k]; !ok {
 			result.data[k] = struct{}{}
@@ -208,7 +241,10 @@ func (s *IntSet) Difference(ss *IntSet) *IntSet {
 }
 
 func (s *IntSet) SymDifference(ss *IntSet) *IntSet {
-	result := *s
+	result := IntSet{
+		m:    &sync.Mutex{},
+		data: make(map[int]struct{}, len(s.data)),
+	}
 	for k := range s.data {
 		if _, ok := ss.data[k]; !ok {
 			result.data[k] = struct{}{}
