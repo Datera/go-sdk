@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 
@@ -62,11 +63,12 @@ func parseTemplate(fstring string, args ...interface{}) (string, error) {
 // SETS
 
 type StringSet struct {
+	m    sync.Mutex
 	data map[string]struct{}
 }
 
-func newStringSet(d ...string) *StringSet {
-	result := StringSet{data: map[string]struct{}{}}
+func NewStringSet(size int, d ...string) *StringSet {
+	result := StringSet{data: make(map[string]struct{}, size)}
 	for _, i := range d {
 		result.data[i] = struct{}{}
 	}
@@ -81,10 +83,14 @@ func (s *StringSet) Contains(ns string) bool {
 }
 
 func (s *StringSet) Add(ns string) {
+	s.m.Lock()
+	defer s.m.Unlock()
 	s.data[ns] = struct{}{}
 }
 
 func (s *StringSet) Delete(ns string) {
+	s.m.Lock()
+	defer s.m.Unlock()
 	delete(s.data, ns)
 }
 
@@ -131,12 +137,23 @@ func (s *StringSet) SymDifference(ss *StringSet) *StringSet {
 	return &result
 }
 
+func (s *StringSet) List() []string {
+	keys := make([]string, len(s.data))
+	i := 0
+	for k := range s.data {
+		keys[i] = k
+		i++
+	}
+	return keys
+}
+
 type IntSet struct {
+	m    sync.Mutex
 	data map[int]struct{}
 }
 
-func newIntSet(d ...int) *IntSet {
-	result := IntSet{data: map[int]struct{}{}}
+func NewIntSet(size int, d ...int) *IntSet {
+	result := IntSet{data: make(map[int]struct{}, size)}
 	for _, i := range d {
 		result.data[i] = struct{}{}
 	}
@@ -151,10 +168,14 @@ func (s *IntSet) Contains(ns int) bool {
 }
 
 func (s *IntSet) Add(ns int) {
+	s.m.Lock()
+	defer s.m.Unlock()
 	s.data[ns] = struct{}{}
 }
 
 func (s *IntSet) Delete(ns int) {
+	s.m.Lock()
+	defer s.m.Unlock()
 	delete(s.data, ns)
 }
 
@@ -199,6 +220,16 @@ func (s *IntSet) SymDifference(ss *IntSet) *IntSet {
 		}
 	}
 	return &result
+}
+
+func (s *IntSet) List() []int {
+	keys := make([]int, len(s.data))
+	i := 0
+	for k := range s.data {
+		keys[i] = k
+		i++
+	}
+	return keys
 }
 
 // From https://stackoverflow.com/a/31832326/4408885

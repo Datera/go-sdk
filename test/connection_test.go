@@ -1,4 +1,4 @@
-package dsdk
+package dsdk_test
 
 import (
 	"context"
@@ -40,7 +40,7 @@ func TestConnReAuth(t *testing.T) {
 		t.Errorf("%s", err)
 	}
 	conn := dsdk.NewApiConnection(c, false)
-	_, _, err = conn.GetList(context.Background(), "app_instances", nil)
+	_, _, err = conn.GetList(context.Background(), "app_instances", &greq.RequestOptions{})
 	if err != nil {
 		t.Errorf("%s", err)
 	}

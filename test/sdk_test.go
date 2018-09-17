@@ -28,7 +28,9 @@ func TestSDKInitiatorCreate(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	ctxt := sdk.NewContext()
 	ro := &dsdk.InitiatorsCreateRequest{
+		Ctxt: ctxt,
 		Id:   fmt.Sprintf("iqn.1993-08.org.debian:01:%s", dsdk.RandString(12)),
 		Name: dsdk.RandString(12),
 	}
@@ -36,7 +38,9 @@ func TestSDKInitiatorCreate(t *testing.T) {
 	if init, _, err = sdk.Initiators.Create(ro); err != nil {
 		t.Errorf("%s", err)
 	}
-	if _, _, err = init.Delete(nil); err != nil {
+	if _, _, err = init.Delete(&dsdk.InitiatorDeleteRequest{
+		Ctxt: ctxt,
+	}); err != nil {
 		t.Errorf("%s", err)
 	}
 }
