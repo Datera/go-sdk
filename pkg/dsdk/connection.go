@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -82,6 +83,55 @@ type ApiOuter struct {
 	ReqTime  int                    `json:"request_time"`
 	Tenant   string                 `json:"tenant"`
 	Path     string                 `json:"path"`
+}
+
+type ListParams struct {
+	Filter string `json:"filter,omitempty" mapstructure:"filter"`
+	Limit  int    `json:"limit,omitempty" mapstructure:"limit"`
+	Sort   string `json:"sort,omitempty" mapstructure:"sort"`
+	Offset int    `json:"offset,omitempty" mapstructure:"offset"`
+}
+
+func (s ListParams) ToMap() map[string]string {
+	r := map[string]string{}
+	if s.Filter != "" {
+		r["filter"] = s.Filter
+	}
+	if s.Limit != 0 {
+		r["limit"] = strconv.FormatInt(int64(s.Limit), 10)
+	}
+	if s.Sort != "" {
+		r["sort"] = s.Sort
+	}
+	if s.Offset != 0 {
+		r["offset"] = strconv.FormatInt(int64(s.Offset), 10)
+	}
+	return r
+}
+
+func ListParamsFromMap(m map[string]string) *ListParams {
+	lp := &ListParams{}
+	lp.Filter = m["filter"]
+	lp.Sort = m["sort"]
+	if m["offset"] != "" {
+		o, err := strconv.ParseInt(m["offset"], 0, 0)
+		if err != nil {
+			panic(err)
+		}
+		lp.Offset = int(o)
+	} else {
+		lp.Offset = 0
+	}
+	if m["limit"] != "" {
+		o, err := strconv.ParseInt(m["limit"], 0, 0)
+		if err != nil {
+			panic(err)
+		}
+		lp.Limit = int(o)
+	} else {
+		lp.Limit = 0
+	}
+	return lp
 }
 
 func init() {
@@ -213,8 +263,35 @@ func (c *ApiConnection) Get(ctxt context.Context, url string, ro *greq.RequestOp
 
 func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.RequestOptions) (*ApiListOuter, *ApiErrorResponse, error) {
 	rs := &ApiListOuter{}
-	// TODO:(_alastor_) handle pulling paged entries
 	apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
+	// TODO:(_alastor_) handle pulling paged entries
+	if apiresp == nil && len(rs.Metadata) > 0 {
+		lp := ListParamsFromMap(ro.Params)
+		if lp.Limit != 0 || lp.Offset != 0 {
+			return rs, apiresp, err
+		}
+		data := rs.Data
+		offset := 0
+		tcnt := 0
+		for ldata := len(data); ldata != tcnt; {
+			tcnt := int(rs.Metadata["total_count"].(float64))
+			offset += len(rs.Data)
+			if offset >= tcnt {
+				break
+			}
+			ro.Params = ListParams{
+				Offset: offset,
+			}.ToMap()
+			rs.Data = []interface{}{}
+			apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
+			if apiresp != nil || err != nil {
+				rs.Data = data
+				return rs, apiresp, err
+			}
+			data = append(data, rs.Data...)
+		}
+		rs.Data = data
+	}
 	return rs, apiresp, err
 }
 

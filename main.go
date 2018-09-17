@@ -8,7 +8,7 @@ import (
 	dsdk "github.com/Datera/go-sdk/pkg/dsdk"
 )
 
-func createAi(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.AppInstance, error) {
+func createAi(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.AppInstance, func(), error) {
 	vol := &dsdk.Volume{
 		Name:          "volume-1",
 		Size:          5,
@@ -21,95 +21,15 @@ func createAi(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.AppInstance, error) {
 	}
 	aiReq := dsdk.AppInstancesCreateRequest{
 		Ctxt:             ctxt,
-		Name:             "my-test-ai",
+		Name:             fmt.Sprintf("test-%s", dsdk.RandString(10)),
 		StorageInstances: []*dsdk.StorageInstance{si},
 	}
 	resp, _, err := sdk.AppInstances.Create(&aiReq)
 	if err != nil {
-		return nil, err
+		return nil, func() {}, err
 	}
 	ai := dsdk.AppInstance(*resp)
-	return &ai, nil
-}
-
-func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, error) {
-	init, _, err := sdk.Initiators.Create(&dsdk.InitiatorsCreateRequest{
-		Ctxt: ctxt,
-		Name: "my-test-init",
-		Id:   "iqn.1993-08.org.debian:01:58cc6c30e338",
-	})
-	if err != nil {
-		return nil, err
-	}
-	return init, nil
-}
-
-func testStorageNodes(sdk *dsdk.SDK) error {
-	sns, _, err := sdk.StorageNodes.List(&dsdk.StorageNodesListRequest{Ctxt: sdk.NewContext()})
-	if err != nil {
-		return err
-	}
-	for _, sn := range sns {
-		fmt.Printf("StorageNode: %s\n", sn.Uuid)
-	}
-	return nil
-}
-
-func testIpPools(sdk *dsdk.SDK) error {
-	anips, _, err := sdk.AccessNetworkIpPools.List(&dsdk.AccessNetworkIpPoolsListRequest{Ctxt: sdk.NewContext()})
-	if err != nil {
-		return err
-	}
-	for _, anip := range anips {
-		fmt.Printf("AccessNetworkIpPool: %s\n", anip.Name)
-	}
-	return nil
-}
-
-func testStoragePools(sdk *dsdk.SDK) error {
-	sps, _, err := sdk.StoragePools.List(&dsdk.StoragePoolsListRequest{Ctxt: sdk.NewContext()})
-	if err != nil {
-		return err
-	}
-	for _, sp := range sps {
-		fmt.Printf("StoragePool: %s\n", sp.Name)
-	}
-	return nil
-}
-
-func testInitiators(sdk *dsdk.SDK) error {
-	inits, _, err := sdk.Initiators.List(&dsdk.InitiatorsListRequest{Ctxt: sdk.NewContext()})
-	if err != nil {
-		return err
-	}
-	for _, init := range inits {
-		fmt.Printf("Initiator: %s\n", init.Name)
-	}
-	return nil
-}
-
-func testInitiatorGroups(sdk *dsdk.SDK) error {
-	igs, _, err := sdk.InitiatorGroups.List(&dsdk.InitiatorGroupsListRequest{Ctxt: sdk.NewContext()})
-	if err != nil {
-		return err
-	}
-	for _, ig := range igs {
-		fmt.Printf("InitiatorGroup: %s\n", ig.Name)
-	}
-	return nil
-}
-
-func testAclPolicy(sdk *dsdk.SDK) error {
-	ctxt := sdk.NewContext()
-	ai, err := createAi(ctxt, sdk)
-	if err != nil {
-		return err
-	}
-	init, err := createInitiator(ctxt, sdk)
-	if err != nil {
-		return err
-	}
-	defer func() {
+	return &ai, func() {
 		_, _, err = ai.Set(&dsdk.AppInstanceSetRequest{
 			Ctxt:       ctxt,
 			AdminState: "offline",
@@ -123,13 +43,106 @@ func testAclPolicy(sdk *dsdk.SDK) error {
 			fmt.Println(err)
 			return
 		}
+	}, nil
+}
 
+func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, func(), error) {
+	init, apierr, err := sdk.Initiators.Create(&dsdk.InitiatorsCreateRequest{
+		Ctxt: ctxt,
+		Name: "my-test-init",
+		Id:   "iqn.1993-08.org.debian:01:58cc6c30e338",
+	})
+	if err != nil {
+		return nil, func() {}, err
+	}
+	if apierr != nil {
+		return nil, func() {}, fmt.Errorf("%#v", apierr)
+	}
+	return init, func() {
+		if init == nil {
+			return
+		}
 		_, _, err = init.Delete(&dsdk.InitiatorDeleteRequest{Ctxt: ctxt})
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-	}()
+	}, nil
+}
+
+func testStorageNodes(sdk *dsdk.SDK) error {
+	fmt.Println("Running: TestStorageNodes")
+	sns, _, err := sdk.StorageNodes.List(&dsdk.StorageNodesListRequest{Ctxt: sdk.NewContext()})
+	if err != nil {
+		return err
+	}
+	for _, sn := range sns {
+		fmt.Printf("StorageNode: %s\n", sn.Uuid)
+	}
+	return nil
+}
+
+func testIpPools(sdk *dsdk.SDK) error {
+	fmt.Println("Running: TestIpPools")
+	anips, _, err := sdk.AccessNetworkIpPools.List(&dsdk.AccessNetworkIpPoolsListRequest{Ctxt: sdk.NewContext()})
+	if err != nil {
+		return err
+	}
+	for _, anip := range anips {
+		fmt.Printf("AccessNetworkIpPool: %s\n", anip.Name)
+	}
+	return nil
+}
+
+func testStoragePools(sdk *dsdk.SDK) error {
+	fmt.Println("Running: TestStoragePools")
+	sps, _, err := sdk.StoragePools.List(&dsdk.StoragePoolsListRequest{Ctxt: sdk.NewContext()})
+	if err != nil {
+		return err
+	}
+	for _, sp := range sps {
+		fmt.Printf("StoragePool: %s\n", sp.Name)
+	}
+	return nil
+}
+
+func testInitiators(sdk *dsdk.SDK) error {
+	fmt.Println("Running: TestInitiators")
+	inits, _, err := sdk.Initiators.List(&dsdk.InitiatorsListRequest{Ctxt: sdk.NewContext()})
+	if err != nil {
+		return err
+	}
+	for _, init := range inits {
+		fmt.Printf("Initiator: %s\n", init.Name)
+	}
+	return nil
+}
+
+func testInitiatorGroups(sdk *dsdk.SDK) error {
+	fmt.Println("Running: TestInitiatorGroups")
+	igs, _, err := sdk.InitiatorGroups.List(&dsdk.InitiatorGroupsListRequest{Ctxt: sdk.NewContext()})
+	if err != nil {
+		return err
+	}
+	for _, ig := range igs {
+		fmt.Printf("InitiatorGroup: %s\n", ig.Name)
+	}
+	return nil
+}
+
+func testAclPolicy(sdk *dsdk.SDK) error {
+	fmt.Println("Running: TestACLPolicy")
+	ctxt := sdk.NewContext()
+	ai, cleanAi, err := createAi(ctxt, sdk)
+	if err != nil {
+		return err
+	}
+	init, cleanInit, err := createInitiator(ctxt, sdk)
+	if err != nil {
+		return err
+	}
+	defer cleanInit()
+	defer cleanAi()
 	time.Sleep(time.Second / 2)
 
 	si := ai.StorageInstances[0]
@@ -152,6 +165,7 @@ func testAclPolicy(sdk *dsdk.SDK) error {
 }
 
 func testTenants(sdk *dsdk.SDK) error {
+	fmt.Println("Running: TestTenants")
 	tnts, _, err := sdk.Tenants.List(&dsdk.TenantsListRequest{Ctxt: sdk.NewContext()})
 	if err != nil {
 		return err
@@ -163,11 +177,57 @@ func testTenants(sdk *dsdk.SDK) error {
 }
 
 func testSystem(sdk *dsdk.SDK) error {
+	fmt.Println("Running: TestSystem")
 	sys, _, err := sdk.System.Get(&dsdk.SystemGetRequest{Ctxt: sdk.NewContext()})
 	if err != nil {
 		return err
 	}
 	fmt.Printf("System: %s\n", dsdk.Pretty(sys))
+	return nil
+}
+
+func testPaging(sdk *dsdk.SDK) error {
+	fmt.Println("Running: TestPaging")
+	cleanups := []func(){}
+	ctxt := sdk.NewContext()
+	workers := make(chan int, 30)
+	for i := 0; i < 30; i++ {
+		workers <- i
+	}
+	for i := 0; i < 200; i++ {
+		w := <-workers
+		go func() {
+			_, clean, err := createAi(ctxt, sdk)
+			if err != nil {
+				fmt.Println(err)
+				workers <- w
+				return
+			}
+			cleanups = append(cleanups, clean)
+			workers <- w
+		}()
+	}
+	ais, _, err := sdk.AppInstances.List(&dsdk.AppInstancesListRequest{
+		Ctxt:   ctxt,
+		Params: dsdk.ListParams{Limit: 0},
+	})
+	if err != nil {
+		return err
+	}
+	fmt.Printf("APPINSTANCES RESP LEN: %d\n", len(ais))
+	for _, ai := range ais {
+		fmt.Printf("AppInstance: %s\n", ai.Name)
+	}
+	defer func() {
+		for _, clean := range cleanups {
+			w := <-workers
+			go func(cleanup func()) {
+				cleanup()
+				workers <- w
+			}(clean)
+		}
+	}()
+
 	return nil
 }
 
@@ -202,6 +262,10 @@ func main() {
 	}
 	if err = testSystem(sdk); err != nil {
 		fmt.Printf("\nSystem ERROR: %s\n", err)
+	}
+
+	if err := testPaging(sdk); err != nil {
+		fmt.Printf("\nPaging ERROR: %s\n", err)
 	}
 
 }
