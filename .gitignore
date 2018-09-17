@@ -11,3 +11,6 @@ gopkg.in/*
 *.txt
 tags
 cached_api
+_output/
+datera-config.json
+.datera-config.json
