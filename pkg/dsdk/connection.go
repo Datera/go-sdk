@@ -210,13 +210,13 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		}
 		return c.do(ctxt, method, url, ro, rs, false, sensitive)
 	}
-	if err != nil {
-		log.Errorf("Error during checkResponse: %s\n", err)
-		return nil, err
-	}
 	if eresp != nil {
 		log.Errorf("Recieved API Error %s\n", Pretty(eresp))
 		return eresp, nil
+	}
+	if err != nil {
+		log.Errorf("Error during checkResponse: %s\n", err)
+		return nil, err
 	}
 	err = resp.JSON(rs)
 	if err != nil {
