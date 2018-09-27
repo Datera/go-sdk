@@ -192,7 +192,7 @@ func (e *AppInstance) Delete(ro *AppInstanceDeleteRequest) (*AppInstance, *ApiEr
 type AppInstanceMetadata map[string]string
 
 type AppInstanceMetadataGetRequest struct {
-	Ctxt context.Context
+	Ctxt context.Context `json:"-"`
 }
 
 func (e *AppInstance) GetMetadata(ro *AppInstanceMetadataGetRequest) (*AppInstanceMetadata, *ApiErrorResponse, error) {
@@ -212,7 +212,7 @@ func (e *AppInstance) GetMetadata(ro *AppInstanceMetadataGetRequest) (*AppInstan
 }
 
 type AppInstanceMetadataSetRequest struct {
-	Ctxt     context.Context
+	Ctxt     context.Context `json:"-"`
 	Metadata map[string]string
 }
 
