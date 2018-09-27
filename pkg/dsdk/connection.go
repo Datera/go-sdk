@@ -40,27 +40,28 @@ type ApiConnection struct {
 }
 
 type ApiErrorResponse struct {
-	Name         string            `json:"name"`
-	Code         int               `json:"code"`
-	Http         int               `json:"http"`
-	Message      string            `json:"message"`
-	Ts           string            `json:"ts"`
-	Version      string            `json:"version"`
-	Op           string            `json:"op"`
-	Tenant       string            `json:"tenant"`
-	Path         string            `json:"path"`
-	Params       map[string]string `json:"params"`
-	ConnInfo     map[string]string `json:"connInfo"`
-	ClientId     string            `json:"client_id"`
-	ClientType   string            `json:"client_type"`
-	Id           string            `json:"api_req_id"`
-	TenancyClass string            `json:"tenancy_class"`
+	Name         string            `json:"name,omitempty"`
+	Code         int               `json:"code,omitempty"`
+	Http         int               `json:"http,omitempty"`
+	Message      string            `json:"message,omitempty"`
+	Ts           string            `json:"ts,omitempty"`
+	Version      string            `json:"version,omitempty"`
+	Op           string            `json:"op,omitempty"`
+	Tenant       string            `json:"tenant,omitempty"`
+	Path         string            `json:"path,omitempty"`
+	Params       map[string]string `json:"params,omitempty"`
+	ConnInfo     map[string]string `json:"connInfo,omitempty"`
+	ClientId     string            `json:"client_id,omitempty"`
+	ClientType   string            `json:"client_type,omitempty"`
+	Id           string            `json:"api_req_id,omitempty"`
+	TenancyClass string            `json:"tenancy_class,omitempty"`
+	Errors       []string          `json:"errors,omitempty"`
 }
 
 type ApiLogin struct {
-	Key     string `json:"key"`
-	Version string `json:"version"`
-	ReqTime int    `json:"request_time"`
+	Key     string `json:"key,omitempty,omitempty"`
+	Version string `json:"version,omitempty,omitempty"`
+	ReqTime int    `json:"request_time,omitempty,omitempty"`
 }
 
 type ApiVersions struct {
@@ -68,21 +69,21 @@ type ApiVersions struct {
 }
 
 type ApiListOuter struct {
-	Data     []interface{}          `json:"data"`
-	Version  string                 `json:"version"`
-	Metadata map[string]interface{} `json:"metadata"`
-	ReqTime  int                    `json:"request_time"`
-	Tenant   string                 `json:"tenant"`
-	Path     string                 `json:"path"`
+	Data     []interface{}          `json:"data,omitempty"`
+	Version  string                 `json:"version,omitempty"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	ReqTime  int                    `json:"request_time,omitempty"`
+	Tenant   string                 `json:"tenant,omitempty"`
+	Path     string                 `json:"path,omitempty"`
 }
 
 type ApiOuter struct {
-	Data     map[string]interface{} `json:"data"`
-	Version  string                 `json:"version"`
-	Metadata map[string]interface{} `json:"metadata"`
-	ReqTime  int                    `json:"request_time"`
-	Tenant   string                 `json:"tenant"`
-	Path     string                 `json:"path"`
+	Data     map[string]interface{} `json:"data,omitempty"`
+	Version  string                 `json:"version,omitempty"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	ReqTime  int                    `json:"request_time,omitempty"`
+	Tenant   string                 `json:"tenant,omitempty"`
+	Path     string                 `json:"path,omitempty"`
 }
 
 type ListParams struct {
