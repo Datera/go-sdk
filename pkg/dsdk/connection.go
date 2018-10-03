@@ -329,7 +329,7 @@ func (c *ApiConnection) ApiVersions() []string {
 func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
 	login := &ApiLogin{}
 	ro := &greq.RequestOptions{
-		Data: map[string]string{"name": "admin", "password": "password"},
+		Data: map[string]string{"name": c.username, "password": c.password},
 	}
 	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, false, true)
 	c.apikey = login.Key
