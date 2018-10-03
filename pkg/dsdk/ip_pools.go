@@ -49,7 +49,7 @@ func (e *AccessNetworkIpPools) Create(ro *AccessNetworkIpPoolsCreateRequest) (*A
 
 type AccessNetworkIpPoolsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams
+	Params ListParams `json:"params,omitempty"`
 }
 
 func (e *AccessNetworkIpPools) List(ro *AccessNetworkIpPoolsListRequest) ([]*AccessNetworkIpPool, *ApiErrorResponse, error) {

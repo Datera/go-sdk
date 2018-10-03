@@ -66,7 +66,7 @@ func (e *AppTemplates) Create(ro *AppTemplatesCreateRequest) (*AppTemplate, *Api
 
 type AppTemplatesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams
+	Params ListParams `json:"params,omitempty"`
 }
 
 func (e *AppTemplates) List(ro *AppTemplatesListRequest) ([]*AppTemplate, *ApiErrorResponse, error) {

@@ -48,7 +48,7 @@ func (e *InitiatorGroups) Create(ro *InitiatorGroupsCreateRequest) (*InitiatorGr
 
 type InitiatorGroupsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams
+	Params ListParams `json:"params,omitempty"`
 }
 
 func (e *InitiatorGroups) List(ro *InitiatorGroupsListRequest) ([]*InitiatorGroup, *ApiErrorResponse, error) {

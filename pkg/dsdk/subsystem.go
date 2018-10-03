@@ -30,7 +30,7 @@ func newSubsystems(path string) *Subsystems {
 
 type SubsystemsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams
+	Params ListParams `json:"params,omitempty"`
 }
 
 func (e *Subsystems) List(ro *SubsystemsListRequest) ([]*Subsystem, *ApiErrorResponse, error) {

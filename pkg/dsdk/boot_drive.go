@@ -29,7 +29,7 @@ func newBootDrives(path string) *BootDrives {
 
 type BootDrivesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams
+	Params ListParams `json:"params,omitempty"`
 }
 
 func (e *BootDrives) List(ro *BootDrivesListRequest) ([]*BootDrive, *ApiErrorResponse, error) {

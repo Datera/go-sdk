@@ -78,7 +78,7 @@ func newStorageNodes(path string) *StorageNodes {
 
 type StorageNodesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams
+	Params ListParams `json:"params,omitempty"`
 }
 
 func (e *StorageNodes) List(ro *StorageNodesListRequest) ([]*StorageNode, *ApiErrorResponse, error) {

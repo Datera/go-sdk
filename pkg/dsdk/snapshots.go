@@ -59,7 +59,7 @@ func (e *Snapshots) Create(ro *SnapshotsCreateRequest) (*Snapshot, *ApiErrorResp
 
 type SnapshotsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams
+	Params ListParams `json:"params,omitempty"`
 }
 
 func (e *Snapshots) List(ro *SnapshotsListRequest) ([]*Snapshot, *ApiErrorResponse, error) {

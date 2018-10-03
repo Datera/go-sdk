@@ -54,7 +54,7 @@ func (e *Tenants) Create(ro *TenantsCreateRequest) (*Tenant, *ApiErrorResponse, 
 
 type TenantsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams
+	Params ListParams `json:"params,omitempty"`
 }
 
 func (e *Tenants) List(ro *TenantsListRequest) ([]*Tenant, *ApiErrorResponse, error) {

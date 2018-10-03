@@ -76,7 +76,7 @@ func (e *StorageInstances) Create(ro *StorageInstancesCreateRequest) (*StorageIn
 
 type StorageInstancesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams
+	Params ListParams `json:"params,omitempty"`
 }
 
 func (e *StorageInstances) List(ro *StorageInstancesListRequest) ([]*StorageInstance, *ApiErrorResponse, error) {

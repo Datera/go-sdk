@@ -47,7 +47,7 @@ func (e *StoragePools) Create(ro *StoragePoolsCreateRequest) (*StoragePool, *Api
 
 type StoragePoolsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams
+	Params ListParams `json:"params,omitempty"`
 }
 
 func (e *StoragePools) List(ro *StoragePoolsListRequest) ([]*StoragePool, *ApiErrorResponse, error) {

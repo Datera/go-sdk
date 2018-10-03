@@ -60,7 +60,7 @@ func (e *VolumeTemplates) Create(ro *VolumeTemplatesCreateRequest) (*VolumeTempl
 
 type VolumeTemplatesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams
+	Params ListParams `json:"params,omitempty"`
 }
 
 func (e *VolumeTemplates) List(ro *VolumeTemplatesListRequest) ([]*VolumeTemplate, *ApiErrorResponse, error) {
