@@ -291,16 +291,6 @@ func FillStruct(m map[string]interface{}, s interface{}) error {
 	return mapstructure.Decode(m, s)
 }
 
-type LogFormatter struct {
-}
-
-func (f *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
-	msg := entry.Message
-	level := entry.Level
-	t := entry.Time
-	return []byte(fmt.Sprintf("%s %s %s", t.Format(time.RFC3339), strings.ToUpper(level.String()), string(msg))), nil
-}
-
 func GetConn(ctxt context.Context) *ApiConnection {
 	defer recoverConn()
 	conn := ctxt.Value("conn")
@@ -317,6 +307,25 @@ func recoverConn() {
 func Pretty(i interface{}) string {
 	s, _ := json.MarshalIndent(i, "", "\t")
 	return string(s)
+}
+
+type LogFormatter struct {
+}
+
+func (f *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
+	msg := entry.Message
+	level := entry.Level
+	t := entry.Time
+	fields, err := json.Marshal(entry.Data)
+	if err != nil {
+		fmt.Printf("Error marshalling fields during logging: %s\n", err)
+	}
+	return []byte(fmt.Sprintf("%s %s %s %s\n",
+		t.Format(time.RFC3339),
+		strings.ToUpper(level.String()),
+		string(msg),
+		fields),
+	), nil
 }
 
 func init() {
