@@ -51,7 +51,7 @@ func (e *PerformancePolicy) Create(ro *PerformancePolicyCreateRequest) (*Perform
 
 type PerformancePolicyListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams `json:"params,omitempty"`
+	Params ListParams      `json:"params,omitempty"`
 }
 
 func (e *PerformancePolicy) List(ro *PerformancePolicyListRequest) ([]*PerformancePolicy, *ApiErrorResponse, error) {

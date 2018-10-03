@@ -48,7 +48,7 @@ func (e *Initiators) Create(ro *InitiatorsCreateRequest) (*Initiator, *ApiErrorR
 
 type InitiatorsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams `json:"params,omitempty"`
+	Params ListParams      `json:"params,omitempty"`
 }
 
 func (e *Initiators) List(ro *InitiatorsListRequest) ([]*Initiator, *ApiErrorResponse, error) {

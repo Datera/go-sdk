@@ -47,7 +47,7 @@ func (e *FailureDomains) Create(ro *FailureDomainsCreateRequest) (*FailureDomain
 
 type FailureDomainsListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams `json:"params,omitempty"`
+	Params ListParams      `json:"params,omitempty"`
 }
 
 func (e *FailureDomains) List(ro *FailureDomainsListRequest) ([]*FailureDomain, *ApiErrorResponse, error) {

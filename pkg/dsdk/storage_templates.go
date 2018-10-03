@@ -63,7 +63,7 @@ func (e *StorageTemplates) Create(ro *StorageTemplatesCreateRequest) (*StorageTe
 
 type StorageTemplatesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams `json:"params,omitempty"`
+	Params ListParams      `json:"params,omitempty"`
 }
 
 func (e *StorageTemplates) List(ro *StorageTemplatesListRequest) ([]*StorageTemplate, *ApiErrorResponse, error) {

@@ -80,7 +80,7 @@ func (e *Volumes) Create(ro *VolumesCreateRequest) (*Volume, *ApiErrorResponse, 
 
 type VolumesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams `json:"params,omitempty"`
+	Params ListParams      `json:"params,omitempty"`
 }
 
 func (e *Volumes) List(ro *VolumesListRequest) ([]*Volume, *ApiErrorResponse, error) {

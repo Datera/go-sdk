@@ -86,7 +86,7 @@ func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstance, *Api
 
 type AppInstancesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams `json:"params,omitempty"`
+	Params ListParams      `json:"params,omitempty"`
 }
 
 func (e *AppInstances) List(ro *AppInstancesListRequest) ([]*AppInstance, *ApiErrorResponse, error) {

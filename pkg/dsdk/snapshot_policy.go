@@ -51,7 +51,7 @@ func (e *SnapshotPolicies) Create(ro *SnapshotPoliciesCreateRequest) (*SnapshotP
 
 type SnapshotPoliciesListRequest struct {
 	Ctxt   context.Context `json:"-"`
-	Params ListParams `json:"params,omitempty"`
+	Params ListParams      `json:"params,omitempty"`
 }
 
 func (e *SnapshotPolicies) List(ro *SnapshotPoliciesListRequest) ([]*SnapshotPolicy, *ApiErrorResponse, error) {
