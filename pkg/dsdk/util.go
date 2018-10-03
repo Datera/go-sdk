@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"runtime"
 	"strings"
 	"sync"
 	"text/template"
@@ -23,7 +24,13 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
-var src = rand.NewSource(time.Now().UnixNano())
+var (
+	src = rand.NewSource(time.Now().UnixNano())
+)
+
+func Log() *log.Entry {
+	return DecorateRuntimeContext(log.WithFields(log.Fields{}))
+}
 
 // Args have the form "name=value"
 func parseTemplate(fstring string, args ...interface{}) (string, error) {
@@ -310,6 +317,15 @@ func Pretty(i interface{}) string {
 }
 
 type LogFormatter struct {
+}
+
+func DecorateRuntimeContext(logger *log.Entry) *log.Entry {
+	if pc, file, line, ok := runtime.Caller(2); ok {
+		fName := runtime.FuncForPC(pc).Name()
+		return logger.WithField("file", file).WithField("line", line).WithField("func", fName)
+	} else {
+		return logger
+	}
 }
 
 func (f *LogFormatter) Format(entry *log.Entry) ([]byte, error) {

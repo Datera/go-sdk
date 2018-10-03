@@ -6,7 +6,6 @@ import (
 
 	udc "github.com/Datera/go-udc/pkg/udc"
 	uuid "github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -36,7 +35,7 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 	if c == nil {
 		c, err = udc.GetConfig()
 		if err != nil {
-			log.Error(err)
+			Log().Error(err)
 			return nil, err
 		}
 	}
@@ -76,9 +75,9 @@ func (c SDK) HealthCheck() error {
 	if apierr != nil {
 		return fmt.Errorf("ApiError: %s", Pretty(apierr))
 	}
-	log.Debugf("Connected to cluster: %s with tenant %s.\n", c.conf.MgmtIp, c.conf.Tenant)
+	Log().Debugf("Connected to cluster: %s with tenant %s.\n", c.conf.MgmtIp, c.conf.Tenant)
 	for _, sn := range sns {
-		log.Debugf("Found Storage Node: %s\n", sn.Uuid)
+		Log().Debugf("Found Storage Node: %s\n", sn.Uuid)
 	}
 	return nil
 }

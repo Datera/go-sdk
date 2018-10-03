@@ -15,7 +15,6 @@ import (
 	udc "github.com/Datera/go-udc/pkg/udc"
 	uuid "github.com/google/uuid"
 	greq "github.com/levigross/grequests"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -150,7 +149,7 @@ func makeBaseUrl(h, apiv string, secure bool) (*url.URL, error) {
 
 func checkResponse(resp *greq.Response, err error, retry bool) (*ApiErrorResponse, error) {
 	if err != nil {
-		log.Error(err)
+		Log().Error(err)
 		return nil, err
 	}
 	if resp.StatusCode == PermissionDenied && retry {
@@ -170,20 +169,20 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	reqId := uuid.Must(uuid.NewRandom()).String()
 	sdata, err := json.Marshal(ro.JSON)
 	if err != nil {
-		log.Errorf("Couldn't stringify data, %s", ro.JSON)
+		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
 	if sensitive {
 		sdata = []byte("********")
 	}
 	sheaders, err := json.Marshal(ro.Headers)
 	if err != nil {
-		log.Errorf("Couldn't stringify headers, %s", ro.Headers)
+		Log().Errorf("Couldn't stringify headers, %s", ro.Headers)
 	}
 	tid, ok := ctxt.Value("tid").(string)
 	if !ok {
 		tid = "nil"
 	}
-	log.Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
+	Log().Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
 		"Datera Request ID: %s",
 		"Datera Request URL: %s",
 		"Datera Request Method: %s",
@@ -194,7 +193,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	resp, err := greq.DoRegularRequest(method, gurl.String(), ro)
 	t2 := time.Now()
 	tDelta := t2.Sub(t1)
-	log.Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
+	Log().Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
 		"Datera Response ID: %s",
 		"Datera Response TimeDelta: %fs",
 		"Datera Response URL: %s",
@@ -204,24 +203,24 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	eresp, err := checkResponse(resp, err, retry)
 	if err == badStatus[RetryRequestAfterLogin] {
 		if apiresp, err2 := c.Login(ctxt); err2 != nil {
-			log.Errorf("%s", err)
-			log.Errorf("%s", err2)
+			Log().Errorf("%s", err)
+			Log().Errorf("%s", err2)
 			return apiresp, err2
 		}
 		return c.do(ctxt, method, url, ro, rs, false, sensitive)
 	}
 	if eresp != nil {
-		log.Errorf("Recieved API Error %s\n", Pretty(eresp))
+		Log().Errorf("Recieved API Error %s\n", Pretty(eresp))
 		return eresp, nil
 	}
 	if err != nil {
-		log.Errorf("Error during checkResponse: %s\n", err)
+		Log().Errorf("Error during checkResponse: %s\n", err)
 		return nil, err
 	}
 	err = resp.JSON(rs)
 	if err != nil {
-		log.Errorf("Could not unpack response, %s\n", err)
-		log.Errorf("Response, %s\n", resp.String())
+		Log().Errorf("Could not unpack response, %s\n", err)
+		Log().Errorf("Response, %s\n", resp.String())
 		return nil, err
 	}
 	return nil, nil
@@ -233,7 +232,7 @@ func (c *ApiConnection) doWithAuth(ctxt context.Context, method, url string, ro 
 	}
 	if c.apikey == "" {
 		if apierr, err := c.Login(ctxt); err != nil {
-			log.Errorf("Login failure: %s, %s", Pretty(apierr), err)
+			Log().Errorf("Login failure: %s, %s", Pretty(apierr), err)
 			return apierr, err
 		}
 	}
@@ -244,7 +243,7 @@ func (c *ApiConnection) doWithAuth(ctxt context.Context, method, url string, ro 
 func NewApiConnection(c *udc.UDC, secure bool) *ApiConnection {
 	url, err := makeBaseUrl(c.MgmtIp, c.ApiVersion, secure)
 	if err != nil {
-		log.Fatalf("%s", err)
+		Log().Fatalf("%s", err)
 	}
 	return &ApiConnection{
 		username:   c.Username,
