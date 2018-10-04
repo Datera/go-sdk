@@ -26,6 +26,7 @@ var (
 		PermissionDenied:       fmt.Errorf("PermissionDenied"),
 		RetryRequestAfterLogin: fmt.Errorf("RetryRequestAfterLogin"),
 	}
+	DateraDriver = fmt.Sprintf("Golang-SDK-%s", VERSION)
 )
 
 type ApiConnection struct {
@@ -174,6 +175,10 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if sensitive {
 		sdata = []byte("********")
 	}
+	if ro.Headers == nil {
+		ro.Headers = make(map[string]string, 1)
+	}
+	ro.Headers["Datera-Driver"] = DateraDriver
 	sheaders, err := json.Marshal(ro.Headers)
 	if err != nil {
 		Log().Errorf("Couldn't stringify headers, %s", ro.Headers)

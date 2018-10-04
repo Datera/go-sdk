@@ -55,6 +55,10 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 	}, nil
 }
 
+func (c SDK) SetDriver(d string) {
+	DateraDriver = d
+}
+
 func (c SDK) WithContext(ctxt context.Context) context.Context {
 	return context.WithValue(ctxt, "conn", c.Conn)
 }
