@@ -8,30 +8,32 @@ import (
 )
 
 type StorageInstance struct {
-	Path                 string               `json:"path,omitempty" mapstructure:"path"`
-	Access               *Access              `json:"access,omitempty" mapstructure:"access"`
-	AccessControlMode    string               `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
-	AclPolicy            *AclPolicy           `json:"acl_policy,omitempty" mapstructure:"acl_policy"`
-	ActiveInitiators     []string             `json:"active_initiators,omitempty" mapstructure:"active_initiators"`
-	ActiveStorageNodes   []*StorageNode       `json:"active_storage_nodes,omitempty" mapstructure:"active_storage_nodes"`
-	AdminState           string               `json:"admin_state,omitempty" mapstructure:"admin_state"`
-	Auth                 *Auth                `json:"auth,omitempty" mapstructure:"auth"`
-	Causes               []string             `json:"causes,omitempty" mapstructure:"causes"`
-	DeploymentState      string               `json:"deployment_state,omitempty" mapstructure:"deployment_state"`
-	Health               string               `json:"health,omitempty" mapstructure:"health"`
-	IpPool               *AccessNetworkIpPool `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
-	Name                 string               `json:"name,omitempty" mapstructure:"name"`
-	OpState              string               `json:"op_state,omitempty" mapstructure:"op_state"`
-	ServiceConfiguration string               `json:"service_configuration,omitempty" mapstructure:"service_configuration"`
-	Uuid                 string               `json:"uuid,omitempty" mapstructure:"uuid"`
-	Volumes              []*Volume            `json:"volumes,omitempty" mapstructure:"volumes"`
-	VolumesEp            *Volumes             `json:"-"`
+	Path                 string                `json:"path,omitempty" mapstructure:"path"`
+	Access               *Access               `json:"access,omitempty" mapstructure:"access"`
+	AccessControlMode    string                `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
+	AclPolicy            *AclPolicy            `json:"acl_policy,omitempty" mapstructure:"acl_policy"`
+	ActiveInitiators     []string              `json:"active_initiators,omitempty" mapstructure:"active_initiators"`
+	ActiveStorageNodes   []*StorageNode        `json:"active_storage_nodes,omitempty" mapstructure:"active_storage_nodes"`
+	AdminState           string                `json:"admin_state,omitempty" mapstructure:"admin_state"`
+	Auth                 *Auth                 `json:"auth,omitempty" mapstructure:"auth"`
+	Causes               []string              `json:"causes,omitempty" mapstructure:"causes"`
+	DeploymentState      string                `json:"deployment_state,omitempty" mapstructure:"deployment_state"`
+	Health               string                `json:"health,omitempty" mapstructure:"health"`
+	IpPool               *AccessNetworkIpPool  `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
+	Name                 string                `json:"name,omitempty" mapstructure:"name"`
+	OpState              string                `json:"op_state,omitempty" mapstructure:"op_state"`
+	ServiceConfiguration string                `json:"service_configuration,omitempty" mapstructure:"service_configuration"`
+	Uuid                 string                `json:"uuid,omitempty" mapstructure:"uuid"`
+	Volumes              []*Volume             `json:"volumes,omitempty" mapstructure:"volumes"`
+	VolumesEp            *Volumes              `json:"-"`
+	IpPoolEp             *AccessNetworkIpPools `json:"-"`
 }
 
 func RegisterStorageInstanceEndpoints(a *StorageInstance) {
 	a.VolumesEp = newVolumes(a.Path)
-	for _, si := range a.Volumes {
-		RegisterVolumeEndpoints(si)
+	a.IpPoolEp = newAccessNetworkIpPools(a.Path)
+	for _, vol := range a.Volumes {
+		RegisterVolumeEndpoints(vol)
 	}
 }
 
