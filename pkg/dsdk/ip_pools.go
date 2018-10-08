@@ -77,12 +77,12 @@ func (e *AccessNetworkIpPools) List(ro *AccessNetworkIpPoolsListRequest) ([]*Acc
 
 type AccessNetworkIpPoolsGetRequest struct {
 	Ctxt context.Context `json:"-"`
-	Id   string          `json:"-"`
+	Name string          `json:"-"`
 }
 
 func (e *AccessNetworkIpPools) Get(ro *AccessNetworkIpPoolsGetRequest) (*AccessNetworkIpPool, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Id), gro)
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, _path.Join(e.Path, ro.Name), gro)
 	if apierr != nil {
 		return nil, apierr, err
 	}
