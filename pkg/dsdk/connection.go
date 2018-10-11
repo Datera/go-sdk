@@ -37,6 +37,7 @@ type ApiConnection struct {
 	secure     bool
 	baseUrl    *url.URL
 	apikey     string
+	ldap       string
 }
 
 type ApiErrorResponse struct {
@@ -255,6 +256,7 @@ func NewApiConnection(c *udc.UDC, secure bool) *ApiConnection {
 		password:   c.Password,
 		apiVersion: c.ApiVersion,
 		tenant:     c.Tenant,
+		ldap:       c.Ldap,
 		secure:     secure,
 		baseUrl:    url,
 	}
@@ -337,6 +339,9 @@ func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
 			"name":     c.username,
 			"password": c.password,
 		},
+	}
+	if c.ldap != "" {
+		ro.Data["remote_server"] = c.ldap
 	}
 	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, false, true)
 	c.apikey = login.Key
