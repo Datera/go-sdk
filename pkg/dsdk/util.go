@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os/exec"
 	"runtime"
 	"strings"
 	"sync"
@@ -25,7 +26,8 @@ const (
 )
 
 var (
-	src = rand.NewSource(time.Now().UnixNano())
+	src         = rand.NewSource(time.Now().UnixNano())
+	execCommand = exec.Command
 )
 
 func Log() *log.Entry {
@@ -342,6 +344,24 @@ func (f *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
 		string(msg),
 		fields),
 	), nil
+}
+
+func RunCmd(cmd ...string) (string, error) {
+	ncmd := []string{}
+	for _, c := range cmd {
+		c = strings.TrimSpace(c)
+		if c != "" {
+			ncmd = append(ncmd, c)
+		}
+	}
+	Log().Debugf("Running command: [%s]\n", strings.Join(ncmd, " "))
+	prefix := ncmd[0]
+	ncmd = ncmd[1:]
+	c := execCommand(prefix, ncmd...)
+	out, err := c.CombinedOutput()
+	sout := string(out)
+	Log().Debug(sout)
+	return sout, err
 }
 
 func init() {

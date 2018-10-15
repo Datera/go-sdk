@@ -10,6 +10,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	udc "github.com/Datera/go-udc/pkg/udc"
@@ -30,14 +31,15 @@ var (
 )
 
 type ApiConnection struct {
+	m          *sync.Mutex
 	username   string
 	password   string
 	apiVersion string
 	tenant     string
 	secure     bool
-	baseUrl    *url.URL
-	apikey     string
 	ldap       string
+	apikey     string
+	baseUrl    *url.URL
 }
 
 type ApiErrorResponse struct {
@@ -180,23 +182,31 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		ro.Headers = make(map[string]string, 1)
 	}
 	ro.Headers["Datera-Driver"] = DateraDriver
-	sheaders, err := json.Marshal(ro.Headers)
-	if err != nil {
-		Log().Errorf("Couldn't stringify headers, %s", ro.Headers)
-	}
 	tid, ok := ctxt.Value("tid").(string)
 	if !ok {
 		tid = "nil"
 	}
-	Log().Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
-		"Datera Request ID: %s",
-		"Datera Request URL: %s",
-		"Datera Request Method: %s",
-		"Datera Request Payload: %s",
-		"Datera Request Headers: %s\n"}, "\n"),
-		tid, reqId, gurl.String(), method, string(sdata), sheaders)
 	t1 := time.Now()
+	// This will be run before each request.  It's needed so we can get access
+	// to the headers/body passed with the request instead of just our custom ones
+	ro.BeforeRequest = func(h *http.Request) error {
+		sheaders, err := json.Marshal(h.Header)
+		if err != nil {
+			Log().Errorf("Couldn't stringify headers, %s", h.Header)
+		}
+		Log().Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
+			"Datera Request ID: %s",
+			"Datera Request URL: %s",
+			"Datera Request Method: %s",
+			"Datera Request Payload: %s",
+			"Datera Request Headers: %s\n"}, "\n"),
+			tid, reqId, gurl.String(), method, string(sdata), sheaders)
+		return nil
+	}
+
+	// The actual request happens here
 	resp, err := greq.DoRegularRequest(method, gurl.String(), ro)
+
 	t2 := time.Now()
 	tDelta := t2.Sub(t1)
 	Log().Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
@@ -259,6 +269,7 @@ func NewApiConnection(c *udc.UDC, secure bool) *ApiConnection {
 		ldap:       c.Ldap,
 		secure:     secure,
 		baseUrl:    url,
+		m:          &sync.Mutex{},
 	}
 }
 
@@ -333,6 +344,8 @@ func (c *ApiConnection) ApiVersions() []string {
 }
 
 func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
+	c.m.Lock()
+	defer c.m.Unlock()
 	login := &ApiLogin{}
 	ro := &greq.RequestOptions{
 		Data: map[string]string{
