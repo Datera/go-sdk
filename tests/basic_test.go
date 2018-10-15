@@ -3,6 +3,9 @@ package dsdk_test
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"mime"
+	"os"
 	"testing"
 	"time"
 
@@ -12,7 +15,7 @@ import (
 func createAi(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.AppInstance, func(), error) {
 	vol := &dsdk.Volume{
 		Name:          "volume-1",
-		Size:          5,
+		Size:          1,
 		PlacementMode: "hybrid",
 		ReplicaCount:  1,
 	}
@@ -127,7 +130,7 @@ func TestStoragePools(t *testing.T) {
 	}
 }
 
-func testInitiators(t *testing.T) {
+func TestInitiators(t *testing.T) {
 	sdk, err := dsdk.NewSDK(nil, true)
 	if err != nil {
 		panic(err)
@@ -194,7 +197,7 @@ func TestAclPolicy(t *testing.T) {
 	}
 }
 
-func testTenants(t *testing.T) {
+func TestTenants(t *testing.T) {
 	sdk, err := dsdk.NewSDK(nil, true)
 	if err != nil {
 		panic(err)
@@ -222,65 +225,156 @@ func TestSystem(t *testing.T) {
 	fmt.Printf("System: %s\n", dsdk.Pretty(sys))
 }
 
-func TestPaging(t *testing.T) {
+// func TestPaging(t *testing.T) {
+// 	sdk, err := dsdk.NewSDK(nil, true)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	fmt.Println("Running: TestPaging")
+// 	cleanups := []func(){}
+// 	ctxt := sdk.NewContext()
+// 	w := 10
+// 	workers := make(chan int, w)
+// 	startAis := dsdk.NewStringSet(200)
+// 	for i := 0; i < w; i++ {
+// 		workers <- i
+// 	}
+// 	for i := 0; i < 200; i++ {
+// 		w := <-workers
+// 		go func() {
+// 			ai, clean, err := createAi(ctxt, sdk)
+// 			if err != nil {
+// 				fmt.Println(err)
+// 				workers <- w
+// 				return
+// 			}
+// 			cleanups = append(cleanups, clean)
+// 			startAis.Add(ai.Name)
+// 			workers <- w
+// 		}()
+// 	}
+// 	defer func() {
+// 		for _, clean := range cleanups {
+// 			w := <-workers
+// 			go func(cleanup func()) {
+// 				cleanup()
+// 				workers <- w
+// 			}(clean)
+// 		}
+// 		// Waiting for all workers to complete
+// 		for i := 0; i < w; i++ {
+// 			<-workers
+// 		}
+// 	}()
+// 	ais, apierr, err := sdk.AppInstances.List(&dsdk.AppInstancesListRequest{
+// 		Ctxt:   ctxt,
+// 		Params: dsdk.ListParams{Limit: 0},
+// 	})
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	if apierr != nil {
+// 		t.Fatal(fmt.Sprintf("%#v", apierr))
+// 	}
+// 	fmt.Printf("APPINSTANCES RESP LEN: %d\n", len(ais))
+// 	endAis := dsdk.NewStringSet(200)
+// 	for _, ai := range ais {
+// 		endAis.Add(ai.Name)
+// 	}
+// 	for _, ai := range startAis.List() {
+// 		if !endAis.Contains(ai) {
+// 			t.Fatalf("Missing AppInstance %s from List results", ai)
+// 		}
+// 	}
+// }
+
+func TestLogUpload(t *testing.T) {
 	sdk, err := dsdk.NewSDK(nil, true)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Running: TestPaging")
-	cleanups := []func(){}
+	fmt.Println("Running: TestLogUpload")
 	ctxt := sdk.NewContext()
-	w := 30
-	workers := make(chan int, w)
-	startAis := dsdk.NewStringSet(200)
-	for i := 0; i < w; i++ {
-		workers <- i
-	}
-	for i := 0; i < 200; i++ {
-		w := <-workers
-		go func() {
-			ai, clean, err := createAi(ctxt, sdk)
-			if err != nil {
-				fmt.Println(err)
-				workers <- w
-				return
-			}
-			cleanups = append(cleanups, clean)
-			startAis.Add(ai.Name)
-			workers <- w
-		}()
-	}
-	ais, apierr, err := sdk.AppInstances.List(&dsdk.AppInstancesListRequest{
-		Ctxt:   ctxt,
-		Params: dsdk.ListParams{Limit: 0},
-	})
+	tmp, err := ioutil.TempFile("", "log-upload*.txt")
+	fmt.Printf("MIME TYPE: (%s, %s)\n", tmp.Name(), mime.TypeByExtension(tmp.Name()))
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer os.Remove(tmp.Name())
+	content := []byte(`This was a triumph
+I'm making a note here:
+Huge success
+It's hard to overstate
+My satisfaction
+Aperture Science
+We do what we must
+Because we can
+For the good of all of us
+Except the ones who are dead
+But there's no sense crying
+Over every mistake
+You just keep on trying
+Till you run out of cake
+And the Science gets done
+And you make a neat gun
+For the people who are
+Still alive
+
+I'm not even angry
+I'm being so sincere right now
+Even though you broke my heart
+And killed me
+And tore me to pieces
+And threw every piece into a fire
+As they burned it hurt because
+I was so happy for you!
+Now these points of data
+Make a beautiful line
+And we're out of beta
+We're releasing on time
+So I'm glad. I got burned
+Think of all the things we learned
+For the people who are
+Still alive
+
+Go ahead and leave me
+I think I prefer to stay inside
+Maybe you'll find someone else
+To help you
+Maybe Black Mesa...
+That was A joke, ha ha, fat chance
+Anyway this cake is great
+It's so delicious and moist
+Look at me still talking when there's science to do
+When I look out there
+It makes me glad I'm not you
+I've experiments to be run
+There is research to be done
+On the people who are
+Still alive
+
+And believe me I am still alive
+I'm doing science and I'm still alive
+I feel fantastic and I'm still alive
+And while you're dying I'll be still alive
+And when you're dead I will be still alive
+Still alive
+Still alive
+`)
+	if _, err = tmp.Write(content); err != nil {
+		t.Fatal(err)
+	}
+	if err := tmp.Close(); err != nil {
+		t.Fatal(err)
+	}
+	_, apierr, err := sdk.LogsUpload.Upload(&dsdk.LogsUploadRequest{
+		Ctxt:  ctxt,
+		Files: []string{tmp.Name()},
+	})
 	if apierr != nil {
-		t.Fatal(fmt.Sprintf("%#v", apierr))
+		t.Fatal(apierr)
 	}
-	fmt.Printf("APPINSTANCES RESP LEN: %d\n", len(ais))
-	endAis := dsdk.NewStringSet(200)
-	for _, ai := range ais {
-		endAis.Add(ai.Name)
+	if err != nil {
+		t.Fatal(err)
 	}
-	for _, ai := range startAis.List() {
-		if !endAis.Contains(ai) {
-			t.Fatalf("Missing AppInstance %s from List results", ai)
-		}
-	}
-	defer func() {
-		for _, clean := range cleanups {
-			w := <-workers
-			go func(cleanup func()) {
-				cleanup()
-				workers <- w
-			}(clean)
-		}
-		// Waiting for all workers to complete
-		for i := 0; i < w; i++ {
-			<-workers
-		}
-	}()
 }

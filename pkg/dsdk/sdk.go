@@ -25,6 +25,7 @@ type SDK struct {
 	AppTemplates         *AppTemplates
 	Initiators           *Initiators
 	InitiatorGroups      *InitiatorGroups
+	LogsUpload           *LogsUpload
 	StorageNodes         *StorageNodes
 	StoragePools         *StoragePools
 	System               *System
@@ -49,6 +50,7 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 		AppTemplates:         newAppTemplates("/"),
 		Initiators:           newInitiators("/"),
 		InitiatorGroups:      newInitiatorGroups("/"),
+		LogsUpload:           newLogsUpload("/"),
 		StorageNodes:         newStorageNodes("/"),
 		StoragePools:         newStoragePools("/"),
 		System:               newSystem("/"),
