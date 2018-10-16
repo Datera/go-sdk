@@ -12,15 +12,8 @@ import (
 	"os"
 	_path "path"
 	"strings"
-	"time"
 
 	uuid "github.com/google/uuid"
-)
-
-const (
-	LogInterval = int(time.Hour * 1)
-	LastFile    = "last"
-	LogFiltered = "dlogs.tar.gz"
 )
 
 var (
@@ -128,54 +121,43 @@ func rotateLogs(rule string) error {
 	return nil
 }
 
-// For finer grained sleeping, interval is specified in seconds
-func logSleeper(interval int) {
-	for {
-		if interval <= 0 {
-			break
-		}
-		time.Sleep(time.Second * 1)
-		interval--
-	}
-}
-
 func (e *LogsUpload) Upload(ro *LogsUploadRequest) (*LogsUpload, *ApiErrorResponse, error) {
 	return nil, nil, logsUpload(ro.Ctxt, ro.Files[0])
 }
 
-func (e *LogsUpload) LogUploadDaemon(rule, rotated string, interval int) error {
-	for {
-		if err := rotateLogs(rule); err != nil {
-			return err
-		}
-
-		// Determine if filtered logs exist
-		lf, err := os.Open(rotated)
-		if err != nil {
-			return err
-		}
-		defer os.Remove(rotated)
-		defer lf.Close()
-		fstat, err := lf.Stat()
-		if err != nil {
-			return err
-		}
-		// Even a single line of logs will be greater than 100 bytes
-		if fstat.Size() > 100 {
-			Log().Debug("Uploading logs")
-			go func() {
-				_, apierr, err := e.Upload(&LogsUploadRequest{Files: []string{rotated}})
-				if apierr != nil {
-					Log().Errorf("%s\n", Pretty(apierr))
-				}
-				if err != nil {
-					Log().Error(err)
-				}
-			}()
-		} else {
-			Log().Debugf("No new filtered logs detected.  Size: %d\n", fstat.Size())
-		}
-		Log().Debugf("Logpush sleeping %d", interval)
-		logSleeper(interval)
+func (e *LogsUpload) RotateUploadRemove(ctxt context.Context, rule, rotated string) error {
+	if err := rotateLogs(rule); err != nil {
+		return err
 	}
+
+	// Determine if filtered logs exist
+	lf, err := os.Open(rotated)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(rotated)
+	defer lf.Close()
+	fstat, err := lf.Stat()
+	if err != nil {
+		return err
+	}
+	// Even a single line of logs will be greater than 100 bytes
+	if fstat.Size() > 100 {
+		Log().Debug("Uploading logs")
+		go func() {
+			_, apierr, err := e.Upload(&LogsUploadRequest{
+				Ctxt:  ctxt,
+				Files: []string{rotated},
+			})
+			if apierr != nil {
+				Log().Errorf("%s\n", Pretty(apierr))
+			}
+			if err != nil {
+				Log().Error(err)
+			}
+		}()
+	} else {
+		Log().Debugf("No new filtered logs detected.  Size: %d\n", fstat.Size())
+	}
+	return nil
 }
