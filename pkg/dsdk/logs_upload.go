@@ -144,18 +144,16 @@ func (e *LogsUpload) RotateUploadRemove(ctxt context.Context, rule, rotated stri
 	// Even a single line of logs will be greater than 100 bytes
 	if fstat.Size() > 100 {
 		Log().Debug("Uploading logs")
-		go func() {
-			_, apierr, err := e.Upload(&LogsUploadRequest{
-				Ctxt:  ctxt,
-				Files: []string{rotated},
-			})
-			if apierr != nil {
-				Log().Errorf("%s\n", Pretty(apierr))
-			}
-			if err != nil {
-				Log().Error(err)
-			}
-		}()
+		_, apierr, err := e.Upload(&LogsUploadRequest{
+			Ctxt:  ctxt,
+			Files: []string{rotated},
+		})
+		if apierr != nil {
+			Log().Errorf("%s\n", Pretty(apierr))
+		}
+		if err != nil {
+			Log().Error(err)
+		}
 	} else {
 		Log().Debugf("No new filtered logs detected.  Size: %d\n", fstat.Size())
 	}
