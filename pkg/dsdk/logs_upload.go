@@ -49,8 +49,9 @@ func logsUpload(ctxt context.Context, file string) error {
 		}
 	}
 	key := conn.apikey
-	conn.baseUrl.Path = _path.Join(conn.baseUrl.Path, "logs_upload")
-	url := conn.baseUrl.String()
+	gurl := *conn.baseUrl
+	gurl.Path = _path.Join(conn.baseUrl.Path, "logs_upload")
+	url := gurl.String()
 
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
