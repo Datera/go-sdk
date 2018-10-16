@@ -75,7 +75,9 @@ func (c SDK) NewContext() context.Context {
 // Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under
 // the currently configured tenant
 func (c SDK) HealthCheck() error {
-	sns, apierr, err := c.StorageNodes.List(&StorageNodesListRequest{Ctxt: c.NewContext()})
+	sns, apierr, err := c.StorageNodes.List(&StorageNodesListRequest{
+		Ctxt: context.WithValue(c.NewContext(), "quiet", true),
+	})
 	if err != nil {
 		return err
 	}

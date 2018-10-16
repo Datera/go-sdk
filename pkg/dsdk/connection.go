@@ -186,6 +186,9 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if !ok {
 		tid = "nil"
 	}
+	if _, ok := ctxt.Value("quiet").(bool); ok {
+		sdata = []byte("<muted>")
+	}
 	t1 := time.Now()
 	// This will be run before each request.  It's needed so we can get access
 	// to the headers/body passed with the request instead of just our custom ones
@@ -209,13 +212,17 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 
 	t2 := time.Now()
 	tDelta := t2.Sub(t1)
+	rdata := resp.String()
+	if _, ok := ctxt.Value("quiet").(bool); ok {
+		rdata = "<muted>"
+	}
 	Log().Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
 		"Datera Response ID: %s",
 		"Datera Response TimeDelta: %fs",
 		"Datera Response URL: %s",
 		"Datera Response Payload: %s",
 		"Datera Response Object: %s\n"}, "\n"),
-		tid, reqId, tDelta.Seconds(), gurl.String(), resp.String(), "nil")
+		tid, reqId, tDelta.Seconds(), gurl.String(), rdata, "nil")
 	eresp, err := checkResponse(resp, err, retry)
 	if err == badStatus[RetryRequestAfterLogin] {
 		if apiresp, err2 := c.Login(ctxt); err2 != nil {
