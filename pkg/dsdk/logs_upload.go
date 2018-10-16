@@ -95,9 +95,9 @@ func logsUpload(ctxt context.Context, file string) error {
 		"Datera Request ID: %s",
 		"Datera Request URL: %s",
 		"Datera Request Method: %s",
-		"Datera Request Payload: %s",
+		"Datera Request Payload: <binary stream>",
 		"Datera Request Headers: %s\n"}, "\n"),
-		tid, reqId, url, http.MethodPut, req.Body, sheaders)
+		tid, reqId, url, http.MethodPut, sheaders)
 	res, err := client.Do(req)
 	if err != nil {
 		return err
