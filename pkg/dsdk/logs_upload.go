@@ -115,7 +115,7 @@ func logsUpload(ctxt context.Context, file string) error {
 }
 
 func rotateLogs(rule string) error {
-	if _, err := RunCmd("logrotate", rule); err != nil {
+	if _, err := RunCmd("logrotate", "-f", rule); err != nil {
 		return err
 	}
 	return nil
