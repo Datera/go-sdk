@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	VERSION         = "2.1.0"
+	VERSION         = "2.2.0"
 	VERSION_HISTORY = `
 		2.0.0 -- Revamped SDK to new directory structure, switched to using grequests and added UDC support
 		2.1.0 -- Added LDAP server support
+		2.2.0 -- Added logs upload, template override
 	`
 )
 
