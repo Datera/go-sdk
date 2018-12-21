@@ -207,23 +207,7 @@ func (e *AppInstance) GetMetadata(ro *AppInstanceMetadataGetRequest) (*AppInstan
 	if err != nil {
 		return nil, nil, err
 	}
-	resp := &AppInstanceMetadata{}
-	for k, v := range rs.Data {
-		var nv string
-		switch t := v.(type) {
-		case string:
-			nv = v.(string)
-		case bool:
-			nv = strconv.FormatBool(v.(bool))
-		case int:
-			nv = strconv.FormatInt(int64(v.(int)), 10)
-		default:
-			panic(fmt.Sprintf("Don't know this, what do?: %s", t))
-		}
-
-		(*resp)[k] = nv
-	}
-	return resp, nil, nil
+	return stringifyResults(rs), nil, nil
 }
 
 type AppInstanceMetadataSetRequest struct {
@@ -240,6 +224,10 @@ func (e *AppInstance) SetMetadata(ro *AppInstanceMetadataSetRequest) (*AppInstan
 	if err != nil {
 		return nil, nil, err
 	}
+	return stringifyResults(rs), nil, nil
+}
+
+func stringifyResults(rs *ApiOuter) *AppInstanceMetadata {
 	resp := &AppInstanceMetadata{}
 	for k, v := range rs.Data {
 		var nv string
@@ -256,5 +244,5 @@ func (e *AppInstance) SetMetadata(ro *AppInstanceMetadataSetRequest) (*AppInstan
 
 		(*resp)[k] = nv
 	}
-	return resp, nil, nil
+	return resp
 }
