@@ -11,7 +11,7 @@ type VolumeTemplate struct {
 	Path               string            `json:"path,omitempty" mapstructure:"path"`
 	Name               string            `json:"name,omitempty" mapstructure:"name"`
 	PlacementMode      string            `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
-	PlacementPolicy    string            `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	PlacementPolicy    *PlacementPolicy  `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
 	ReplicaCount       int               `json:"replica_count,omitempty" mapstructure:"replica_count"`
 	Size               int               `json:"size,omitempty" mapstructure:"size"`
 	StoragePool        []StoragePool     `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
@@ -27,12 +27,12 @@ type VolumeTemplates struct {
 }
 
 type VolumeTemplatesCreateRequest struct {
-	Ctxt            context.Context `json:"-"`
-	Name            string          `json:"name,omitempty" mapstructure:"name"`
-	ReplicaCount    int             `json:"replica_count,omitempty" mapstructure:"replica_count"`
-	Size            int             `json:"size,omitempty" mapstructure:"size"`
-	PlacementMode   string          `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
-	PlacementPolicy string          `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	Ctxt            context.Context  `json:"-"`
+	Name            string           `json:"name,omitempty" mapstructure:"name"`
+	ReplicaCount    int              `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int              `json:"size,omitempty" mapstructure:"size"`
+	PlacementMode   string           `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy *PlacementPolicy `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
 }
 
 func newVolumeTemplates(path string) *VolumeTemplates {
@@ -110,12 +110,12 @@ func (e *VolumeTemplates) Get(ro *VolumeTemplatesGetRequest) (*VolumeTemplate, *
 }
 
 type VolumeTemplateSetRequest struct {
-	Ctxt            context.Context `json:"-"`
-	PlacementMode   string          `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
-	PlacementPolicy string          `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
-	ReplicaCount    int             `json:"replica_count,omitempty" mapstructure:"replica_count"`
-	Size            int             `json:"size,omitempty" mapstructure:"size"`
-	StoragePool     []StoragePool   `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
+	Ctxt            context.Context  `json:"-"`
+	PlacementMode   string           `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy *PlacementPolicy `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	ReplicaCount    int              `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int              `json:"size,omitempty" mapstructure:"size"`
+	StoragePool     []StoragePool    `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 }
 
 func (e *VolumeTemplate) Set(ro *VolumeTemplateSetRequest) (*VolumeTemplate, *ApiErrorResponse, error) {

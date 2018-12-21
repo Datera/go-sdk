@@ -23,7 +23,7 @@ type Volume struct {
 	OpStatus           string             `json:"op_status,omitempty" mapstructure:"op_status"`
 	PhysicalSize       int                `json:"physical_size,omitempty" mapstructure:"physical_size"`
 	PlacementMode      string             `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
-	PlacementPolicy    string             `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	PlacementPolicy    *PlacementPolicy   `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
 	RecoveryState      string             `json:"recovery_state,omitempty" mapstructure:"recovery_state"`
 	ReplicaCount       int                `json:"replica_count,omitempty" mapstructure:"replica_count"`
 	RestorePoint       string             `json:"restore_point,omitempty" mapstructure:"restore_point"`
@@ -46,13 +46,13 @@ type Volumes struct {
 }
 
 type VolumesCreateRequest struct {
-	Ctxt            context.Context `json:"-"`
-	Name            string          `json:"name,omitempty" mapstructure:"name"`
-	ReplicaCount    int             `json:"replica_count,omitempty" mapstructure:"replica_count"`
-	Size            int             `json:"size,omitempty" mapstructure:"size"`
-	PlacementMode   string          `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
-	PlacementPolicy string          `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
-	Force           bool            `json:"force,omitempty" mapstructure:"force"`
+	Ctxt            context.Context  `json:"-"`
+	Name            string           `json:"name,omitempty" mapstructure:"name"`
+	ReplicaCount    int              `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int              `json:"size,omitempty" mapstructure:"size"`
+	PlacementMode   string           `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy *PlacementPolicy `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	Force           bool             `json:"force,omitempty" mapstructure:"force"`
 }
 
 func newVolumes(path string) *Volumes {
@@ -130,13 +130,13 @@ func (e *Volumes) Get(ro *VolumesGetRequest) (*Volume, *ApiErrorResponse, error)
 }
 
 type VolumeSetRequest struct {
-	Ctxt            context.Context `json:"-"`
-	ReplicaCount    int             `json:"replica_count,omitempty" mapstructure:"replica_count"`
-	Size            int             `json:"size,omitempty" mapstructure:"size"`
-	PlacementMode   string          `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
-	PlacementPolicy string          `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
-	RestorePoint    string          `json:"restore_point,omitempty" mapstructure:"restore_point"`
-	StoragePool     []*StoragePool  `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
+	Ctxt            context.Context  `json:"-"`
+	ReplicaCount    int              `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int              `json:"size,omitempty" mapstructure:"size"`
+	PlacementMode   string           `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy *PlacementPolicy `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	RestorePoint    string           `json:"restore_point,omitempty" mapstructure:"restore_point"`
+	StoragePool     []*StoragePool   `json:"storage_pool,omitempty" mapstructure:"storage_pool"`
 }
 
 func (e *Volume) Set(ro *VolumeSetRequest) (*Volume, *ApiErrorResponse, error) {

@@ -29,13 +29,13 @@ type StorageTemplates struct {
 }
 
 type StorageTemplatesCreateRequest struct {
-	Ctxt            context.Context `json:"-"`
-	Name            string          `json:"name,omitempty" mapstructure:"name"`
-	ReplicaCount    int             `json:"replica_count,omitempty" mapstructure:"replica_count"`
-	Size            int             `json:"size,omitempty" mapstructure:"size"`
-	PlacementMode   string          `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
-	PlacementPolicy string          `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
-	Force           bool            `json:"force,omitempty" mapstructure:"force"`
+	Ctxt            context.Context  `json:"-"`
+	Name            string           `json:"name,omitempty" mapstructure:"name"`
+	ReplicaCount    int              `json:"replica_count,omitempty" mapstructure:"replica_count"`
+	Size            int              `json:"size,omitempty" mapstructure:"size"`
+	PlacementMode   string           `json:"placement_mode,omitempty" mapstructure:"placement_mode"`
+	PlacementPolicy *PlacementPolicy `json:"placement_policy,omitempty" mapstructure:"placement_policy"`
+	Force           bool             `json:"force,omitempty" mapstructure:"force"`
 }
 
 func newStorageTemplates(path string) *StorageTemplates {

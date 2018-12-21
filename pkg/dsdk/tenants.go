@@ -8,15 +8,15 @@ import (
 )
 
 type Tenant struct {
-	Path             string            `json:"path,omitempty" mapstructure:"path"`
-	Descr            string            `json:"descr,omitempty" mapstructure:"descr"`
-	InitiatorListSrc string            `json:"initiator_list_src,omitempty" mapstructure:"initiator_list_src"`
-	MgmtIps          map[string]string `json:"mgmt_ips,omitempty" mapstructure:"mgmt_ips"`
-	Name             string            `json:"name,omitempty" mapstructure:"name"`
-	ParentPath       string            `json:"parent_path,omitempty" mapstructure:"parent_path"`
-	Quota            Quota             `json:"quota,omitempty" mapstructure:"quota"`
-	QuotaStatus      QuotaStatus       `json:"quota_status,omitempty" mapstructure:"quota_status"`
-	Subtenants       []Tenant          `json:"subtenants,omitempty" mapstructure:"subtenants"`
+	Path             string                 `json:"path,omitempty" mapstructure:"path"`
+	Descr            string                 `json:"descr,omitempty" mapstructure:"descr"`
+	InitiatorListSrc string                 `json:"initiator_list_src,omitempty" mapstructure:"initiator_list_src"`
+	MgmtIps          map[string]interface{} `json:"mgmt_ips,omitempty" mapstructure:"mgmt_ips"`
+	Name             string                 `json:"name,omitempty" mapstructure:"name"`
+	ParentPath       string                 `json:"parent_path,omitempty" mapstructure:"parent_path"`
+	Quota            Quota                  `json:"quota,omitempty" mapstructure:"quota"`
+	QuotaStatus      QuotaStatus            `json:"quota_status,omitempty" mapstructure:"quota_status"`
+	Subtenants       []string               `json:"subtenants,omitempty" mapstructure:"subtenants"`
 }
 
 type Tenants struct {
