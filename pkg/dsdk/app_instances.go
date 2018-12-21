@@ -2,7 +2,9 @@ package dsdk
 
 import (
 	"context"
+	"fmt"
 	_path "path"
+	"strconv"
 
 	greq "github.com/levigross/grequests"
 )
@@ -228,7 +230,19 @@ func (e *AppInstance) SetMetadata(ro *AppInstanceMetadataSetRequest) (*AppInstan
 	}
 	resp := &AppInstanceMetadata{}
 	for k, v := range rs.Data {
-		(*resp)[k] = v.(string)
+		var nv string
+		switch t := v.(type) {
+		case string:
+			nv = v.(string)
+		case bool:
+			nv = strconv.FormatBool(v.(bool))
+		case int:
+			nv = strconv.FormatInt(int64(v.(int)), 10)
+		default:
+			panic(fmt.Sprintf("Don't know this, what do?: %s", t))
+		}
+
+		(*resp)[k] = nv
 	}
 	return resp, nil, nil
 }
