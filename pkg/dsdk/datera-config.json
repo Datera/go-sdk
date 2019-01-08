@@ -1,7 +1,0 @@
-{
-    "mgmt_ip": "172.19.1.41",
-    "username": "admin",
-    "tenant": "/root",
-    "api_version": "2.2",
-    "password": "password"
-}

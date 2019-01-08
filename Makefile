@@ -4,12 +4,12 @@ NAME=dsdk
 compile:
 	@echo "==> Building the Datera Golang SDK"
 	@env go get -d ./...
-	@env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build ./pkg/dsdk
+	@env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build ./pkg/v2/dsdk
 	@env go vet ./...
 
 local:
 	@echo "==> Building the Datera Golang SDK locally"
-	@env CGO_ENABLED=0 GOARCH=amd64 go build ./pkg/dsdk
+	@env CGO_ENABLED=0 GOARCH=amd64 go build ./pkg/v2/dsdk
 	@env go vet ./...
 
 clean:

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	dsdk "github.com/Datera/go-sdk/pkg/dsdk"
+	dsdk "github.com/Datera/go-sdk/pkg/v2/dsdk"
 )
 
 func createAi(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.AppInstance, func(), error) {

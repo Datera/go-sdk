@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	dsdk "github.com/Datera/go-sdk/pkg/dsdk"
+	dsdk "github.com/Datera/go-sdk/pkg/v2/dsdk"
 	udc "github.com/Datera/go-udc/pkg/udc"
 	greq "github.com/levigross/grequests"
 )
