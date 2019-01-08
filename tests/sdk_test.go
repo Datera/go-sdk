@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	dsdk "github.com/Datera/go-sdk/pkg/v2/dsdk"
+	dsdk "github.com/Datera/go-sdk/pkg/dsdk"
 )
 
 func TestSDKInsecure(t *testing.T) {
