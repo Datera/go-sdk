@@ -19,12 +19,17 @@ import (
 )
 
 var (
+	RetryTimeout           = int64(300)
 	InvalidRequest         = 400
 	PermissionDenied       = 401
+	Retry503               = 503
+	ConnectionError        = 9998
 	RetryRequestAfterLogin = 9999
 	badStatus              = map[int]error{
 		InvalidRequest:         fmt.Errorf("InvalidRequest"),
 		PermissionDenied:       fmt.Errorf("PermissionDenied"),
+		Retry503:               fmt.Errorf("Retry503"),
+		ConnectionError:        fmt.Errorf("ConnectionError"),
 		RetryRequestAfterLogin: fmt.Errorf("RetryRequestAfterLogin"),
 	}
 	DateraDriver = fmt.Sprintf("Golang-SDK-%s", VERSION)
@@ -154,10 +159,15 @@ func makeBaseUrl(h, apiv string, secure bool) (*url.URL, error) {
 func checkResponse(resp *greq.Response, err error, retry bool) (*ApiErrorResponse, error) {
 	if err != nil {
 		Log().Error(err)
+		if strings.Contains(err.Error(), "connect: connection refused") {
+			return nil, badStatus[ConnectionError]
+		}
 		return nil, err
 	}
 	if resp.StatusCode == PermissionDenied && retry {
 		return nil, badStatus[RetryRequestAfterLogin]
+	} else if resp.StatusCode == Retry503 && retry {
+		return nil, badStatus[Retry503]
 	}
 	if !resp.Ok {
 		eresp := &ApiErrorResponse{}
@@ -165,6 +175,22 @@ func checkResponse(resp *greq.Response, err error, retry bool) (*ApiErrorRespons
 		return eresp, badStatus[resp.StatusCode]
 	}
 	return nil, nil
+}
+
+func (c *ApiConnection) retry(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, sensitive bool) (*ApiErrorResponse, error) {
+	t1 := time.Now().Unix()
+	backoff := 1
+	var apiresp *ApiErrorResponse
+	for time.Now().Unix()-t1 < RetryTimeout {
+		apiresp, err := c.do(ctxt, method, url, ro, rs, false, sensitive)
+		// Retry on 503 and ConnectionErrors only
+		if apiresp != nil && apiresp.Http != 503 && err != nil && !strings.Contains(err.Error(), "connect: connection refused") {
+			return apiresp, err
+		}
+		time.Sleep(time.Second * time.Duration(backoff*backoff))
+		backoff += 1
+	}
+	return apiresp, fmt.Errorf("Timeout reached before request completed successfully during retries")
 }
 
 func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, retry, sensitive bool) (*ApiErrorResponse, error) {
@@ -231,6 +257,9 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 			return apiresp, err2
 		}
 		return c.do(ctxt, method, url, ro, rs, false, sensitive)
+	}
+	if err == badStatus[Retry503] || err == badStatus[ConnectionError] {
+		return c.retry(ctxt, method, url, ro, rs, sensitive)
 	}
 	if eresp != nil {
 		Log().Errorf("Recieved API Error %s\n", Pretty(eresp))

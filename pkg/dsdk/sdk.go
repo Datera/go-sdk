@@ -9,12 +9,14 @@ import (
 )
 
 const (
-	VERSION         = "1.1.3"
+	VERSION         = "1.1.5"
 	VERSION_HISTORY = `
 		1.1.0 -- Revamped SDK to new directory structure, switched to using grequests and added UDC support
 		1.1.1 -- Added LDAP server support
 		1.1.2 -- Added logs upload, template override
 		1.1.3 -- Support for Go modules
+		1.1.4 -- AppInstance AppTemplate datastructure bugfix
+		1.1.5 -- HTTP 503 Retry and Connection Retry support
 	`
 )
 
