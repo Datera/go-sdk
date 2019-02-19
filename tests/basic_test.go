@@ -84,6 +84,23 @@ func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, func
 	}, nil
 }
 
+func TestAiReload(t *testing.T) {
+	sdk, err := dsdk.NewSDK(nil, true)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Running: TestAiReload")
+	ai, cleanAi, err := createAi(sdk.NewContext(), sdk)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cleanAi()
+	ai, _, err = ai.Reload(&dsdk.AppInstanceReloadRequest{Ctxt: sdk.NewContext()})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestStorageNodes(t *testing.T) {
 	sdk, err := dsdk.NewSDK(nil, true)
 	if err != nil {
@@ -95,6 +112,10 @@ func TestStorageNodes(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, sn := range sns {
+		sn, _, err = sn.Reload(&dsdk.StorageNodeReloadRequest{Ctxt: sdk.NewContext()})
+		if err != nil {
+			t.Fatal(err)
+		}
 		fmt.Printf("StorageNode: %s\n", sn.Uuid)
 	}
 }

@@ -61,3 +61,23 @@ func (e *AclPolicy) Set(ro *AclPolicySetRequest) (*AclPolicy, *ApiErrorResponse,
 	return resp, nil, nil
 
 }
+
+type AclPolicyReloadRequest struct {
+	Ctxt context.Context `json:"-"`
+}
+
+func (e *AclPolicy) Reload(ro *AclPolicyReloadRequest) (*AclPolicy, *ApiErrorResponse, error) {
+	gro := &greq.RequestOptions{JSON: ro}
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := &AclPolicy{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+	return resp, nil, nil
+}

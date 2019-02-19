@@ -101,3 +101,24 @@ func (e *System) Set(ro *SystemSetRequest) (*System, *ApiErrorResponse, error) {
 	return resp, nil, nil
 
 }
+
+type SystemReloadRequest struct {
+	Ctxt context.Context `json:"-"`
+}
+
+func (e *System) Reload(ro *SystemReloadRequest) (*System, *ApiErrorResponse, error) {
+	gro := &greq.RequestOptions{JSON: ro}
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := &System{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+	RegisterSystemEndpoints(resp)
+	return resp, nil, nil
+}

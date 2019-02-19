@@ -252,3 +252,24 @@ func stringifyResults(rs *ApiOuter) *AppInstanceMetadata {
 	}
 	return resp
 }
+
+type AppInstanceReloadRequest struct {
+	Ctxt context.Context `json:"-"`
+}
+
+func (e *AppInstance) Reload(ro *AppInstanceReloadRequest) (*AppInstance, *ApiErrorResponse, error) {
+	gro := &greq.RequestOptions{JSON: ro}
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := &AppInstance{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+	RegisterAppInstanceEndpoints(resp)
+	return resp, nil, nil
+}

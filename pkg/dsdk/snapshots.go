@@ -125,3 +125,23 @@ func (e *Snapshot) Delete(ro *SnapshotDeleteRequest) (*Snapshot, *ApiErrorRespon
 	}
 	return resp, nil, nil
 }
+
+type SnapshotReloadRequest struct {
+	Ctxt context.Context `json:"-"`
+}
+
+func (e *Snapshot) Reload(ro *SnapshotReloadRequest) (*Snapshot, *ApiErrorResponse, error) {
+	gro := &greq.RequestOptions{JSON: ro}
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := &Snapshot{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+	return resp, nil, nil
+}

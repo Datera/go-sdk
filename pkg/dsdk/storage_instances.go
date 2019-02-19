@@ -176,3 +176,24 @@ func (e *StorageInstance) Delete(ro *StorageInstanceDeleteRequest) (*StorageInst
 	RegisterStorageInstanceEndpoints(resp)
 	return resp, nil, nil
 }
+
+type StorageInstanceReloadRequest struct {
+	Ctxt context.Context `json:"-"`
+}
+
+func (e *StorageInstance) Reload(ro *StorageInstanceReloadRequest) (*StorageInstance, *ApiErrorResponse, error) {
+	gro := &greq.RequestOptions{JSON: ro}
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := &StorageInstance{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+	RegisterStorageInstanceEndpoints(resp)
+	return resp, nil, nil
+}

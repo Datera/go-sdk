@@ -175,3 +175,24 @@ func (e *Volume) Delete(ro *VolumeDeleteRequest) (*Volume, *ApiErrorResponse, er
 	RegisterVolumeEndpoints(resp)
 	return resp, nil, nil
 }
+
+type VolumeReloadRequest struct {
+	Ctxt context.Context `json:"-"`
+}
+
+func (e *Volume) Reload(ro *VolumeReloadRequest) (*Volume, *ApiErrorResponse, error) {
+	gro := &greq.RequestOptions{JSON: ro}
+	rs, apierr, err := GetConn(ro.Ctxt).Get(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := &Volume{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+	RegisterVolumeEndpoints(resp)
+	return resp, nil, nil
+}
