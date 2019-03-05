@@ -7,8 +7,6 @@ import (
 	greq "github.com/levigross/grequests"
 )
 
-type RemoteProvider string
-
 type Snapshot struct {
 	Path            string            `json:"path,omitempty" mapstructure:"path"`
 	Timestamp       string            `json:"timestamp,omitempty" mapstructure:"timestamp"`
@@ -21,7 +19,7 @@ type Snapshot struct {
 	ExclusiveSize   int               `json:"exclusive_size,omitempty" mapstructure:"exclusive_size"`
 	EffectiveSize   int               `json:"effective_size,omitempty" mapstructure:"effective_size"`
 	Local           bool              `json:"local,omitempty" mapstructure:"local"`
-	AppStructure    string            `json:"app_structure,omitempty" mapstructure:"app_structure"`
+	AppStructure    interface{}       `json:"app_structure,omitempty" mapstructure:"app_structure"`
 }
 
 type Snapshots struct {
