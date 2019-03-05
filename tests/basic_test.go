@@ -2,6 +2,7 @@ package dsdk_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"mime"
@@ -11,6 +12,18 @@ import (
 
 	dsdk "github.com/Datera/go-sdk/pkg/dsdk"
 )
+
+const (
+	RemoteConfigFile = "remote_provider.json"
+)
+
+type RemoteConfig struct {
+	HostBucket string `json:"host_bucket"`
+	Host       string `json:"host"`
+	AccessKey  string `json:"access_key"`
+	SecretKey  string `json:"secret_key"`
+	Port       int    `json:"port"`
+}
 
 func createAi(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.AppInstance, func(), error) {
 	vol := &dsdk.Volume{
@@ -82,6 +95,110 @@ func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, func
 			return
 		}
 	}, nil
+}
+
+func TestSnapshot(t *testing.T) {
+	sdk, err := dsdk.NewSDK(nil, true)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Running: TestAiReload")
+	ai, cleanAi, err := createAi(sdk.NewContext(), sdk)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cleanAi()
+
+	vol := ai.StorageInstances[0].Volumes[0]
+	snap, _, err := vol.SnapshotsEp.Create(&dsdk.SnapshotsCreateRequest{Ctxt: sdk.NewContext()})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		_, _, err = snap.Delete(&dsdk.SnapshotDeleteRequest{Ctxt: sdk.NewContext()})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+	fmt.Printf("Snapshot ID: %s\n", snap.UtcTs)
+}
+
+func TestSnapshotRemoteProvider(t *testing.T) {
+	data, err := ioutil.ReadFile(RemoteConfigFile)
+	if err != nil {
+		fmt.Printf("Couldn't read %s, skipping SnapshotRemoteProvider test\n", RemoteConfigFile)
+	}
+	cfg := &RemoteConfig{}
+	if err = json.Unmarshal(data, cfg); err != nil {
+		t.Skip()
+	}
+	sdk, err := dsdk.NewSDK(nil, true)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Running: TestAiReload")
+	ai, cleanAi, err := createAi(sdk.NewContext(), sdk)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cleanAi()
+
+	// Create Remote Provider
+	rp, _, err := sdk.RemoteProvider.Create(&dsdk.RemoteProvidersCreateRequest{
+		Ctxt:       sdk.NewContext(),
+		RemoteType: dsdk.ProviderS3,
+		Host:       cfg.Host,
+		Port:       cfg.Port,
+		AccessKey:  cfg.AccessKey,
+		SecretKey:  cfg.SecretKey,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	timeout := 60
+	for {
+		if timeout <= 0 {
+			t.Fatal(fmt.Errorf("Did not reach available state before timeout"))
+		}
+		rp, _, err := rp.Reload(&dsdk.RemoteProviderReloadRequest{
+			Ctxt: sdk.NewContext(),
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if rp.Status == "available" {
+			break
+		}
+		time.Sleep(1 * time.Second)
+		timeout--
+	}
+
+	defer func() {
+		if rp == nil {
+			return
+		}
+		_, _, err = rp.Delete(&dsdk.RemoteProviderDeleteRequest{Ctxt: sdk.NewContext()})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	vol := ai.StorageInstances[0].Volumes[0]
+	snap, _, err := vol.SnapshotsEp.Create(&dsdk.SnapshotsCreateRequest{
+		Ctxt:               sdk.NewContext(),
+		RemoteProviderUuid: rp.Uuid,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		_, _, err = snap.Delete(&dsdk.SnapshotDeleteRequest{Ctxt: sdk.NewContext()})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
 }
 
 func TestAiReload(t *testing.T) {
