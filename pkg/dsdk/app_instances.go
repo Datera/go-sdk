@@ -35,10 +35,12 @@ type AppInstance struct {
 	TemplateOverride        map[string]interface{}  `json:"template_override,omitempty" mapstructure:"template_override"`
 	Uuid                    string                  `json:"uuid,omitempty" mapstructure:"uuid"`
 	StorageInstancesEp      *StorageInstances       `json:"-"`
+	SnapshotsEp             *Snapshots              `json:"-"`
 }
 
 func RegisterAppInstanceEndpoints(a *AppInstance) {
 	a.StorageInstancesEp = newStorageInstances(a.Path)
+	a.SnapshotsEp = newSnapshots(a.Path)
 	for _, si := range a.StorageInstances {
 		RegisterStorageInstanceEndpoints(si)
 	}
