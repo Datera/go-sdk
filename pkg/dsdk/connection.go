@@ -319,6 +319,12 @@ func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.Reque
 	rs := &ApiListOuter{}
 	apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
 	// TODO:(_alastor_) handle pulling paged entries
+
+	filterparam := ""
+	if ro.Params != nil && len(ro.Params) > 0 {
+		filterparam = ro.Params["filter"]
+	}
+
 	if apiresp == nil && len(rs.Metadata) > 0 {
 		lp := ListParamsFromMap(ro.Params)
 		if lp.Limit != 0 || lp.Offset != 0 {
@@ -335,6 +341,7 @@ func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.Reque
 			}
 			ro.Params = ListParams{
 				Offset: offset,
+				Filter: filterparam,
 			}.ToMap()
 			rs.Data = []interface{}{}
 			apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
