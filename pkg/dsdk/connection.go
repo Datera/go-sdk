@@ -334,7 +334,7 @@ func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.Reque
 		offset := 0
 		tcnt := 0
 		for ldata := len(data); ldata != tcnt; {
-			tcnt := int(rs.Metadata["total_count"].(float64))
+			tcnt := int(rs.Metadata["request_count"].(float64))
 			offset += len(rs.Data)
 			if offset >= tcnt {
 				break
