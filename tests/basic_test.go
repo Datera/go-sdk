@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"mime"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -97,12 +98,62 @@ func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, func
 	}, nil
 }
 
+func createRemoteProvider(ctxt context.Context, sdk *dsdk.SDK, cfg RemoteConfig) (*dsdk.RemoteProvider, func(), error) {
+	rp, aer, err := sdk.RemoteProvider.Create(&dsdk.RemoteProvidersCreateRequest{
+		Ctxt:       ctxt,
+		RemoteType: dsdk.ProviderS3,
+		Host:       cfg.Host,
+		Port:       cfg.Port,
+		AccessKey:  cfg.AccessKey,
+		SecretKey:  cfg.SecretKey,
+	})
+	if err != nil {
+		return nil, func() {}, err
+	}
+	if aer != nil {
+		return nil, nil, fmt.Errorf("%v: %v", aer.Message, strings.Join(aer.Errors, ","))
+	}
+
+	timeout := 60
+	for {
+		if timeout <= 0 {
+			return nil, func() {}, fmt.Errorf("Did not reach available state before timeout")
+		}
+		rp, _, err := rp.Reload(&dsdk.RemoteProviderReloadRequest{
+			Ctxt: sdk.NewContext(),
+		})
+		if err != nil {
+			return nil, func() {}, err
+		}
+		if rp.Status == "available" {
+			break
+		}
+		time.Sleep(1 * time.Second)
+		timeout--
+	}
+
+	return rp, func() {
+		if rp == nil {
+			return
+		}
+		_, aer, err := rp.Delete(&dsdk.RemoteProviderDeleteRequest{Ctxt: ctxt})
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		if aer != nil {
+			fmt.Println(fmt.Errorf("%v: %v", aer.Message, strings.Join(aer.Errors, ",")))
+			return
+		}
+	}, nil
+}
+
 func TestSnapshot(t *testing.T) {
 	sdk, err := dsdk.NewSDK(nil, true)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Running: TestAiReload")
+	fmt.Println("Running: TestSnapshot")
 	ai, cleanAi, err := createAi(sdk.NewContext(), sdk)
 	if err != nil {
 		t.Fatal(err)
@@ -127,17 +178,17 @@ func TestSnapshot(t *testing.T) {
 func TestSnapshotRemoteProvider(t *testing.T) {
 	data, err := ioutil.ReadFile(RemoteConfigFile)
 	if err != nil {
-		fmt.Printf("Couldn't read %s, skipping SnapshotRemoteProvider test\n", RemoteConfigFile)
+		t.Skipf("Couldn't read %s, skipping SnapshotRemoteProvider test\n", RemoteConfigFile)
 	}
 	cfg := &RemoteConfig{}
 	if err = json.Unmarshal(data, cfg); err != nil {
-		t.Skip()
+		t.Skip(err)
 	}
 	sdk, err := dsdk.NewSDK(nil, true)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Running: TestAiReload")
+	fmt.Println("Running: TestSnapshotRemoteProvider")
 	ai, cleanAi, err := createAi(sdk.NewContext(), sdk)
 	if err != nil {
 		t.Fatal(err)
@@ -145,44 +196,12 @@ func TestSnapshotRemoteProvider(t *testing.T) {
 	defer cleanAi()
 
 	// Create Remote Provider
-	rp, _, err := sdk.RemoteProvider.Create(&dsdk.RemoteProvidersCreateRequest{
-		Ctxt:       sdk.NewContext(),
-		RemoteType: dsdk.ProviderS3,
-		Host:       cfg.Host,
-		Port:       cfg.Port,
-		AccessKey:  cfg.AccessKey,
-		SecretKey:  cfg.SecretKey,
-	})
+	rp, cleanRp, err := createRemoteProvider(sdk.NewContext(), sdk, *cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
-	timeout := 60
-	for {
-		if timeout <= 0 {
-			t.Fatal(fmt.Errorf("Did not reach available state before timeout"))
-		}
-		rp, _, err := rp.Reload(&dsdk.RemoteProviderReloadRequest{
-			Ctxt: sdk.NewContext(),
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if rp.Status == "available" {
-			break
-		}
-		time.Sleep(1 * time.Second)
-		timeout--
-	}
 
-	defer func() {
-		if rp == nil {
-			return
-		}
-		_, _, err = rp.Delete(&dsdk.RemoteProviderDeleteRequest{Ctxt: sdk.NewContext()})
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
+	defer cleanRp()
 
 	vol := ai.StorageInstances[0].Volumes[0]
 	snap, _, err := vol.SnapshotsEp.Create(&dsdk.SnapshotsCreateRequest{
@@ -199,6 +218,37 @@ func TestSnapshotRemoteProvider(t *testing.T) {
 			t.Fatal(err)
 		}
 	}()
+}
+
+func TestAppInstanceSnapshot(t *testing.T) {
+	sdk, err := dsdk.NewSDK(nil, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println("Running: TestAppInstanceSnapshot")
+
+	ai, cleanAi, err := createAi(sdk.NewContext(), sdk)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer cleanAi()
+
+	snap, aer, err := ai.SnapshotsEp.Create(&dsdk.SnapshotsCreateRequest{Ctxt: sdk.NewContext()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if aer != nil {
+		t.Fatal(aer)
+	}
+
+	defer func() {
+		_, _, err = snap.Delete(&dsdk.SnapshotDeleteRequest{Ctxt: sdk.NewContext()})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+	fmt.Printf("Snapshot ID: %s\n", snap.UtcTs)
 }
 
 func TestAiReload(t *testing.T) {
