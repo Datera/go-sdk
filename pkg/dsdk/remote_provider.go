@@ -26,10 +26,12 @@ type RemoteProvider struct {
 	Host              string                   `json:"host,omitempty" mapstructure:"host"`
 	Port              string                   `json:"port,omitempty" mapstructure:"port"`
 	OperationsEp      string
+	SnapshotsEp       *Snapshots
 }
 
-func RegisterRemoteProviderEndpoints(a *RemoteProvider) {
+func RegisterRemoteProviderEndpoints(rp *RemoteProvider) {
 	//a.OperationsEp = newOperations(a.Path)
+	rp.SnapshotsEp = newSnapshots(rp.Path)
 }
 
 type RemoteProviders struct {
