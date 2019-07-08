@@ -20,6 +20,7 @@ type Snapshot struct {
 	EffectiveSize   int               `json:"effective_size,omitempty" mapstructure:"effective_size"`
 	Local           bool              `json:"local,omitempty" mapstructure:"local"`
 	AppStructure    interface{}       `json:"app_structure,omitempty" mapstructure:"app_structure"`
+	TsVersion       string            `json:"ts_version,omitempty" mapstructure:"ts_version"`
 }
 
 type Snapshots struct {
