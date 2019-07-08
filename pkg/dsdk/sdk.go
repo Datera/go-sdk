@@ -78,6 +78,19 @@ func (c SDK) NewContext() context.Context {
 	return ctxt
 }
 
+func (c SDK) GetDateraVersion() (string, error) {
+	sys, apierr, err := c.System.Get(&SystemGetRequest{
+		Ctxt: context.WithValue(c.NewContext(), "quiet", true),
+	})
+	if err != nil {
+		return "", err
+	}
+	if apierr != nil {
+		return "", fmt.Errorf("ApiError: %s", Pretty(apierr))
+	}
+	return sys.SwVersion, nil
+}
+
 // Cleans AppInstances, AppTemplates, StorageInstances, Initiators and InitiatorGroups under
 // the currently configured tenant
 func (c SDK) HealthCheck() error {
