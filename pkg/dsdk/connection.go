@@ -256,6 +256,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 			Log().Errorf("%s", err2)
 			return apiresp, err2
 		}
+		ro.Headers["Auth-Token"] = c.apikey
 		return c.do(ctxt, method, url, ro, rs, false, sensitive)
 	}
 	if err == badStatus[Retry503] || err == badStatus[ConnectionError] {
