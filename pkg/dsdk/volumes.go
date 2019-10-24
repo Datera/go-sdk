@@ -33,7 +33,7 @@ type Volume struct {
 	StorageState       string             `json:"storage_state,omitempty" mapstructure:"storage_state"`
 	Uuid               string             `json:"uuid,omitempty" mapstructure:"uuid"`
 	SnapshotsEp        *Snapshots         `json:"-"`
-	PerformancePolicy  *PerformancePolicy `json:"-"`
+	PerformancePolicy  *PerformancePolicy `json:"performance_policy,omitempty" map_structure:"performance_policy"`
 }
 
 func RegisterVolumeEndpoints(a *Volume) {
