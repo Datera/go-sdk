@@ -45,6 +45,7 @@ type ApiConnection struct {
 	ldap       string
 	apikey     string
 	baseUrl    *url.URL
+	httpClient *http.Client
 }
 
 type ApiErrorResponse struct {
@@ -204,6 +205,12 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if sensitive {
 		sdata = []byte("********")
 	}
+	if ro.HTTPClient == nil && c.httpClient != nil {
+		ro.HTTPClient = c.httpClient
+	}
+	if ro.Context == nil {
+		ro.Context = ctxt
+	}
 	if ro.Headers == nil {
 		ro.Headers = make(map[string]string, 1)
 	}
@@ -234,6 +241,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	}
 
 	// The actual request happens here
+	// Context is passed through ro.Context
 	resp, err := greq.DoRegularRequest(method, gurl.String(), ro)
 
 	t2 := time.Now()
@@ -294,7 +302,11 @@ func (c *ApiConnection) doWithAuth(ctxt context.Context, method, url string, ro 
 }
 
 func NewApiConnection(c *udc.UDC, secure bool) *ApiConnection {
-	url, err := makeBaseUrl(c.MgmtIp, c.ApiVersion, secure)
+	return NewApiConnectionWithHTTPClient(c, secure, nil)
+}
+
+func NewApiConnectionWithHTTPClient(c *udc.UDC, secure bool, client *http.Client) *ApiConnection {
+	u, err := makeBaseUrl(c.MgmtIp, c.ApiVersion, secure)
 	if err != nil {
 		Log().Fatalf("%s", err)
 	}
@@ -305,7 +317,8 @@ func NewApiConnection(c *udc.UDC, secure bool) *ApiConnection {
 		tenant:     c.Tenant,
 		ldap:       c.Ldap,
 		secure:     secure,
-		baseUrl:    url,
+		baseUrl:    u,
+		httpClient: client,
 		m:          &sync.Mutex{},
 	}
 }
