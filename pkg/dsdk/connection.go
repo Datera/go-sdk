@@ -259,7 +259,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		ro.Headers["Auth-Token"] = c.apikey
 		return c.do(ctxt, method, url, ro, rs, false, sensitive)
 	}
-	if err == badStatus[Retry503] || err == badStatus[ConnectionError] {
+	if retry && (err == badStatus[Retry503] || err == badStatus[ConnectionError]) {
 		return c.retry(ctxt, method, url, ro, rs, sensitive)
 	}
 	if eresp != nil {
@@ -400,7 +400,7 @@ func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
 	if c.ldap != "" {
 		ro.Data["remote_server"] = c.ldap
 	}
-	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, false, true)
+	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, true, true)
 	c.apikey = login.Key
 	return apiresp, err
 }
