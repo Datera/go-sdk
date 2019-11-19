@@ -1,4 +1,4 @@
-module github.com/geek/go-datera
+module github.com/Datera/go-datera
 
 require (
 	github.com/Datera/go-udc v1.1.0
