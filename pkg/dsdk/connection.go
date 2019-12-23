@@ -101,6 +101,16 @@ type ListParams struct {
 	Offset int    `json:"offset,omitempty" mapstructure:"offset"`
 }
 
+type ListRangeParams struct {
+	Since  string `json:"since,omitempty" mapstructure:"since"`
+	From   string `json:"from,omitempty" mapstructure:"from"`
+	To     string `json:"to,omitempty" mapstructure:"to"`
+	Filter string `json:"filter,omitempty" mapstructure:"filter"`
+	Limit  int    `json:"limit,omitempty" mapstructure:"limit"`
+	Sort   string `json:"sort,omitempty" mapstructure:"sort"`
+	Offset int    `json:"offset,omitempty" mapstructure:"offset"`
+}
+
 func (s ListParams) ToMap() map[string]string {
 	r := map[string]string{}
 	if s.Filter != "" {
@@ -122,6 +132,60 @@ func ListParamsFromMap(m map[string]string) *ListParams {
 	lp := &ListParams{}
 	lp.Filter = m["filter"]
 	lp.Sort = m["sort"]
+	if m["offset"] != "" {
+		o, err := strconv.ParseInt(m["offset"], 0, 0)
+		if err != nil {
+			panic(err)
+		}
+		lp.Offset = int(o)
+	} else {
+		lp.Offset = 0
+	}
+	if m["limit"] != "" {
+		o, err := strconv.ParseInt(m["limit"], 0, 0)
+		if err != nil {
+			panic(err)
+		}
+		lp.Limit = int(o)
+	} else {
+		lp.Limit = 0
+	}
+	return lp
+}
+
+func (s ListRangeParams) ToMap() map[string]string {
+	r := map[string]string{}
+	if s.Filter != "" {
+		r["filter"] = s.Filter
+	}
+	if s.Limit != 0 {
+		r["limit"] = strconv.FormatInt(int64(s.Limit), 10)
+	}
+	if s.Sort != "" {
+		r["sort"] = s.Sort
+	}
+	if s.Offset != 0 {
+		r["offset"] = strconv.FormatInt(int64(s.Offset), 10)
+	}
+	if s.Since != "" {
+		r["since"] = s.Since
+	}
+	if s.From != "" {
+		r["from"] = s.From
+	}
+	if s.To != "" {
+		r["to"] = s.To
+	}
+	return r
+}
+
+func ListRangeParamsFromMap(m map[string]string) *ListRangeParams {
+	lp := &ListRangeParams{}
+	lp.Filter = m["filter"]
+	lp.Sort = m["sort"]
+	lp.Since = m["since"]
+	lp.From = m["from"]
+	lp.To = m["to"]
 	if m["offset"] != "" {
 		o, err := strconv.ParseInt(m["offset"], 0, 0)
 		if err != nil {
