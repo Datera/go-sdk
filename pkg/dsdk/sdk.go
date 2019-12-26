@@ -34,6 +34,7 @@ type SDK struct {
 	StorageNodes         *StorageNodes
 	StoragePools         *StoragePools
 	System               *System
+	SystemEvents         *SystemEvents
 	Tenants              *Tenants
 }
 
@@ -60,6 +61,7 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 		StorageNodes:         newStorageNodes("/"),
 		StoragePools:         newStoragePools("/"),
 		System:               newSystem("/"),
+		SystemEvents:         newSystemEvents("/"),
 		Tenants:              newTenants("/"),
 	}, nil
 }
