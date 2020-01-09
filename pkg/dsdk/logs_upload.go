@@ -98,7 +98,7 @@ func logsUpload(ctxt context.Context, file string) error {
 		"request_method":  http.MethodPut,
 		"request_url":     gurl.String(),
 		"request_headers": sheaders,
-	}).Debug("Uploading logs")
+	}).Debug("Datera SDK uploading logs")
 	res, err := client.Do(req)
 	if err != nil {
 		return err

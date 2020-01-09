@@ -297,7 +297,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 			"request_url":     gurl.String(),
 			"request_headers": sheaders,
 			"request_payload": string(sdata),
-		}).Debugf("Sending request")
+		}).Debugf("Datera SDK making request")
 		return nil
 	}
 
@@ -311,12 +311,12 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		rdata = "<muted>"
 	}
 	Log().WithFields(log.Fields{
-		logTraceID:            tid,
-		"request_id":          reqId,
-		"response_timedelata": tDelta.Seconds(),
-		"request_url":         gurl.String(),
-		"response_payload":    rdata,
-	}).Debugf("Response received")
+		logTraceID:           tid,
+		"request_id":         reqId,
+		"response_timedelta": tDelta.Seconds(),
+		"request_url":        gurl.String(),
+		"response_payload":   rdata,
+	}).Debugf("Datera SDK response received")
 	eresp, err := checkResponse(resp, err, retry)
 	if err == badStatus[RetryRequestAfterLogin] {
 		if apiresp, err2 := c.Login(ctxt); err2 != nil {
