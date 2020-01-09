@@ -2,7 +2,6 @@ module github.com/Datera/go-sdk
 
 require (
 	github.com/Datera/go-udc v1.1.0
-	github.com/InVisionApp/go-logger v1.0.1
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.1.0
 	github.com/levigross/grequests v0.0.0-20181123014746-f3f67e7783bb
