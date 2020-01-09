@@ -11,9 +11,9 @@ import (
 	"net/http"
 	"os"
 	_path "path"
-	"strings"
 
 	uuid "github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -92,13 +92,13 @@ func logsUpload(ctxt context.Context, file string) error {
 	if err != nil {
 		Log().Errorf("Couldn't stringify headers, %s", req.Header)
 	}
-	Log().Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
-		"Datera Request ID: %s",
-		"Datera Request URL: %s",
-		"Datera Request Method: %s",
-		"Datera Request Payload: <binary stream>",
-		"Datera Request Headers: %s\n"}, "\n"),
-		tid, reqId, url, http.MethodPut, sheaders)
+	Log().WithFields(log.Fields{
+		logTraceID:        tid,
+		"request_id":      reqId,
+		"request_method":  http.MethodPut,
+		"request_url":     gurl.String(),
+		"request_headers": sheaders,
+	}).Debug("Uploading logs")
 	res, err := client.Do(req)
 	if err != nil {
 		return err
@@ -150,13 +150,13 @@ func (e *LogsUpload) RotateUploadRemove(ctxt context.Context, rule, rotated stri
 			Files: []string{rotated},
 		})
 		if apierr != nil {
-			Log().Errorf("%s\n", Pretty(apierr))
+			Log().Errorf("%s", Pretty(apierr))
 		}
 		if err != nil {
 			Log().Error(err)
 		}
 	} else {
-		Log().Debugf("No new filtered logs detected.  Size: %d\n", fstat.Size())
+		Log().Debugf("No new filtered logs detected.  Size: %d", fstat.Size())
 	}
 	return nil
 }

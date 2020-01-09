@@ -1,10 +1,13 @@
 github.com/Datera/go-udc v1.1.0 h1:00PLH1rWv9Ygde4JCWzpg1I5Ka1RVMMN10bTXXOS58o=
 github.com/Datera/go-udc v1.1.0/go.mod h1:Z1tRCsem0RwlAJ6W0nnBda74SngfTQAE88xAU8mOpJ8=
+github.com/InVisionApp/go-logger v1.0.1 h1:WFL19PViM1mHUmUWfsv5zMo379KSWj2MRmBlzMFDRiE=
+github.com/InVisionApp/go-logger v1.0.1/go.mod h1:+cGTDSn+P8105aZkeOfIhdd7vFO5X1afUHcjvanY0L8=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/go-querystring v1.0.0 h1:Xkwi/a1rcvNg1PPYe5vI8GbeBY/jrVuDX5ASuANWTrk=
 github.com/google/go-querystring v1.0.0/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO6wN/zVPAxq5ck=
 github.com/google/uuid v1.1.0 h1:Jf4mxPC/ziBnoPIdpQdPJ9OeiomAUHLvxmPRSPH9m4s=
 github.com/google/uuid v1.1.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/konsorten/go-windows-terminal-sequences v1.0.1 h1:mweAR1A6xJ3oS2pRaGiHgQ4OO8tzTaLawm8vnODuwDk=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/levigross/grequests v0.0.0-20181123014746-f3f67e7783bb h1:abtOECcfhYEyOcL1SKUuv/XzdbSk1Ebo2nF8ArWrrxU=
 github.com/levigross/grequests v0.0.0-20181123014746-f3f67e7783bb/go.mod h1:uCZIhROSrVmuF/BPYFPwDeiiQ6juSLp0kikFoEcNcEs=
