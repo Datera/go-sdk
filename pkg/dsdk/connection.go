@@ -264,7 +264,6 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	gurl.Path = path.Join(gurl.Path, url)
 	reqId := uuid.Must(uuid.NewRandom()).String()
 	sdata, err := json.Marshal(ro.JSON)
-	Log().Debugf("REST call going with following payload, %s", string(sdata))
 	if err != nil {
 		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
