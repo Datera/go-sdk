@@ -105,9 +105,9 @@ func (c SDK) HealthCheck() error {
 	if apierr != nil {
 		return fmt.Errorf("ApiError: %s", Pretty(apierr))
 	}
-	Log().Debugf("Connected to cluster: %s with tenant %s.\n", c.conf.MgmtIp, c.conf.Tenant)
+	Log().Debugf("Connected to cluster: %s with tenant %s.", c.conf.MgmtIp, c.conf.Tenant)
 	for _, sn := range sns {
-		Log().Debugf("Found Storage Node: %s\n", sn.Uuid)
+		Log().Debugf("Found Storage Node: %s", sn.Uuid)
 	}
 	return nil
 }
