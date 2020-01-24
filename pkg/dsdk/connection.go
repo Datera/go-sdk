@@ -16,6 +16,7 @@ import (
 	udc "github.com/Datera/go-udc/pkg/udc"
 	uuid "github.com/google/uuid"
 	greq "github.com/levigross/grequests"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -33,6 +34,7 @@ var (
 		RetryRequestAfterLogin: fmt.Errorf("RetryRequestAfterLogin"),
 	}
 	DateraDriver = fmt.Sprintf("Golang-SDK-%s", VERSION)
+	logTraceID   = "trace_id"
 )
 
 type ApiConnection struct {
@@ -102,6 +104,16 @@ type ListParams struct {
 	Offset int    `json:"offset,omitempty" mapstructure:"offset"`
 }
 
+type ListRangeParams struct {
+	Since  string `json:"since,omitempty" mapstructure:"since"`
+	From   string `json:"from,omitempty" mapstructure:"from"`
+	To     string `json:"to,omitempty" mapstructure:"to"`
+	Filter string `json:"filter,omitempty" mapstructure:"filter"`
+	Limit  int    `json:"limit,omitempty" mapstructure:"limit"`
+	Sort   string `json:"sort,omitempty" mapstructure:"sort"`
+	Offset int    `json:"offset,omitempty" mapstructure:"offset"`
+}
+
 func (s ListParams) ToMap() map[string]string {
 	r := map[string]string{}
 	if s.Filter != "" {
@@ -123,6 +135,60 @@ func ListParamsFromMap(m map[string]string) *ListParams {
 	lp := &ListParams{}
 	lp.Filter = m["filter"]
 	lp.Sort = m["sort"]
+	if m["offset"] != "" {
+		o, err := strconv.ParseInt(m["offset"], 0, 0)
+		if err != nil {
+			panic(err)
+		}
+		lp.Offset = int(o)
+	} else {
+		lp.Offset = 0
+	}
+	if m["limit"] != "" {
+		o, err := strconv.ParseInt(m["limit"], 0, 0)
+		if err != nil {
+			panic(err)
+		}
+		lp.Limit = int(o)
+	} else {
+		lp.Limit = 0
+	}
+	return lp
+}
+
+func (s ListRangeParams) ToMap() map[string]string {
+	r := map[string]string{}
+	if s.Filter != "" {
+		r["filter"] = s.Filter
+	}
+	if s.Limit != 0 {
+		r["limit"] = strconv.FormatInt(int64(s.Limit), 10)
+	}
+	if s.Sort != "" {
+		r["sort"] = s.Sort
+	}
+	if s.Offset != 0 {
+		r["offset"] = strconv.FormatInt(int64(s.Offset), 10)
+	}
+	if s.Since != "" {
+		r["since"] = s.Since
+	}
+	if s.From != "" {
+		r["from"] = s.From
+	}
+	if s.To != "" {
+		r["to"] = s.To
+	}
+	return r
+}
+
+func ListRangeParamsFromMap(m map[string]string) *ListRangeParams {
+	lp := &ListRangeParams{}
+	lp.Filter = m["filter"]
+	lp.Sort = m["sort"]
+	lp.Since = m["since"]
+	lp.From = m["from"]
+	lp.To = m["to"]
 	if m["offset"] != "" {
 		o, err := strconv.ParseInt(m["offset"], 0, 0)
 		if err != nil {
@@ -230,13 +296,14 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		if err != nil {
 			Log().Errorf("Couldn't stringify headers, %s", h.Header)
 		}
-		Log().Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
-			"Datera Request ID: %s",
-			"Datera Request URL: %s",
-			"Datera Request Method: %s",
-			"Datera Request Payload: %s",
-			"Datera Request Headers: %s\n"}, "\n"),
-			tid, reqId, gurl.String(), method, string(sdata), sheaders)
+		Log().WithFields(log.Fields{
+			logTraceID:        tid,
+			"request_id":      reqId,
+			"request_method":  method,
+			"request_url":     gurl.String(),
+			"request_headers": sheaders,
+			"request_payload": string(sdata),
+		}).Debugf("Datera SDK making request")
 		return nil
 	}
 
@@ -250,13 +317,13 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if _, ok := ctxt.Value("quiet").(bool); ok {
 		rdata = "<muted>"
 	}
-	Log().Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
-		"Datera Response ID: %s",
-		"Datera Response TimeDelta: %fs",
-		"Datera Response URL: %s",
-		"Datera Response Payload: %s",
-		"Datera Response Object: %s\n"}, "\n"),
-		tid, reqId, tDelta.Seconds(), gurl.String(), rdata, "nil")
+	Log().WithFields(log.Fields{
+		logTraceID:           tid,
+		"request_id":         reqId,
+		"response_timedelta": tDelta.Seconds(),
+		"request_url":        gurl.String(),
+		"response_payload":   rdata,
+	}).Debugf("Datera SDK response received")
 	eresp, err := checkResponse(resp, err, retry)
 	if err == badStatus[RetryRequestAfterLogin] {
 		if apiresp, err2 := c.Login(ctxt); err2 != nil {
@@ -267,21 +334,21 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		ro.Headers["Auth-Token"] = c.apikey
 		return c.do(ctxt, method, url, ro, rs, false, sensitive)
 	}
-	if err == badStatus[Retry503] || err == badStatus[ConnectionError] {
+	if retry && (err == badStatus[Retry503] || err == badStatus[ConnectionError]) {
 		return c.retry(ctxt, method, url, ro, rs, sensitive)
 	}
 	if eresp != nil {
-		Log().Errorf("Recieved API Error %s\n", Pretty(eresp))
+		Log().Errorf("Recieved API Error %s", Pretty(eresp))
 		return eresp, nil
 	}
 	if err != nil {
-		Log().Errorf("Error during checkResponse: %s\n", err)
+		Log().Errorf("Error during checkResponse: %s", err)
 		return nil, err
 	}
 	err = resp.JSON(rs)
 	if err != nil {
-		Log().Errorf("Could not unpack response, %s\n", err)
-		Log().Errorf("Response, %s\n", resp.String())
+		Log().Errorf("Could not unpack response, %s", err)
+		Log().Errorf("Response, %s", resp.String())
 		return nil, err
 	}
 	return nil, nil
@@ -413,7 +480,7 @@ func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
 	if c.ldap != "" {
 		ro.Data["remote_server"] = c.ldap
 	}
-	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, false, true)
+	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, true, true)
 	c.apikey = login.Key
 	return apiresp, err
 }

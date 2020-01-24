@@ -22,6 +22,7 @@ type AppInstance struct {
 	Id                      string                  `json:"id,omitempty" mapstructure:"id"`
 	Name                    string                  `json:"name,omitempty" mapstructure:"name"`
 	OpState                 string                  `json:"op_state,omitempty" mapstructure:"op_state"`
+	OperationPath           string                  `json:"operation_path,omitempty" mapstructure:"operation_path"`
 	Path                    string                  `json:"path,omitempty" mapstructure:"path"`
 	RemoteRestorePercentage int                     `json:"remote_restore_percentage,omitempty" mapstructure:"remote_restore_percentage"`
 	RemoteRestoreProgress   string                  `json:"remote_restore_progress,omitempty" mapstructure:"remote_restore_progress"`
@@ -75,6 +76,7 @@ func newAppInstances(path string) *AppInstances {
 func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, apierr, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
+	Log().Debugf("App Instance create request sent to go-sdk with following data, %#v", ro)
 	if apierr != nil {
 		return nil, apierr, err
 	}

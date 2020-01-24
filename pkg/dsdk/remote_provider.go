@@ -125,6 +125,34 @@ func (e *RemoteProviders) Get(ro *RemoteProvidersGetRequest) (*RemoteProvider, *
 	return resp, nil, nil
 }
 
+type RemoteProvidersRefreshRequest struct {
+	Ctxt context.Context `json:"-"`
+	Uuid string          `json:"-"`
+}
+
+type RemoteProvidersRefreshResponse struct {
+	Uuid string `json:"uuid,omitempty" mapstructure:"uuid"`
+}
+
+func (e *RemoteProviders) Refresh(ro *RemoteProvidersRefreshRequest) (*RemoteProvidersRefreshResponse, *ApiErrorResponse, error) {
+	gro := &greq.RequestOptions{JSON: ro}
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, _path.Join(e.Path, ro.Uuid, "refresh"), gro)
+
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp := &RemoteProvidersRefreshResponse{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+
+	return resp, nil, nil
+}
+
 type RemoteProviderSetRequest struct {
 	Ctxt        context.Context `json:"-"`
 	ProjectName string          `json:"project_name,omitempty" mapstructure:"project_name"`
