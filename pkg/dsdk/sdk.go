@@ -3,6 +3,7 @@ package dsdk
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	udc "github.com/Datera/go-udc/pkg/udc"
 	uuid "github.com/google/uuid"
@@ -39,6 +40,10 @@ type SDK struct {
 }
 
 func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
+	return NewSDKWithHTTPClient(c, secure, nil)
+}
+
+func NewSDKWithHTTPClient(c *udc.UDC, secure bool, client *http.Client) (*SDK, error) {
 	var err error
 	if c == nil {
 		c, err = udc.GetConfig()
@@ -47,7 +52,7 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 			return nil, err
 		}
 	}
-	conn := NewApiConnection(c, secure)
+	conn := NewApiConnectionWithHTTPClient(c, secure, client)
 	return &SDK{
 		conf:                 c,
 		Conn:                 conn,
