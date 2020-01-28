@@ -236,7 +236,7 @@ type RemoteProviderOperationsUpdateRequest struct {
 	Action      string          `json:"action"` //available options are 'clear' and 'abort'
 }
 
-func (e *RemoteProvider) PerformOperation(ao *RemoteProviderOperationsUpdateRequest) (*RemoteProvider, *ApiErrorResponse, error) {
+func (e *RemoteProvider) CreateOperation(ao *RemoteProviderOperationsUpdateRequest) (*RemoteProvider, *ApiErrorResponse, error) {
 
 	gro := &greq.RequestOptions{JSON: ao}
 	rs, apierr, err := GetConn(ao.Ctxt).Put(ao.Ctxt, _path.Join(e.Path, "operations", ao.OperationId), gro)
