@@ -229,3 +229,26 @@ func (e *RemoteProvider) Reload(ro *RemoteProviderReloadRequest) (*RemoteProvide
 	RegisterRemoteProviderEndpoints(resp)
 	return resp, nil, nil
 }
+
+type RemoteProviderOperationsUpdateRequest struct {
+	Ctxt   context.Context `json:"-"`
+	Action string          `json:"action"` //available options are 'clear' and 'abort'
+}
+
+func (e *RemoteProvider) PerformOperation(ao *RemoteProviderOperationsUpdateRequest) (*RemoteProvider, *ApiErrorResponse, error) {
+
+	gro := &greq.RequestOptions{JSON: ao}
+	rs, apierr, err := GetConn(ao.Ctxt).Put(ao.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := &RemoteProvider{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+	RegisterRemoteProviderEndpoints(resp)
+	return resp, nil, nil
+}
