@@ -232,7 +232,7 @@ func (e *RemoteProvider) Reload(ro *RemoteProviderReloadRequest) (*RemoteProvide
 
 type RemoteProviderOperationsUpdateRequest struct {
 	Ctxt        context.Context `json:"-"`
-	OperationId string          `json:"omit"`
+	OperationId string          `json:"-"`
 	Action      string          `json:"action"` //available options are 'clear' and 'abort'
 }
 
