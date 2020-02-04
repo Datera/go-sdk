@@ -76,14 +76,14 @@ func (mp MetricsParams) ToMap() map[string]string {
 }
 
 type Metrics struct {
-	EntityPath string
-	Tenant     string
-	Points     []Point
+	EntityPath string  `json:"entity_path" mapstructure:"entity_path"`
+	Tenant     string  `json:"tenant" mapstructure:"tenant"`
+	Points     []Point `json:"points" mapstructure:"points"`
 }
 
 type Point struct {
-	Time  int64
-	Value float64
+	Time  int64   `json:"time" mapstructure:"time"`
+	Value float64 `json:"value" mapstructure:"value"`
 }
 
 type IOMetricsRequest struct {
