@@ -31,6 +31,8 @@ type SDK struct {
 	Initiators           *Initiators
 	InitiatorGroups      *InitiatorGroups
 	LogsUpload           *LogsUpload
+	HWMetrics            *HWMetrics
+	IOMetrics            *IOMetrics
 	RemoteProvider       *RemoteProviders
 	StorageNodes         *StorageNodes
 	StoragePools         *StoragePools
@@ -62,6 +64,8 @@ func NewSDKWithHTTPClient(c *udc.UDC, secure bool, client *http.Client) (*SDK, e
 		Initiators:           newInitiators("/"),
 		InitiatorGroups:      newInitiatorGroups("/"),
 		LogsUpload:           newLogsUpload("/"),
+		HWMetrics:            newHWMetrics("/"),
+		IOMetrics:            newIOMetrics("/"),
 		RemoteProvider:       newRemoteProviders("/"),
 		StorageNodes:         newStorageNodes("/"),
 		StoragePools:         newStoragePools("/"),
