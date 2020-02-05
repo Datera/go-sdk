@@ -401,11 +401,6 @@ func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.Reque
 	apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
 	// TODO:(_alastor_) handle pulling paged entries
 
-	filterparam := ""
-	if ro.Params != nil && len(ro.Params) > 0 {
-		filterparam = ro.Params["filter"]
-	}
-
 	if apiresp == nil && len(rs.Metadata) > 0 {
 		lp := ListParamsFromMap(ro.Params)
 		if lp.Limit != 0 || lp.Offset != 0 {
@@ -415,15 +410,15 @@ func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.Reque
 		offset := 0
 		tcnt := 0
 		for ldata := len(data); ldata != tcnt; {
-			tcnt := int(rs.Metadata["request_count"].(float64))
+			tcnt := int(rs.Metadata["total_count"].(float64))
 			offset += len(rs.Data)
 			if offset >= tcnt {
 				break
 			}
-			ro.Params = ListParams{
-				Offset: offset,
-				Filter: filterparam,
-			}.ToMap()
+			// there are api endpoints that handle lists with more fields than
+			// ListParams (but still have offset/limit in common)
+			// just update offset directly here to preserve those extra fields
+			ro.Params["offset"] = strconv.FormatInt(int64(offset), 10)
 			rs.Data = []interface{}{}
 			apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
 			if apiresp != nil || err != nil {
