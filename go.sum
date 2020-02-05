@@ -1,3 +1,5 @@
+github.com/Datera/go-sdk v1.1.14 h1:bj8CEQmuy7wwtas7BC5lXmAbfw4GFwYLM7IN8RyTx3Y=
+github.com/Datera/go-sdk v1.1.14/go.mod h1:Y9vguQE6UvgtDGnd3eyOkYpliNnhIkrZ8Ub9ACtzzgA=
 github.com/Datera/go-udc v1.1.0 h1:00PLH1rWv9Ygde4JCWzpg1I5Ka1RVMMN10bTXXOS58o=
 github.com/Datera/go-udc v1.1.0/go.mod h1:Z1tRCsem0RwlAJ6W0nnBda74SngfTQAE88xAU8mOpJ8=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
