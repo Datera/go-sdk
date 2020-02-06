@@ -229,3 +229,42 @@ func (e *RemoteProvider) Reload(ro *RemoteProviderReloadRequest) (*RemoteProvide
 	RegisterRemoteProviderEndpoints(resp)
 	return resp, nil, nil
 }
+
+type RemoteProviderOperationsSetRequest struct {
+	Ctxt        context.Context `json:"-"`
+	OperationId string          `json:"-"`
+	Action      string          `json:"action"` //available options are 'clear' and 'abort'
+}
+
+type RemoteOperation struct {
+	Path               string `json:"path" mapstructure:"path"`
+	Uuid               string `json:"uuid" mapstructure:"uuid"`
+	RemoteProviderUuid string `json:"remote_provider_uuid" mapstructure:"remote_provider_uuid"`
+	AppInstanceUuid    string `json:"app_instance_uuid" mapstructure:"app_instance_uuid"`
+	OpState            string `json:"op_state" mapstructure:"op_state"`
+	OpType             string `json:"op_type" mapstructure:"op_type"`
+	PercentDone        int    `json:"percent_done" mapstructure:"percent_done"`
+	TotalTasksDone     int    `json:"total_tasks_done" mapstructure:"total_tasks_done"`
+	TotalTasksIssued   int    `json:"total_tasks_issued" mapstructure:"total_tasks_issued"`
+	References         struct {
+		SnapshotAppInstancePath string `json:"snapshot_app_instance_path" "mapstructure:"snapshot_app_instance_path"`
+	} `json:"references" mapstructure:"references"`
+}
+
+func (e *RemoteProvider) SetOperation(ao *RemoteProviderOperationsSetRequest) (*RemoteOperation, *ApiErrorResponse, error) {
+
+	gro := &greq.RequestOptions{JSON: ao}
+	rs, apierr, err := GetConn(ao.Ctxt).Put(ao.Ctxt, _path.Join(e.Path, "operations", ao.OperationId), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := &RemoteOperation{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+
+	return resp, nil, nil
+}
