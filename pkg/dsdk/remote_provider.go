@@ -230,13 +230,13 @@ func (e *RemoteProvider) Reload(ro *RemoteProviderReloadRequest) (*RemoteProvide
 	return resp, nil, nil
 }
 
-type RemoteProviderOperationsUpdateRequest struct {
+type RemoteProviderOperationsSetRequest struct {
 	Ctxt        context.Context `json:"-"`
 	OperationId string          `json:"-"`
 	Action      string          `json:"action"` //available options are 'clear' and 'abort'
 }
 
-func (e *RemoteProvider) UpdateOperation(ao *RemoteProviderOperationsUpdateRequest) (*RemoteProvider, *ApiErrorResponse, error) {
+func (e *RemoteProvider) SetOperation(ao *RemoteProviderOperationsSetRequest) (*RemoteProvider, *ApiErrorResponse, error) {
 
 	gro := &greq.RequestOptions{JSON: ao}
 	rs, apierr, err := GetConn(ao.Ctxt).Put(ao.Ctxt, _path.Join(e.Path, "operations", ao.OperationId), gro)
