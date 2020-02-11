@@ -118,7 +118,7 @@ func newHWMetrics(path string) *HWMetrics {
 	}
 }
 
-func (m *IOMetrics) Get(ro *IOMetricsRequest) ([]*Metrics, *ApiErrorResponse, error) {
+func (m *IOMetrics) List(ro *IOMetricsRequest) ([]*Metrics, *ApiErrorResponse, error) {
 	if err := ro.Type.Validate(); err != nil {
 		return nil, nil, err
 	}
@@ -150,7 +150,7 @@ func (m *IOMetrics) Get(ro *IOMetricsRequest) ([]*Metrics, *ApiErrorResponse, er
 	return resp, nil, nil
 }
 
-func (m *HWMetrics) Get(ro *HWMetricsRequest) ([]*Metrics, *ApiErrorResponse, error) {
+func (m *HWMetrics) List(ro *HWMetricsRequest) ([]*Metrics, *ApiErrorResponse, error) {
 	if err := ro.Type.Validate(); err != nil {
 		return nil, nil, err
 	}
