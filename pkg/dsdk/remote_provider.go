@@ -27,6 +27,10 @@ type RemoteProvider struct {
 	Port              string                   `json:"port,omitempty" mapstructure:"port"`
 	OperationsEp      string
 	SnapshotsEp       *Snapshots
+
+	// Present only when the RemoteProvider is a subresource of a snapshot. Indicates the replication state of the
+	// snapshot on this RemoteProvider.
+	OpState           string
 }
 
 func RegisterRemoteProviderEndpoints(rp *RemoteProvider) {
