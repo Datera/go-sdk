@@ -9,4 +9,5 @@ require (
 	github.com/levigross/grequests v0.0.0-20181123014746-f3f67e7783bb
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/sirupsen/logrus v1.3.0
+	gopkg.in/h2non/gock.v1 v1.0.15
 )
