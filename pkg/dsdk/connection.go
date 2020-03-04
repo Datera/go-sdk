@@ -313,20 +313,23 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	t1 := time.Now()
 	// This will be run before each request.  It's needed so we can get access
 	// to the headers/body passed with the request instead of just our custom ones
-	ro.BeforeRequest = func(h *http.Request) error {
-		sheaders, err := json.Marshal(h.Header)
-		if err != nil {
-			Log().Errorf("Couldn't stringify headers, %s", h.Header)
+	if Log().Logger.GetLevel() >= log.DebugLevel {
+		ro.BeforeRequest = func(h *http.Request) error {
+			sheaders, err := json.Marshal(h.Header)
+			if err != nil {
+				Log().Errorf("Couldn't stringify headers, %s", h.Header)
+			}
+
+			Log().WithFields(log.Fields{
+				logTraceID:        tid,
+				"request_id":      reqId,
+				"request_method":  method,
+				"request_url":     gurl.String(),
+				"request_headers": sheaders,
+				"request_payload": string(sdata),
+			}).Debugf("Datera SDK making request")
+			return nil
 		}
-		Log().WithFields(log.Fields{
-			logTraceID:        tid,
-			"request_id":      reqId,
-			"request_method":  method,
-			"request_url":     gurl.String(),
-			"request_headers": sheaders,
-			"request_payload": string(sdata),
-		}).Debugf("Datera SDK making request")
-		return nil
 	}
 
 	// The actual request happens here
@@ -339,14 +342,18 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if _, ok := ctxt.Value("quiet").(bool); ok {
 		rdata = "<muted>"
 	}
-	Log().WithFields(log.Fields{
+	detailLog := Log().WithFields(log.Fields{
 		logTraceID:           tid,
 		"request_id":         reqId,
 		"response_timedelta": tDelta.Seconds(),
+		"request_method":     method,
 		"request_url":        gurl.String(),
+		"request_payload":    string(sdata),
 		"response_payload":   rdata,
 		"response_code":      resp.StatusCode,
-	}).Debugf("Datera SDK response received")
+	})
+
+	detailLog.Debugf("Datera SDK response received")
 
 	eresp, err := translateErrors(resp, err)
 
@@ -356,8 +363,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		if c.hasLoggedIn() {
 			c.Logout()
 			if apiresp, err2 := c.Login(ctxt); apiresp != nil || err2 != nil {
-				Log().Errorf("%s", err)
-				Log().Errorf("%s", err2)
+				detailLog.Errorf("failed to re-authenticate before retrying request: %s", err2)
 				return apiresp, err2
 			}
 			c.m.RLock()
@@ -375,17 +381,16 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		return c.retry(ctxt, method, url, ro, rs, sensitive)
 	}
 	if eresp != nil {
-		Log().Errorf("Recieved API Error %s", Pretty(eresp))
+		detailLog.Errorf("Recieved API Error %s", Pretty(eresp))
 		return eresp, nil
 	}
 	if err != nil {
-		Log().Errorf("Error during checkResponse: %s", err)
+		detailLog.Errorf("Error during translateErrors: %s", err)
 		return nil, err
 	}
 	err = resp.JSON(rs)
 	if err != nil {
-		Log().Errorf("Could not unpack response, %s", err)
-		Log().Errorf("Response, %s", resp.String())
+		detailLog.Errorf("Could not unpack response, err: %s with response: %s", err, resp.String())
 		return nil, err
 	}
 	return nil, nil
