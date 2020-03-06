@@ -106,6 +106,29 @@ func (e *Snapshots) Get(ro *SnapshotsGetRequest) (*Snapshot, *ApiErrorResponse, 
 	return resp, nil, nil
 }
 
+
+type SnapshotSetRequest struct {
+	Ctxt               context.Context `json:"-"`
+	DeleteLocal        bool            `json:"delete_local" mapstructure:"delete_local"`
+	RemoteProviderUuid string          `json:"remote_provider_uuid" mapstructure:"remote_provider_uuid"`
+}
+
+func (e *Snapshot) Set(ro *SnapshotSetRequest) (*Snapshot, *ApiErrorResponse, error) {
+	gro := &greq.RequestOptions{JSON: ro}
+	rs, apierr, err := GetConn(ro.Ctxt).Put(ro.Ctxt, e.Path, gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := &Snapshot{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+	return resp, nil, nil
+}
+
 type SnapshotDeleteRequest struct {
 	Ctxt               context.Context `json:"-"`
 	RemoteProviderUuid string          `json:"remote_provider_uuid,omitempty" mapstructure:"remote_provider_uuid"`
