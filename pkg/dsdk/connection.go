@@ -238,7 +238,7 @@ func translateErrors(resp *greq.Response, err error) (*ApiErrorResponse, error) 
 		eresp := &ApiErrorResponse{}
 		err := resp.JSON(eresp)
 		if err != nil {
-			eresp.Message = fmt.Sprintf("failed to unmarshal ApiErrorResponse: %v", err)
+			Log().Error(fmt.Sprintf("failed to unmarshal ApiErrorResponse %+v: %v", eresp, err))
 		}
 
 		// in some cases (like 503s) the response JSON doesn't contain
