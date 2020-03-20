@@ -11,7 +11,7 @@ import (
 	"github.com/Datera/go-udc/pkg/udc"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/tjcelaya/go-datera/pkg/dsdk"
+        dsdk "github.com/Datera/go-sdk/pkg/dsdk"
 	"gopkg.in/h2non/gock.v1"
 )
 

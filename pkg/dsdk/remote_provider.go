@@ -251,7 +251,7 @@ type RemoteOperation struct {
 	TotalTasksDone     int    `json:"total_tasks_done" mapstructure:"total_tasks_done"`
 	TotalTasksIssued   int    `json:"total_tasks_issued" mapstructure:"total_tasks_issued"`
 	References         struct {
-		SnapshotAppInstancePath string `json:"snapshot_app_instance_path" "mapstructure:"snapshot_app_instance_path"`
+		SnapshotAppInstancePath string `json:"snapshot_app_instance_path" mapstructure:"snapshot_app_instance_path"`
 	} `json:"references" mapstructure:"references"`
 }
 
