@@ -66,7 +66,7 @@ type ApiErrorResponse struct {
 	ConnInfo     map[string]string `json:"connInfo,omitempty"`
 	ClientId     string            `json:"client_id,omitempty"`
 	ClientType   string            `json:"client_type,omitempty"`
-	Id           string            `json:"api_req_id,omitempty"`
+	Id           json.Number       `json:"api_req_id,omitempty"`
 	TenancyClass string            `json:"tenancy_class,omitempty"`
 	Errors       []string          `json:"errors,omitempty"`
 }
