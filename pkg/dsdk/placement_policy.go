@@ -46,9 +46,11 @@ type PlacementPolicies struct {
 }
 
 type PlacementPoliciesCreateRequest struct {
-	Ctxt            context.Context  `json:"-"`
-	Name            string           `json:"name,omitempty" mapstructure:"name"`
-	// TODO: ...
+	Ctxt  context.Context `json:"-"`
+	Name  string          `json:"name,omitempty" mapstructure:"name"`
+	Descr string          `json:"descr,omitempty" mapstructure:"descr"`
+	Max   []string        `json:"max,omitempty" mapstructure:"max"`
+	Min   []string        `json:"min,omitempty" mapstructure:"min"`
 }
 
 // TODO: delete?
@@ -96,14 +98,14 @@ func (e *PlacementPolicies) List(ro *PlacementPoliciesListRequest) ([]*Placement
 		adata := data.(map[string]interface{})
 		if err = FillStruct(adata, elem); err != nil {
 			return nil, nil, err
-		})
+		}
 		resp = append(resp, elem)
 	}
 	return resp, nil, nil
 }
 
 type PlacementPoliciesGetRequest struct {
-	Ctxt context.Context `json:"-"`
+	Ctxt  context.Context `json:"-"`
 	Label string          `json:"label" mapstructure:"label"`
 }
 
