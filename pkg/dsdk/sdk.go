@@ -33,6 +33,7 @@ type SDK struct {
 	LogsUpload           *LogsUpload
 	HWMetrics            *HWMetrics
 	IOMetrics            *IOMetrics
+	PlacementPolicies    *PlacementPolicies
 	RemoteProvider       *RemoteProviders
 	StorageNodes         *StorageNodes
 	StoragePools         *StoragePools
@@ -66,6 +67,7 @@ func NewSDKWithHTTPClient(c *udc.UDC, secure bool, client *http.Client) (*SDK, e
 		LogsUpload:           newLogsUpload("/"),
 		HWMetrics:            newHWMetrics("/"),
 		IOMetrics:            newIOMetrics("/"),
+		PlacementPolicies:    newPlacementPolicies("/"),
 		RemoteProvider:       newRemoteProviders("/"),
 		StorageNodes:         newStorageNodes("/"),
 		StoragePools:         newStoragePools("/"),

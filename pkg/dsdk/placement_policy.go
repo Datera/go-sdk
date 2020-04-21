@@ -53,12 +53,11 @@ type PlacementPoliciesCreateRequest struct {
 	Min   []string        `json:"min,omitempty" mapstructure:"min"`
 }
 
-// TODO: delete?
-// func newPlacementPolicies(path string) *PlacementPolicies {
-// 	return &PlacementPolicies{
-// 		Path: _path.Join(path, "PlacementPolicies"),
-// 	}
-// }
+func newPlacementPolicies(path string) *PlacementPolicies {
+	return &PlacementPolicies{
+		Path: _path.Join(path, "PlacementPolicies"),
+	}
+}
 
 func (e *PlacementPolicies) Create(ro *PlacementPoliciesCreateRequest) (*PlacementPolicy, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
@@ -105,8 +104,8 @@ func (e *PlacementPolicies) List(ro *PlacementPoliciesListRequest) ([]*Placement
 }
 
 type PlacementPoliciesGetRequest struct {
-	Ctxt  context.Context `json:"-"`
-	Label string          `json:"label" mapstructure:"label"`
+	Ctxt context.Context `json:"-"`
+	Name string          `json:"name" mapstructure:"name"`
 }
 
 func (e *PlacementPolicies) Get(ro *PlacementPoliciesGetRequest) (*PlacementPolicy, *ApiErrorResponse, error) {
