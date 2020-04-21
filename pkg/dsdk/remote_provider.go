@@ -30,7 +30,7 @@ type RemoteProvider struct {
 
 	// Present only when the RemoteProvider is a subresource of a snapshot. Indicates the replication state of the
 	// snapshot on this RemoteProvider.
-	OpState           string
+	OpState string
 }
 
 func RegisterRemoteProviderEndpoints(rp *RemoteProvider) {
@@ -251,7 +251,7 @@ type RemoteOperation struct {
 	TotalTasksDone     int    `json:"total_tasks_done" mapstructure:"total_tasks_done"`
 	TotalTasksIssued   int    `json:"total_tasks_issued" mapstructure:"total_tasks_issued"`
 	References         struct {
-		SnapshotAppInstancePath string `json:"snapshot_app_instance_path" "mapstructure:"snapshot_app_instance_path"`
+		SnapshotAppInstancePath string `json:"snapshot_app_instance_path" mapstructure:"snapshot_app_instance_path"`
 	} `json:"references" mapstructure:"references"`
 }
 
