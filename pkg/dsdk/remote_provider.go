@@ -30,7 +30,7 @@ type RemoteProvider struct {
 
 	// Present only when the RemoteProvider is a subresource of a snapshot. Indicates the replication state of the
 	// snapshot on this RemoteProvider.
-	OpState string
+	OpStatus string `json:"op_status,omitempty" mapstructure:"op_status"`
 }
 
 func RegisterRemoteProviderEndpoints(rp *RemoteProvider) {
