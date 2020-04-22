@@ -9,9 +9,13 @@ import (
 )
 
 type PlacementPolicy struct {
-	Path           string `json:"path,omitempty" mapstructure:"path"`
-	ResolvedPath   string `json:"resolved_path,omitempty" mapstructure:"resolved_path"`
-	ResolvedTenant string `json:"resolved_tenant,omitempty" mapstructure:"resolved_tenant"`
+	Path           string   `json:"path,omitempty" mapstructure:"path"`
+	ResolvedPath   string   `json:"resolved_path,omitempty" mapstructure:"resolved_path"`
+	ResolvedTenant string   `json:"resolved_tenant,omitempty" mapstructure:"resolved_tenant"`
+	Name           string   `json:"name,omitempty" mapstructure:"name"`
+	Descr          string   `json:"descr,omitempty" mapstructure:"descr"`
+	Max            []string `json:"max,omitempty" mapstructure:"max"`
+	Min            []string `json:"min,omitempty" mapstructure:"min"`
 }
 
 func (p PlacementPolicy) MarshalJSON() ([]byte, error) {
