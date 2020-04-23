@@ -59,7 +59,7 @@ type PlacementPoliciesCreateRequest struct {
 
 func newPlacementPolicies(path string) *PlacementPolicies {
 	return &PlacementPolicies{
-		Path: _path.Join(path, "PlacementPolicies"),
+		Path: _path.Join(path, "placement_policies"),
 	}
 }
 
@@ -129,7 +129,11 @@ func (e *PlacementPolicies) Get(ro *PlacementPoliciesGetRequest) (*PlacementPoli
 }
 
 type PlacementPolicySetRequest struct {
-	Ctxt context.Context `json:"-"`
+	Ctxt  context.Context `json:"-"`
+	Name  string          `json:"name,omitempty" mapstructure:"name"`
+	Descr string          `json:"descr,omitempty" mapstructure:"descr"`
+	Max   []string        `json:"max,omitempty" mapstructure:"max"`
+	Min   []string        `json:"min,omitempty" mapstructure:"min"`
 }
 
 func (e *PlacementPolicy) Set(ro *PlacementPolicySetRequest) (*PlacementPolicy, *ApiErrorResponse, error) {
