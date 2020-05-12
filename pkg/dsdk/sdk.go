@@ -3,6 +3,7 @@ package dsdk
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	udc "github.com/Datera/go-udc/pkg/udc"
 	uuid "github.com/google/uuid"
@@ -30,6 +31,8 @@ type SDK struct {
 	Initiators           *Initiators
 	InitiatorGroups      *InitiatorGroups
 	LogsUpload           *LogsUpload
+	HWMetrics            *HWMetrics
+	IOMetrics            *IOMetrics
 	RemoteProvider       *RemoteProviders
 	StorageNodes         *StorageNodes
 	StoragePools         *StoragePools
@@ -39,6 +42,10 @@ type SDK struct {
 }
 
 func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
+	return NewSDKWithHTTPClient(c, secure, nil)
+}
+
+func NewSDKWithHTTPClient(c *udc.UDC, secure bool, client *http.Client) (*SDK, error) {
 	var err error
 	if c == nil {
 		c, err = udc.GetConfig()
@@ -47,7 +54,7 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 			return nil, err
 		}
 	}
-	conn := NewApiConnection(c, secure)
+	conn := NewApiConnectionWithHTTPClient(c, secure, client)
 	return &SDK{
 		conf:                 c,
 		Conn:                 conn,
@@ -57,6 +64,8 @@ func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
 		Initiators:           newInitiators("/"),
 		InitiatorGroups:      newInitiatorGroups("/"),
 		LogsUpload:           newLogsUpload("/"),
+		HWMetrics:            newHWMetrics("/"),
+		IOMetrics:            newIOMetrics("/"),
 		RemoteProvider:       newRemoteProviders("/"),
 		StorageNodes:         newStorageNodes("/"),
 		StoragePools:         newStoragePools("/"),
@@ -105,9 +114,9 @@ func (c SDK) HealthCheck() error {
 	if apierr != nil {
 		return fmt.Errorf("ApiError: %s", Pretty(apierr))
 	}
-	Log().Debugf("Connected to cluster: %s with tenant %s.\n", c.conf.MgmtIp, c.conf.Tenant)
+	Log().Debugf("Connected to cluster: %s with tenant %s.", c.conf.MgmtIp, c.conf.Tenant)
 	for _, sn := range sns {
-		Log().Debugf("Found Storage Node: %s\n", sn.Uuid)
+		Log().Debugf("Found Storage Node: %s", sn.Uuid)
 	}
 	return nil
 }
