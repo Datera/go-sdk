@@ -459,10 +459,16 @@ func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.Reque
 			if offset >= tcnt {
 				break
 			}
-			// there are api endpoints that handle lists with more fields than
-			// ListParams (but still have offset/limit in common)
-			// just update offset directly here to preserve those extra fields
-			ro.Params["offset"] = strconv.FormatInt(int64(offset), 10)
+			if ro.Params == nil {
+				ro.Params = ListParams{
+					Offset: offset,
+				}.ToMap()
+			} else {
+				// there are api endpoints that handle lists with more fields than
+				// ListParams (but still have offset/limit in common)
+				// just update offset directly here to preserve those extra fields
+				ro.Params["offset"] = strconv.FormatInt(int64(offset), 10)
+			}
 			rs.Data = []interface{}{}
 			apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
 			if apiresp != nil || err != nil {
