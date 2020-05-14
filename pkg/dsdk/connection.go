@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -17,12 +16,10 @@ import (
 	udc "github.com/Datera/go-udc/pkg/udc"
 	uuid "github.com/google/uuid"
 	greq "github.com/levigross/grequests"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
 	RetryTimeout           = int64(300)
-	ErrRetryTimeout        = errors.New("timeout reached before request completed successfully during retries")
 	InvalidRequest         = 400
 	PermissionDenied       = 401
 	Retry503               = 503
@@ -36,11 +33,10 @@ var (
 		RetryRequestAfterLogin: fmt.Errorf("RetryRequestAfterLogin"),
 	}
 	DateraDriver = fmt.Sprintf("Golang-SDK-%s", VERSION)
-	logTraceID   = "trace_id"
 )
 
 type ApiConnection struct {
-	m          *sync.RWMutex
+	m          *sync.Mutex
 	username   string
 	password   string
 	apiVersion string
@@ -49,7 +45,6 @@ type ApiConnection struct {
 	ldap       string
 	apikey     string
 	baseUrl    *url.URL
-	httpClient *http.Client
 }
 
 type ApiErrorResponse struct {
@@ -225,7 +220,7 @@ func makeBaseUrl(h, apiv string, secure bool) (*url.URL, error) {
 	return url.Parse(fmt.Sprintf("http://%s:7717/v%s", h, apiv))
 }
 
-func translateErrors(resp *greq.Response, err error) (*ApiErrorResponse, error) {
+func checkResponse(resp *greq.Response, err error, retry bool) (*ApiErrorResponse, error) {
 	if err != nil {
 		Log().Error(err)
 		if strings.Contains(err.Error(), "connect: connection refused") {
@@ -233,30 +228,17 @@ func translateErrors(resp *greq.Response, err error) (*ApiErrorResponse, error) 
 		}
 		return nil, err
 	}
-
+	if resp.StatusCode == PermissionDenied && retry {
+		return nil, badStatus[RetryRequestAfterLogin]
+	} else if resp.StatusCode == Retry503 && retry {
+		return nil, badStatus[Retry503]
+	}
 	if !resp.Ok {
 		eresp := &ApiErrorResponse{}
-		err := resp.JSON(eresp)
-		if err != nil {
-			eresp.Message = fmt.Sprintf("failed to unmarshal ApiErrorResponse: %v", err)
-		}
-
-		// in some cases (like 503s) the response JSON doesn't contain
-		// all the fields of the ApiErrorResponse and we want to always
-		// be able to rely on at least having the status code
-		if eresp.Http == 0 {
-			eresp.Http = resp.StatusCode
-		}
+		resp.JSON(eresp)
 		return eresp, badStatus[resp.StatusCode]
 	}
 	return nil, nil
-}
-
-// hasLoggedIn reports whether the ApiConnection has successfully authenticated once
-func (c *ApiConnection) hasLoggedIn() bool {
-	c.m.RLock()
-	defer c.m.RUnlock()
-	return c.apikey != ""
 }
 
 func (c *ApiConnection) retry(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, sensitive bool) (*ApiErrorResponse, error) {
@@ -265,21 +247,14 @@ func (c *ApiConnection) retry(ctxt context.Context, method, url string, ro *greq
 	var apiresp *ApiErrorResponse
 	for time.Now().Unix()-t1 < RetryTimeout {
 		apiresp, err := c.do(ctxt, method, url, ro, rs, false, sensitive)
-		if apiresp == nil && err == nil {
-			return nil, nil
-		}
-
 		// Retry on 503 and ConnectionErrors only
-		if apiresp != nil && apiresp.Http != 503 {
-			return apiresp, nil
-		} else if err != nil && !strings.Contains(err.Error(), "connect: connection refused") {
-			return nil, err
+		if apiresp != nil && apiresp.Http != 503 && err != nil && !strings.Contains(err.Error(), "connect: connection refused") {
+			return apiresp, err
 		}
-
 		time.Sleep(time.Second * time.Duration(backoff*backoff))
 		backoff += 1
 	}
-	return apiresp, ErrRetryTimeout
+	return apiresp, fmt.Errorf("Timeout reached before request completed successfully during retries")
 }
 
 func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, retry, sensitive bool) (*ApiErrorResponse, error) {
@@ -287,17 +262,12 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	gurl.Path = path.Join(gurl.Path, url)
 	reqId := uuid.Must(uuid.NewRandom()).String()
 	sdata, err := json.Marshal(ro.JSON)
+	Log().Debugf("REST call going with following payload, %s", string(sdata))
 	if err != nil {
 		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
 	if sensitive {
 		sdata = []byte("********")
-	}
-	if ro.HTTPClient == nil && c.httpClient != nil {
-		ro.HTTPClient = c.httpClient
-	}
-	if ro.Context == nil {
-		ro.Context = ctxt
 	}
 	if ro.Headers == nil {
 		ro.Headers = make(map[string]string, 1)
@@ -313,27 +283,22 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	t1 := time.Now()
 	// This will be run before each request.  It's needed so we can get access
 	// to the headers/body passed with the request instead of just our custom ones
-	if Log().Logger.GetLevel() >= log.DebugLevel {
-		ro.BeforeRequest = func(h *http.Request) error {
-			sheaders, err := json.Marshal(h.Header)
-			if err != nil {
-				Log().Errorf("Couldn't stringify headers, %s", h.Header)
-			}
-
-			Log().WithFields(log.Fields{
-				logTraceID:        tid,
-				"request_id":      reqId,
-				"request_method":  method,
-				"request_url":     gurl.String(),
-				"request_headers": sheaders,
-				"request_payload": string(sdata),
-			}).Debugf("Datera SDK making request")
-			return nil
+	ro.BeforeRequest = func(h *http.Request) error {
+		sheaders, err := json.Marshal(h.Header)
+		if err != nil {
+			Log().Errorf("Couldn't stringify headers, %s", h.Header)
 		}
+		Log().Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
+			"Datera Request ID: %s",
+			"Datera Request URL: %s",
+			"Datera Request Method: %s",
+			"Datera Request Payload: %s",
+			"Datera Request Headers: %s\n"}, "\n"),
+			tid, reqId, gurl.String(), method, string(sdata), sheaders)
+		return nil
 	}
 
 	// The actual request happens here
-	// Context is passed through ro.Context
 	resp, err := greq.DoRegularRequest(method, gurl.String(), ro)
 
 	t2 := time.Now()
@@ -342,55 +307,38 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if _, ok := ctxt.Value("quiet").(bool); ok {
 		rdata = "<muted>"
 	}
-	detailLog := Log().WithFields(log.Fields{
-		logTraceID:           tid,
-		"request_id":         reqId,
-		"response_timedelta": tDelta.Seconds(),
-		"request_method":     method,
-		"request_url":        gurl.String(),
-		"request_payload":    string(sdata),
-		"response_payload":   rdata,
-		"response_code":      resp.StatusCode,
-	})
-
-	detailLog.Debugf("Datera SDK response received")
-
-	eresp, err := translateErrors(resp, err)
-
-	if err == badStatus[PermissionDenied] {
-		// if we have logged in successfully before we may just need to refresh the apikey
-		// and retry the original request
-		if c.hasLoggedIn() {
-			c.Logout()
-			if apiresp, err2 := c.Login(ctxt); apiresp != nil || err2 != nil {
-				detailLog.Errorf("failed to re-authenticate before retrying request: %s", err2)
-				return apiresp, err2
-			}
-			c.m.RLock()
-			ro.Headers["Auth-Token"] = c.apikey
-			c.m.RUnlock()
-			return c.do(ctxt, method, url, ro, rs, false, sensitive)
+	Log().Debugf(strings.Join([]string{"\nDatera Trace ID: %s",
+		"Datera Response ID: %s",
+		"Datera Response TimeDelta: %fs",
+		"Datera Response URL: %s",
+		"Datera Response Payload: %s",
+		"Datera Response Object: %s\n"}, "\n"),
+		tid, reqId, tDelta.Seconds(), gurl.String(), rdata, "nil")
+	eresp, err := checkResponse(resp, err, retry)
+	if err == badStatus[RetryRequestAfterLogin] {
+		if apiresp, err2 := c.Login(ctxt); err2 != nil {
+			Log().Errorf("%s", err)
+			Log().Errorf("%s", err2)
+			return apiresp, err2
 		}
-
-		// but if we get here while logged out then then credentials may no longer be valid and we shouldn't
-		// retry the login again.  Just return the permission denied error
-		return eresp, nil
-
+		ro.Headers["Auth-Token"] = c.apikey
+		return c.do(ctxt, method, url, ro, rs, false, sensitive)
 	}
-	if retry && (err == badStatus[Retry503] || err == badStatus[ConnectionError]) {
+	if err == badStatus[Retry503] || err == badStatus[ConnectionError] {
 		return c.retry(ctxt, method, url, ro, rs, sensitive)
 	}
 	if eresp != nil {
-		detailLog.Errorf("Recieved API Error %s", Pretty(eresp))
+		Log().Errorf("Recieved API Error %s\n", Pretty(eresp))
 		return eresp, nil
 	}
 	if err != nil {
-		detailLog.Errorf("Error during translateErrors: %s", err)
+		Log().Errorf("Error during checkResponse: %s\n", err)
 		return nil, err
 	}
 	err = resp.JSON(rs)
 	if err != nil {
-		detailLog.Errorf("Could not unpack response, err: %s with response: %s", err, resp.String())
+		Log().Errorf("Could not unpack response, %s\n", err)
+		Log().Errorf("Response, %s\n", resp.String())
 		return nil, err
 	}
 	return nil, nil
@@ -400,24 +348,18 @@ func (c *ApiConnection) doWithAuth(ctxt context.Context, method, url string, ro 
 	if ro == nil {
 		ro = &greq.RequestOptions{}
 	}
-	if !c.hasLoggedIn() {
-		if apierr, err := c.Login(ctxt); apierr != nil || err != nil {
+	if c.apikey == "" {
+		if apierr, err := c.Login(ctxt); err != nil {
 			Log().Errorf("Login failure: %s, %s", Pretty(apierr), err)
 			return apierr, err
 		}
 	}
-	c.m.RLock()
 	ro.Headers = map[string]string{"tenant": c.tenant, "Auth-Token": c.apikey}
-	c.m.RUnlock()
 	return c.do(ctxt, method, url, ro, rs, true, false)
 }
 
 func NewApiConnection(c *udc.UDC, secure bool) *ApiConnection {
-	return NewApiConnectionWithHTTPClient(c, secure, nil)
-}
-
-func NewApiConnectionWithHTTPClient(c *udc.UDC, secure bool, client *http.Client) *ApiConnection {
-	u, err := makeBaseUrl(c.MgmtIp, c.ApiVersion, secure)
+	url, err := makeBaseUrl(c.MgmtIp, c.ApiVersion, secure)
 	if err != nil {
 		Log().Fatalf("%s", err)
 	}
@@ -428,9 +370,8 @@ func NewApiConnectionWithHTTPClient(c *udc.UDC, secure bool, client *http.Client
 		tenant:     c.Tenant,
 		ldap:       c.Ldap,
 		secure:     secure,
-		baseUrl:    u,
-		httpClient: client,
-		m:          &sync.RWMutex{},
+		baseUrl:    url,
+		m:          &sync.Mutex{},
 	}
 }
 
@@ -444,7 +385,6 @@ func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.Reque
 	rs := &ApiListOuter{}
 	apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
 	// TODO:(_alastor_) handle pulling paged entries
-
 	if apiresp == nil && len(rs.Metadata) > 0 {
 		lp := ListParamsFromMap(ro.Params)
 		if lp.Limit != 0 || lp.Offset != 0 {
@@ -459,10 +399,9 @@ func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.Reque
 			if offset >= tcnt {
 				break
 			}
-			// there are api endpoints that handle lists with more fields than
-			// ListParams (but still have offset/limit in common)
-			// just update offset directly here to preserve those extra fields
-			ro.Params["offset"] = strconv.FormatInt(int64(offset), 10)
+			ro.Params = ListParams{
+				Offset: offset,
+			}.ToMap()
 			rs.Data = []interface{}{}
 			apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
 			if apiresp != nil || err != nil {
@@ -507,6 +446,8 @@ func (c *ApiConnection) ApiVersions() []string {
 }
 
 func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
+	c.m.Lock()
+	defer c.m.Unlock()
 	login := &ApiLogin{}
 	ro := &greq.RequestOptions{
 		Data: map[string]string{
@@ -517,20 +458,7 @@ func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
 	if c.ldap != "" {
 		ro.Data["remote_server"] = c.ldap
 	}
-	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, true, true)
-	c.m.Lock()
-	if (apiresp != nil && apiresp.Http == PermissionDenied) || (err != nil && err == badStatus[PermissionDenied]) {
-		c.apikey = ""
-	} else {
-		c.apikey = login.Key
-	}
-
-	c.m.Unlock()
+	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, false, true)
+	c.apikey = login.Key
 	return apiresp, err
-}
-
-func (c *ApiConnection) Logout() {
-	c.m.Lock()
-	defer c.m.Unlock()
-	c.apikey = ""
 }
