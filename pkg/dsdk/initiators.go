@@ -8,10 +8,9 @@ import (
 )
 
 type Initiator struct {
-	Path   string `json:"path,omitempty" mapstructure:"path"`
-	Id     string `json:"id,omitempty" mapstructure:"id"`
-	Name   string `json:"name,omitempty" mapstructure:"name"`
-	Tenant string `json:"tenant,omitempty" mapstructure:"tenant"`
+	Path string `json:"path,omitempty" mapstructure:"path"`
+	Id   string `json:"id,omitempty" mapstructure:"id"`
+	Name string `json:"name,omitempty" mapstructure:"name"`
 }
 
 type Initiators struct {
