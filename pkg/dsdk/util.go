@@ -336,9 +336,9 @@ func (f *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
 	t := entry.Time
 	fields, err := json.Marshal(entry.Data)
 	if err != nil {
-		fmt.Printf("Error marshalling fields during logging: %s", err)
+		fmt.Printf("Error marshalling fields during logging: %s\n", err)
 	}
-	return []byte(fmt.Sprintf("%s %s %s %s",
+	return []byte(fmt.Sprintf("%s %s %s %s\n",
 		t.Format(time.RFC3339),
 		strings.ToUpper(level.String()),
 		string(msg),
@@ -354,7 +354,7 @@ func RunCmd(cmd ...string) (string, error) {
 			ncmd = append(ncmd, c)
 		}
 	}
-	Log().Debugf("Running command: [%s]", strings.Join(ncmd, " "))
+	Log().Debugf("Running command: [%s]\n", strings.Join(ncmd, " "))
 	prefix := ncmd[0]
 	ncmd = ncmd[1:]
 	c := execCommand(prefix, ncmd...)
