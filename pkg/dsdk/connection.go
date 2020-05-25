@@ -290,6 +290,11 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if err != nil {
 		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
+	// Strip all CHAP credentails before printing to logs
+	if strings.Contains(string(sdata), "target_user_name") == true {
+		sdata = []byte("********")
+	}
+	Log().Debugf("REST call going with following payload, %s", string(sdata))
 	if sensitive {
 		sdata = []byte("********")
 	}
