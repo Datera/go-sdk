@@ -290,31 +290,31 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if err != nil {
 		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
-        // Strip all CHAP credentails before printing to logs
-        // Decode (Unmarshal) the []byte into a AppInstance struct
-        ai := &AppInstance{}
-        err = json.Unmarshal(sdata, ai)
-        if err != nil {
-	        fmt.Println(err)
-        }
-        // Replace CHAP credentials with ***stripped***
+	// Strip all CHAP credentails before printing to logs
+	// Decode (Unmarshal) the []byte into a AppInstance struct
+	ai := &AppInstance{}
+	err = json.Unmarshal(sdata, ai)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Replace CHAP credentials with ***stripped***
 	auth_field := false
-        for _, si := range ai.StorageInstances {
-            if si.Auth != nil {
-		auth_field = true
-                si.Auth.InitiatorUserName = "***stripped***"
-                si.Auth.InitiatorPassword = "***stripped***"
-                si.Auth.TargetUserName = "***stripped***"
-                si.Auth.TargetPassword = "***stripped***"
-            }
-        }
+	for _, si := range ai.StorageInstances {
+		if si.Auth != nil {
+			auth_field = true
+			si.Auth.InitiatorUserName = "***stripped***"
+			si.Auth.InitiatorPassword = "***stripped***"
+			si.Auth.TargetUserName = "***stripped***"
+			si.Auth.TargetPassword = "***stripped***"
+  		}
+	}
 
-        // Re-encode (Marshal) the JSON data to []byte
+	// Re-encode (Marshal) the JSON data to []byte
 	if auth_field == true {
 		sdata, err = json.Marshal(ai)
 	}
 
-        Log().Debugf("REST call going with following payload, %s", string(sdata))
+	Log().Debugf("REST call going with following payload, %s", string(sdata))
 	if sensitive {
 		sdata = []byte("********")
 	}
