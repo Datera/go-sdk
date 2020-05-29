@@ -290,6 +290,17 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if err != nil {
 		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
+	
+	// Debug 
+	fields := reflect.TypeOf(ro)
+	values := reflect.ValueOf(ro)
+	num := fields.NumField()
+	for i := 0; i < num; i++ {
+		field := fields.Field(i)
+		value := values.Field(i)
+		Log().Debugf(field.Name, field.Type, value)
+	}
+
 	// Strip all CHAP credentails before printing to logs
 	// Decode (Unmarshal) the []byte into a AppInstance struct
 	ai := &AppInstance{}
@@ -306,7 +317,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 			si.Auth.InitiatorPassword = "***stripped***"
 			si.Auth.TargetUserName = "***stripped***"
 			si.Auth.TargetPassword = "***stripped***"
-  		}
+		}
 	}
 
 	// Re-encode (Marshal) the JSON data to []byte
