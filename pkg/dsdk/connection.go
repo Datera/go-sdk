@@ -283,7 +283,7 @@ func (c *ApiConnection) retry(ctxt context.Context, method, url string, ro *greq
 	return apiresp, ErrRetryTimeout
 }
 
-func printRequestOptions (ro) {
+func printRequestOptions(ro) {
 
 	fields := reflect.TypeOf(ro)
 	values := reflect.ValueOf(ro)
