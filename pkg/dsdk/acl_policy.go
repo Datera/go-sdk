@@ -32,6 +32,7 @@ func (e *AclPolicy) Get(ro *AclPolicyGetRequest) (*AclPolicy, *ApiErrorResponse,
 	if err != nil {
 		return nil, nil, err
 	}
+	Log().Debugf("AclPolicy.Get(): , %s", string(rs.Data))
 	resp := &AclPolicy{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, nil, err
