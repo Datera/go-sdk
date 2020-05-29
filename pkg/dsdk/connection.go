@@ -337,14 +337,17 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	gurl := *c.baseUrl
 	gurl.Path = path.Join(gurl.Path, url)
 	reqId := uuid.Must(uuid.NewRandom()).String()
-	Log().Debugf("Request options: %s", ro.JSON)
+	Log().Debugf("Request options (full): %s", ro.JSON)
+	Log().Debugf("Request options (Data): %s", ro.Data)
+	Log().Debugf("Request options (Params): %s", ro.Params)
+	Log().Debugf("Request options (Auth): %s", ro.Auth)
 	sdata, err := json.Marshal(ro.JSON)
 	if err != nil {
 		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
 	
 	// Remove CHAP secrets if exists
-	processSecrets(sdata)
+	//processSecrets(sdata)
 
 	Log().Debugf("REST call going with following payload, %s", string(sdata))
 	if sensitive {
