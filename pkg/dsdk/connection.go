@@ -287,8 +287,6 @@ func printRequestOptions(ro *greq.RequestOptions) {
 
 	fields := reflect.TypeOf(ro)
 	values := reflect.ValueOf(ro)
-	Log().Debugf(fields)
-	Log().Debugf(values)
 	num := fields.NumField()
 	for i := 0; i < num; i++ {
 		field := fields.Field(i)
@@ -311,13 +309,14 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	gurl := *c.baseUrl
 	gurl.Path = path.Join(gurl.Path, url)
 	reqId := uuid.Must(uuid.NewRandom()).String()
+	Log().Debugf("Request options, %s", ro.JSON)
 	sdata, err := json.Marshal(ro.JSON)
 	if err != nil {
 		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
 	
 	// Debug 
-	debugRequestOptions(ro)
+	//debugRequestOptions(ro)
 
 	// Strip all CHAP credentails before printing to logs
 	// Decode (Unmarshal) the []byte into a AppInstance struct
