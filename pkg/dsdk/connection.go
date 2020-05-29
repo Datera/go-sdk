@@ -299,7 +299,7 @@ func printRequestOptions(ro *greq.RequestOptions) {
 func processSecrets(sdata []byte) ([]byte){
 	defer func() {
 		if err := recover(); err != nil {
-			Log().Debugf("panic occurred trying to run removeSecrets():", err)
+			Log().Debugf("panic occurred trying to run removeSecrets(): %s", err)
 		}
 	}()
 	return removeSecrets(sdata)
