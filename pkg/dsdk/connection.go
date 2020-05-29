@@ -283,7 +283,7 @@ func (c *ApiConnection) retry(ctxt context.Context, method, url string, ro *greq
 	return apiresp, ErrRetryTimeout
 }
 
-func printRequestOptions(ro) {
+func printRequestOptions(ro *greq.RequestOptions) {
 
 	fields := reflect.TypeOf(ro)
 	values := reflect.ValueOf(ro)
@@ -298,7 +298,7 @@ func printRequestOptions(ro) {
 
 }
 
-func debugRequestOptions(ro) {
+func debugRequestOptions(ro *greq.RequestOptions) {
 	defer func() {
 		if err := recover(); err != nil {
 			Log().Debugf("panic occurred trying to run printRequestOptions():", err)
