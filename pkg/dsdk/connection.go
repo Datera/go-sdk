@@ -337,10 +337,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	gurl := *c.baseUrl
 	gurl.Path = path.Join(gurl.Path, url)
 	reqId := uuid.Must(uuid.NewRandom()).String()
-	Log().Debugf("Request options (full): %s", ro.JSON)
-	Log().Debugf("Request options (Data): %s", ro.Data)
-	Log().Debugf("Request options (Params): %s", ro.Params)
-	Log().Debugf("Request options (Auth): %s", ro.Auth)
+	// sdata = json encoded string
 	sdata, err := json.Marshal(ro.JSON)
 	if err != nil {
 		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
@@ -349,6 +346,15 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	// Remove CHAP secrets if exists
 	//processSecrets(sdata)
 
+	// string(sdata) shows the JSON encoded string in string format
+	// Splitting this string and parsing for the existence of 
+	// target_user_name or initiator_user_name will tell you whether
+	// CHAP credentials exist. If it does, then try let sdata = []byte("******")
+	// No needed to individually hide the Secrets
+
+	if strings.Contains(string(sdata), "target_user_name") == true {
+		sdata = []byte("********")
+	}
 	Log().Debugf("REST call going with following payload, %s", string(sdata))
 	if sensitive {
 		sdata = []byte("********")
