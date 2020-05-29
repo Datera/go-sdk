@@ -296,7 +296,7 @@ func printRequestOptions(ro *greq.RequestOptions) {
 
 }
 
-func processSecrets(sdata []byte) {
+func processSecrets(sdata []byte) ([]byte){
 	defer func() {
 		if err := recover(); err != nil {
 			Log().Debugf("panic occurred trying to run removeSecrets():", err)
@@ -310,7 +310,7 @@ func removeSecrets(sdata []byte) ([]byte){
 	// Strip all CHAP credentails before printing to logs
 	// Decode (Unmarshal) the []byte into a AppInstance struct
 	ai := &AppInstance{}
-	err = json.Unmarshal(sdata, ai)
+	err := json.Unmarshal(sdata, ai)
 	if err != nil {
 		Log().Errorf(err)
 	}
