@@ -296,34 +296,23 @@ func printRequestOptions(ro *greq.RequestOptions) {
 
 }
 
-func debugRequestOptions(ro *greq.RequestOptions) {
+func processSecrets(sdata []byte) {
 	defer func() {
 		if err := recover(); err != nil {
-			Log().Debugf("panic occurred trying to run printRequestOptions():", err)
+			Log().Debugf("panic occurred trying to run removeSecrets():", err)
 		}
 	}()
-	printRequestOptions(ro)
+	return removeSecrets(sdata)
 }
 
-func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, retry, sensitive bool) (*ApiErrorResponse, error) {
-	gurl := *c.baseUrl
-	gurl.Path = path.Join(gurl.Path, url)
-	reqId := uuid.Must(uuid.NewRandom()).String()
-	Log().Debugf("Request options, %s", ro.JSON)
-	sdata, err := json.Marshal(ro.JSON)
-	if err != nil {
-		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
-	}
-	
-	// Debug 
-	//debugRequestOptions(ro)
+func removeSecrets(sdata []byte) ([]byte){
 
 	// Strip all CHAP credentails before printing to logs
 	// Decode (Unmarshal) the []byte into a AppInstance struct
 	ai := &AppInstance{}
 	err = json.Unmarshal(sdata, ai)
 	if err != nil {
-		fmt.Println(err)
+		Log().Errorf(err)
 	}
 	// Replace CHAP credentials with ***stripped***
 	auth_field := false
@@ -341,6 +330,21 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if auth_field == true {
 		sdata, err = json.Marshal(ai)
 	}
+	return sdata
+}
+
+func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, retry, sensitive bool) (*ApiErrorResponse, error) {
+	gurl := *c.baseUrl
+	gurl.Path = path.Join(gurl.Path, url)
+	reqId := uuid.Must(uuid.NewRandom()).String()
+	Log().Debugf("Request options: %s", ro.JSON)
+	sdata, err := json.Marshal(ro.JSON)
+	if err != nil {
+		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
+	}
+	
+	// Remove CHAP secrets if exists
+	processSecrets(sdata)
 
 	Log().Debugf("REST call going with following payload, %s", string(sdata))
 	if sensitive {
