@@ -312,7 +312,7 @@ func removeSecrets(sdata []byte) ([]byte){
 	ai := &AppInstance{}
 	err := json.Unmarshal(sdata, ai)
 	if err != nil {
-		Log().Errorf(err)
+		Log().Errorf("Couldn't unmarshal data")
 	}
 	// Replace CHAP credentials with ***stripped***
 	auth_field := false
