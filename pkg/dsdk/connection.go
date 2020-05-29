@@ -283,6 +283,30 @@ func (c *ApiConnection) retry(ctxt context.Context, method, url string, ro *greq
 	return apiresp, ErrRetryTimeout
 }
 
+func printRequestOptions (ro) {
+
+	fields := reflect.TypeOf(ro)
+	values := reflect.ValueOf(ro)
+	Log().Debugf(fields)
+	Log().Debugf(values)
+	num := fields.NumField()
+	for i := 0; i < num; i++ {
+		field := fields.Field(i)
+		value := values.Field(i)
+		Log().Debugf(field.Name, field.Type, value)
+	}
+
+}
+
+func debugRequestOptions(ro) {
+	defer func() {
+		if err := recover(); err != nil {
+			Log().Debugf("panic occurred trying to run printRequestOptions():", err)
+		}
+	}()
+	printRequestOptions(ro)
+}
+
 func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, retry, sensitive bool) (*ApiErrorResponse, error) {
 	gurl := *c.baseUrl
 	gurl.Path = path.Join(gurl.Path, url)
@@ -293,14 +317,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	}
 	
 	// Debug 
-	fields := reflect.TypeOf(ro)
-	values := reflect.ValueOf(ro)
-	num := fields.NumField()
-	for i := 0; i < num; i++ {
-		field := fields.Field(i)
-		value := values.Field(i)
-		Log().Debugf(field.Name, field.Type, value)
-	}
+	debugRequestOptions(ro)
 
 	// Strip all CHAP credentails before printing to logs
 	// Decode (Unmarshal) the []byte into a AppInstance struct
