@@ -136,7 +136,7 @@ func createRemoteProvider(ctxt context.Context, sdk *dsdk.SDK, cfg RemoteConfig)
 		if rp == nil {
 			return
 		}
-		_, aer, err := rp.Delete(&dsdk.RemoteProviderDeleteRequest{Ctxt: ctxt})
+		_, aer, err := rp.Delete(&dsdk.RemoteProviderDeleteRequest{Ctxt: ctxt, Force: true})
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -204,17 +204,31 @@ func TestSnapshotRemoteProvider(t *testing.T) {
 	defer cleanRp()
 
 	vol := ai.StorageInstances[0].Volumes[0]
-	snap, _, err := vol.SnapshotsEp.Create(&dsdk.SnapshotsCreateRequest{
+	snap, apiErr, err := vol.SnapshotsEp.Create(&dsdk.SnapshotsCreateRequest{
 		Ctxt:               sdk.NewContext(),
 		RemoteProviderUuid: rp.Uuid,
+		Type:               "remote",
 	})
-	if err != nil {
+	if err != nil || apiErr != nil {
 		t.Fatal(err)
 	}
 
-	defer func() {
-		_, _, err = snap.Delete(&dsdk.SnapshotDeleteRequest{Ctxt: sdk.NewContext()})
+	timeout := 60
+	for snap.OpState != "available" {
+		snap, _, err = snap.Reload(&dsdk.SnapshotReloadRequest{Ctxt: sdk.NewContext()})
 		if err != nil {
+			t.Fatal(err)
+		}
+		if timeout <= 0 {
+			t.Fatal("Snapshot did not reach available state before timeout")
+		}
+		time.Sleep(1 * time.Second)
+		timeout--
+	}
+
+	defer func() {
+		_, apiErr, err = snap.Delete(&dsdk.SnapshotDeleteRequest{Ctxt: sdk.NewContext(), RemoteProviderUuid: rp.Uuid})
+		if err != nil || apiErr != nil {
 			t.Fatal(err)
 		}
 	}()

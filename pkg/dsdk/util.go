@@ -338,7 +338,7 @@ func (f *LogFormatter) Format(entry *log.Entry) ([]byte, error) {
 	if err != nil {
 		fmt.Printf("Error marshalling fields during logging: %s", err)
 	}
-	return []byte(fmt.Sprintf("%s %s %s %s",
+	return []byte(fmt.Sprintf("%s %s %s %s\n",
 		t.Format(time.RFC3339),
 		strings.ToUpper(level.String()),
 		string(msg),
