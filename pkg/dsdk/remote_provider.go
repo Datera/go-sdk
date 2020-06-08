@@ -4,7 +4,6 @@ import (
 	"context"
 	_path "path"
 	"reflect"
-	"strconv"
 
 	greq "github.com/levigross/grequests"
 )
@@ -194,12 +193,12 @@ type RemoteProviderDeleteRequest struct {
 }
 
 func (e *RemoteProvider) Delete(ro *RemoteProviderDeleteRequest) (*RemoteProvider, *ApiErrorResponse, error) {
-	t := reflect.TypeOf(RemoteProviderDeleteRequest{})
-	force, _ := t.FieldByName("Force")
+	v := reflect.ValueOf(*ro)
+	t := reflect.TypeOf(*ro)
 	gro := &greq.RequestOptions{
-		JSON:   ro,
-		Params: map[string]string{force.Tag.Get("mapstructure"): strconv.FormatBool(ro.Force)},
+		JSON: ro,
 	}
+	formatQueryParams(gro, v, t)
 	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, gro)
 	if apierr != nil {
 		return nil, apierr, err

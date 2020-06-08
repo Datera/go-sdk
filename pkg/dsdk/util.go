@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"math/rand"
 	"os/exec"
+	"reflect"
 	"runtime"
 	"strings"
 	"sync"
 	"text/template"
 	"time"
 
+	greq "github.com/levigross/grequests"
 	mapstructure "github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 )
@@ -367,4 +369,20 @@ func RunCmd(cmd ...string) (string, error) {
 func init() {
 	log.SetFormatter(&LogFormatter{})
 	log.SetLevel(log.DebugLevel)
+}
+
+func formatQueryParams(gro *greq.RequestOptions, v reflect.Value, t reflect.Type) {
+	// Formats the Query Params of the Request Option to include
+	// all the fields (name - value) as query params in the URL
+	numFields := t.NumField()
+	params := make(map[string]string)
+	for i := 0; i < numFields; i++ {
+		if t.Field(i).Name == "Ctxt" {
+			continue
+		}
+		key := t.Field(i).Tag.Get("mapstructure")
+		ifc := fmt.Sprintf("%v", v.Field(i).Interface())
+		params[key] = ifc
+	}
+	gro.Params = params
 }
