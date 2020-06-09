@@ -114,6 +114,9 @@ type SnapshotDeleteRequest struct {
 }
 
 func (e *Snapshot) Delete(ro *SnapshotDeleteRequest) (*Snapshot, *ApiErrorResponse, error) {
+	if ro == nil {
+		return nil, nil, badStatus[InvalidRequest]
+	}
 	v := reflect.ValueOf(*ro)
 	t := reflect.TypeOf(*ro)
 	gro := &greq.RequestOptions{

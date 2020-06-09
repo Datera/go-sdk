@@ -193,6 +193,9 @@ type RemoteProviderDeleteRequest struct {
 }
 
 func (e *RemoteProvider) Delete(ro *RemoteProviderDeleteRequest) (*RemoteProvider, *ApiErrorResponse, error) {
+	if ro == nil {
+		return nil, nil, badStatus[InvalidRequest]
+	}
 	v := reflect.ValueOf(*ro)
 	t := reflect.TypeOf(*ro)
 	gro := &greq.RequestOptions{
