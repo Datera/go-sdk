@@ -15,15 +15,19 @@ import (
 )
 
 const (
-	RemoteConfigFile = "remote_provider.json"
+	RemoteConfigFile   = "remote_provider.json"
+	RemoteConfigFileS3 = "remote_provider_s3.json"
 )
 
 type RemoteConfig struct {
+	Provider   string `json:"provider"`
 	HostBucket string `json:"host_bucket"`
 	Host       string `json:"host"`
 	AccessKey  string `json:"access_key"`
 	SecretKey  string `json:"secret_key"`
 	Port       int    `json:"port"`
+	Region     string `json:"region"`
+	UseSsl     bool   `json:"use_ssl"`
 }
 
 func createAi(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.AppInstance, func(), error) {
@@ -101,11 +105,13 @@ func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, func
 func createRemoteProvider(ctxt context.Context, sdk *dsdk.SDK, cfg RemoteConfig) (*dsdk.RemoteProvider, func(), error) {
 	rp, aer, err := sdk.RemoteProvider.Create(&dsdk.RemoteProvidersCreateRequest{
 		Ctxt:       ctxt,
-		RemoteType: dsdk.ProviderS3,
+		RemoteType: cfg.Provider,
 		Host:       cfg.Host,
 		Port:       cfg.Port,
 		AccessKey:  cfg.AccessKey,
 		SecretKey:  cfg.SecretKey,
+		Region:     cfg.Region,
+		UseSSL:     cfg.UseSsl,
 	})
 	if err != nil {
 		return nil, func() {}, err
@@ -178,7 +184,7 @@ func TestSnapshot(t *testing.T) {
 func TestSnapshotRemoteProvider(t *testing.T) {
 	data, err := ioutil.ReadFile(RemoteConfigFile)
 	if err != nil {
-		t.Skipf("Couldn't read %s, skipping SnapshotRemoteProvider test\n", RemoteConfigFile)
+		t.Skipf("Couldn't read %s, skipping %s test\n", RemoteConfigFile, t.Name())
 	}
 	cfg := &RemoteConfig{}
 	if err = json.Unmarshal(data, cfg); err != nil {
@@ -188,7 +194,7 @@ func TestSnapshotRemoteProvider(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Running: TestSnapshotRemoteProvider")
+	fmt.Println("Running: ", t.Name())
 	ai, cleanAi, err := createAi(sdk.NewContext(), sdk)
 	if err != nil {
 		t.Fatal(err)
@@ -232,6 +238,58 @@ func TestSnapshotRemoteProvider(t *testing.T) {
 			t.Fatal(err)
 		}
 	}()
+}
+
+func TestCreateMinioRemoteProviderWithParams(t *testing.T) {
+	data, err := ioutil.ReadFile(RemoteConfigFile)
+	if err != nil {
+		t.Skipf("Couldn't read %s, skipping %s test\n", RemoteConfigFile, t.Name())
+	}
+	cfg := &RemoteConfig{}
+	if err = json.Unmarshal(data, cfg); err != nil {
+		t.Skip(err)
+	}
+	sdk, err := dsdk.NewSDK(nil, true)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Running: ", t.Name())
+
+	// Create Remote Provider
+	rp, cleanRp, err := createRemoteProvider(sdk.NewContext(), sdk, *cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer cleanRp()
+
+	fmt.Println("Remote Provider: ", rp)
+}
+
+func TestCreateS3RemoteProviderWithParams(t *testing.T) {
+	data, err := ioutil.ReadFile(RemoteConfigFileS3)
+	if err != nil {
+		t.Skipf("Couldn't read %s, skipping %s test\n", RemoteConfigFileS3, t.Name())
+	}
+	cfg := &RemoteConfig{}
+	if err = json.Unmarshal(data, cfg); err != nil {
+		t.Skip(err)
+	}
+	sdk, err := dsdk.NewSDK(nil, true)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Running: ", t.Name())
+
+	// Create Remote Provider
+	rp, cleanRp, err := createRemoteProvider(sdk.NewContext(), sdk, *cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer cleanRp()
+
+	fmt.Println("Remote Provider: ", rp)
 }
 
 func TestAppInstanceSnapshot(t *testing.T) {

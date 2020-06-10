@@ -14,6 +14,30 @@ const (
 	ProviderS3     = "S3 Object Store"
 )
 
+const (
+	RegionNone         = "None"
+	RegionUsEast1      = "us-east-1"
+	RegionUsEast2      = "us-east-2"
+	RegionUsWest1      = "us-west-1"
+	RegionUsWest2      = "us-west-2"
+	RegionApEast1      = "ap-east-1"
+	RegionApSouth1     = "ap-south-1"
+	RegionApNorthEast1 = "ap-northeast-1"
+	RegionApNorthEast2 = "ap-northeast-2"
+	RegionApNorthEast3 = "ap-northeast-3"
+	RegionApSouthEast1 = "ap-northeast-1"
+	RegionApSouthEast2 = "ap-northeast-2"
+	RegionCaCentral1   = "ca-central-1"
+	RegionCnNorth1     = "cn-north-1"
+	RegionCnNorthWest1 = "cn-northwest-1"
+	RegionEuCentral1   = "eu-central-1"
+	RegionEuWest1      = "eu-west-1"
+	RegionEuWest2      = "eu-west-2"
+	RegionEuWest3      = "eu-west-3"
+	RegionEuNorth1     = "eu-north-1"
+	RegionSaEast1      = "sa-east-1"
+)
+
 type RemoteProvider struct {
 	Path              string                   `json:"path,omitempty" mapstructure:"path"`
 	Uuid              string                   `json:"uuid,omitempty" mapstructure:"uuid"`
@@ -26,6 +50,12 @@ type RemoteProvider struct {
 	Status            string                   `json:"status,omitempty" mapstructure:"status"`
 	Host              string                   `json:"host,omitempty" mapstructure:"host"`
 	Port              int                      `json:"port,omitempty" mapstructure:"port"`
+	AccessKey         string                   `json:"access_key,omitempty" mapstructure:"access_key"`
+	SecretKey         string                   `json:"secret_key,omitempty" mapstructure:"secret_key"`
+	IpPool            *AccessNetworkIpPool     `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
+	UseSSL            bool                     `json:"use_ssl,omitempty" mapstructure:"use_ssl"`
+	Region            string                   `json:"region,omitempty" mapstructure:"region"`
+	Gateway           string                   `json:"gateway,omitempty" mapstructure:"gateway"`
 	OperationsEp      string
 	SnapshotsEp       *Snapshots
 
@@ -44,16 +74,20 @@ type RemoteProviders struct {
 }
 
 type RemoteProvidersCreateRequest struct {
-	Ctxt        context.Context `json:"-"`
-	ProjectName string          `json:"project_name,omitempty" mapstructure:"project_name"`
-	AccountId   string          `json:"account_id,omitempty" mapstructure:"account_id"`
-	RemoteType  string          `json:"remote_type,omitempty" mapstructure:"remote_type"`
-	PrivateKey  string          `json:"private_key,omitempty" mapstructure:"private_key"`
-	Label       string          `json:"label,omitempty" mapstructure:"label"`
-	Host        string          `json:"host,omitempty" mapstructure:"host"`
-	Port        int             `json:"port,omitempty" mapstructure:"port"`
-	AccessKey   string          `json:"access_key,omitempty" mapstructure:"access_key"`
-	SecretKey   string          `json:"secret_key,omitempty" mapstructure:"secret_key"`
+	Ctxt        context.Context      `json:"-"`
+	ProjectName string               `json:"project_name,omitempty" mapstructure:"project_name"`
+	AccountId   string               `json:"account_id,omitempty" mapstructure:"account_id"`
+	RemoteType  string               `json:"remote_type,omitempty" mapstructure:"remote_type"`
+	PrivateKey  string               `json:"private_key,omitempty" mapstructure:"private_key"`
+	Label       string               `json:"label,omitempty" mapstructure:"label"`
+	Host        string               `json:"host,omitempty" mapstructure:"host"`
+	Port        int                  `json:"port,omitempty" mapstructure:"port"`
+	AccessKey   string               `json:"access_key,omitempty" mapstructure:"access_key"`
+	SecretKey   string               `json:"secret_key,omitempty" mapstructure:"secret_key"`
+	IpPool      *AccessNetworkIpPool `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
+	UseSSL      bool                 `json:"use_ssl,omitempty" mapstructure:"use_ssl"`
+	Region      string               `json:"region,omitempty" mapstructure:"region"`
+	Gateway     string               `json:"gateway,omitempty" mapstructure:"gateway"`
 }
 
 func newRemoteProviders(path string) *RemoteProviders {

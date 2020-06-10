@@ -1,4 +1,5 @@
 {
+  "provider": "S3 Object Store",
   "host_bucket": "go.sdk.test",
   "host": "172.28.41.39",
   "access_key": "abcdabcd",
