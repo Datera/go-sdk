@@ -436,14 +436,33 @@ func TestIpPools(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Running: TestIpPools")
+	fmt.Println("Running: ", t.Name())
+
+	// Create IP Pool
+	ipPool, cleanIpPool, err := createAccessNetworkIpPool(sdk.NewContext(), sdk)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer cleanIpPool()
+
+	fmt.Println("IP Pool: ", ipPool)
+
 	anips, _, err := sdk.AccessNetworkIpPools.List(&dsdk.AccessNetworkIpPoolsListRequest{Ctxt: sdk.NewContext()})
 	if err != nil {
 		t.Fatal(err)
 	}
+	found_anip := (*dsdk.AccessNetworkIpPool)(nil)
 	for _, anip := range anips {
+		if anip.Name == "my-test-ip_pool" {
+			found_anip = anip
+		}
 		fmt.Printf("AccessNetworkIpPool: %s\n", anip.Name)
 	}
+	if found_anip == nil {
+		t.Fatal("Could not find the IP pool created.")
+	}
+
 }
 
 func TestStoragePools(t *testing.T) {

@@ -120,7 +120,6 @@ func (e *AccessNetworkIpPool) Set(ro *AccessNetworkIpPoolSetRequest) (*AccessNet
 
 type AccessNetworkIpPoolDeleteRequest struct {
 	Ctxt context.Context `json:"-"`
-	Id   string          `json:"id,omitempty" mapstructure:"id"`
 }
 
 func (e *AccessNetworkIpPool) Delete(ro *AccessNetworkIpPoolDeleteRequest) (*AccessNetworkIpPool, *ApiErrorResponse, error) {
