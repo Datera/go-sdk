@@ -102,8 +102,8 @@ func createInitiator(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.Initiator, func
 	}, nil
 }
 
-func createRemoteProvider(ctxt context.Context, sdk *dsdk.SDK, cfg RemoteConfig) (*dsdk.RemoteProvider, func(), error) {
-	rp, aer, err := sdk.RemoteProvider.Create(&dsdk.RemoteProvidersCreateRequest{
+func createRemoteProvider(ctxt context.Context, sdk *dsdk.SDK, cfg RemoteConfig, ipPool *dsdk.AccessNetworkIpPool) (*dsdk.RemoteProvider, func(), error) {
+	req := dsdk.RemoteProvidersCreateRequest{
 		Ctxt:       ctxt,
 		RemoteType: cfg.Provider,
 		Host:       cfg.Host,
@@ -112,7 +112,15 @@ func createRemoteProvider(ctxt context.Context, sdk *dsdk.SDK, cfg RemoteConfig)
 		SecretKey:  cfg.SecretKey,
 		Region:     cfg.Region,
 		UseSSL:     cfg.UseSsl,
-	})
+	}
+	// The Create Request only expects path, not the full AccessNetworkIpPool object
+	// So fill in only the required info.
+	if ipPool != nil {
+		req.IpPool = &dsdk.AccessNetworkIpPool{
+			Path: ipPool.Path,
+		}
+	}
+	rp, aer, err := sdk.RemoteProvider.Create(&req)
 	if err != nil {
 		return nil, func() {}, err
 	}
@@ -143,6 +151,34 @@ func createRemoteProvider(ctxt context.Context, sdk *dsdk.SDK, cfg RemoteConfig)
 			return
 		}
 		_, aer, err := rp.Delete(&dsdk.RemoteProviderDeleteRequest{Ctxt: ctxt, Force: true})
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		if aer != nil {
+			fmt.Println(fmt.Errorf("%v: %v", aer.Message, strings.Join(aer.Errors, ",")))
+			return
+		}
+	}, nil
+}
+
+func createAccessNetworkIpPool(ctxt context.Context, sdk *dsdk.SDK) (*dsdk.AccessNetworkIpPool, func(), error) {
+	ipPool, aer, err := sdk.AccessNetworkIpPools.Create(&dsdk.AccessNetworkIpPoolsCreateRequest{
+		Ctxt: ctxt,
+		Name: "my-test-ip_pool",
+	})
+	if err != nil {
+		return nil, func() {}, err
+	}
+	if aer != nil {
+		return nil, nil, fmt.Errorf("%v: %v", aer.Message, strings.Join(aer.Errors, ","))
+	}
+
+	return ipPool, func() {
+		if ipPool == nil {
+			return
+		}
+		_, aer, err := ipPool.Delete(&dsdk.AccessNetworkIpPoolDeleteRequest{Ctxt: ctxt})
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -202,7 +238,7 @@ func TestSnapshotRemoteProvider(t *testing.T) {
 	defer cleanAi()
 
 	// Create Remote Provider
-	rp, cleanRp, err := createRemoteProvider(sdk.NewContext(), sdk, *cfg)
+	rp, cleanRp, err := createRemoteProvider(sdk.NewContext(), sdk, *cfg, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -240,6 +276,42 @@ func TestSnapshotRemoteProvider(t *testing.T) {
 	}()
 }
 
+func TestCreateRemoteProviderWithIpPool(t *testing.T) {
+	data, err := ioutil.ReadFile(RemoteConfigFile)
+	if err != nil {
+		t.Skipf("Couldn't read %s, skipping %s test\n", RemoteConfigFile, t.Name())
+	}
+	cfg := &RemoteConfig{}
+	if err = json.Unmarshal(data, cfg); err != nil {
+		t.Skip(err)
+	}
+	sdk, err := dsdk.NewSDK(nil, true)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Running: ", t.Name())
+
+	// Create IP Pool
+	ipPool, cleanIpPool, err := createAccessNetworkIpPool(sdk.NewContext(), sdk)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer cleanIpPool()
+
+	fmt.Println("IP Pool: ", ipPool)
+
+	// Create Remote Provider
+	rp, cleanRp, err := createRemoteProvider(sdk.NewContext(), sdk, *cfg, ipPool)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer cleanRp()
+
+	fmt.Println("Remote Provider: ", rp)
+}
+
 func TestCreateMinioRemoteProviderWithParams(t *testing.T) {
 	data, err := ioutil.ReadFile(RemoteConfigFile)
 	if err != nil {
@@ -256,7 +328,7 @@ func TestCreateMinioRemoteProviderWithParams(t *testing.T) {
 	fmt.Println("Running: ", t.Name())
 
 	// Create Remote Provider
-	rp, cleanRp, err := createRemoteProvider(sdk.NewContext(), sdk, *cfg)
+	rp, cleanRp, err := createRemoteProvider(sdk.NewContext(), sdk, *cfg, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -282,7 +354,7 @@ func TestCreateS3RemoteProviderWithParams(t *testing.T) {
 	fmt.Println("Running: ", t.Name())
 
 	// Create Remote Provider
-	rp, cleanRp, err := createRemoteProvider(sdk.NewContext(), sdk, *cfg)
+	rp, cleanRp, err := createRemoteProvider(sdk.NewContext(), sdk, *cfg, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
