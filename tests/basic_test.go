@@ -274,6 +274,68 @@ func TestSnapshotRemoteProvider(t *testing.T) {
 			t.Fatal(err)
 		}
 	}()
+
+	// restore this SS to a new App Instance
+	ai2, apiErr, err := rp.RestoreRemoteSnapshot(&dsdk.RestoreRemoteSnapshotRequest{Ctxt: sdk.NewContext(), TargetTenant: "/root", Name: "test_restore_snap"}, snap)
+	if err != nil || apiErr != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		// remove app instance
+		_, apiErr, err = ai2.Set(&dsdk.AppInstanceSetRequest{
+			Ctxt:       sdk.NewContext(),
+			AdminState: "offline",
+		})
+		if err != nil || apiErr != nil {
+			t.Fatal(err)
+		}
+		_, apiErr, err = ai2.Delete(&dsdk.AppInstanceDeleteRequest{Ctxt: sdk.NewContext()})
+		if err != nil || apiErr != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	fmt.Println("Restored App Instance: ", ai2)
+
+	parts := strings.Split(ai2.OperationPath, "/")
+	opId := parts[len(parts)-1]
+
+	// wait for the app instance to be available
+	timeout = 60
+	for {
+		inProgressOperation, apiErr, err := rp.GetOperation(&dsdk.RemoteProviderOperationGetRequest{Ctxt: sdk.NewContext(), OperationId: opId})
+		if err != nil || apiErr != nil {
+			t.Fatal(err)
+		}
+		if inProgressOperation.OpState == "done" {
+			break
+		}
+		if timeout <= 0 {
+			t.Fatal("App instance restore operation not done before timeout")
+		}
+		time.Sleep(1 * time.Second)
+		timeout--
+	}
+
+	// now *really* wait for all operations to complete.
+	timeout = 60
+	for {
+		ops, apiErr, err := rp.ListOperations(&dsdk.RemoteProviderOperationsListRequest{Ctxt: sdk.NewContext()})
+		if err != nil || apiErr != nil {
+			t.Fatal(err)
+		}
+		if len(ops) == 0 {
+			// the list of operations is empty
+			break
+		}
+		if timeout <= 0 {
+			t.Fatal("Did not get to no outstanding operations state before timeout")
+		}
+		time.Sleep(1 * time.Second)
+		timeout--
+	}
+
 }
 
 func TestCreateRemoteProviderWithIpPool(t *testing.T) {

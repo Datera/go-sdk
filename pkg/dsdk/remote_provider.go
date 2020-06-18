@@ -193,15 +193,20 @@ func (e *RemoteProviders) Refresh(ro *RemoteProvidersRefreshRequest) (*RemotePro
 }
 
 type RemoteProviderSetRequest struct {
-	Ctxt        context.Context `json:"-"`
-	ProjectName string          `json:"project_name,omitempty" mapstructure:"project_name"`
-	AccountId   string          `json:"account_id,omitempty" mapstructure:"account_id"`
-	PrivateKey  string          `json:"private_key,omitempty" mapstructure:"private_key"`
-	Label       string          `json:"label,omitempty" mapstructure:"label"`
-	Host        string          `json:"host,omitempty" mapstructure:"host"`
-	Port        int             `json:"port,omitempty" mapstructure:"port"`
-	AccessKey   string          `json:"access_key,omitempty" mapstructure:"access_key"`
-	SecretKey   string          `json:"secret_key,omitempty" mapstructure:"secret_key"`
+	Ctxt        context.Context      `json:"-"`
+	ProjectName string               `json:"project_name,omitempty" mapstructure:"project_name"`
+	AccountId   string               `json:"account_id,omitempty" mapstructure:"account_id"`
+	PrivateKey  string               `json:"private_key,omitempty" mapstructure:"private_key"`
+	Label       string               `json:"label,omitempty" mapstructure:"label"`
+	Host        string               `json:"host,omitempty" mapstructure:"host"`
+	Port        int                  `json:"port,omitempty" mapstructure:"port"`
+	AccessKey   string               `json:"access_key,omitempty" mapstructure:"access_key"`
+	SecretKey   string               `json:"secret_key,omitempty" mapstructure:"secret_key"`
+	RemoteType  string               `json:"remote_type,omitempty" mapstructure:"remote_type"`
+	IpPool      *AccessNetworkIpPool `json:"ip_pool,omitempty" mapstructure:"ip_pool"`
+	UseSSL      bool                 `json:"use_ssl,omitempty" mapstructure:"use_ssl"`
+	Region      string               `json:"region,omitempty" mapstructure:"region"`
+	Gateway     string               `json:"gateway,omitempty" mapstructure:"gateway"`
 }
 
 func (e *RemoteProvider) Set(ro *RemoteProviderSetRequest) (*RemoteProvider, *ApiErrorResponse, error) {
@@ -278,12 +283,6 @@ func (e *RemoteProvider) Reload(ro *RemoteProviderReloadRequest) (*RemoteProvide
 	return resp, nil, nil
 }
 
-type RemoteProviderOperationsSetRequest struct {
-	Ctxt        context.Context `json:"-"`
-	OperationId string          `json:"-"`
-	Action      string          `json:"action"` //available options are 'clear' and 'abort'
-}
-
 type RemoteOperation struct {
 	Path               string `json:"path" mapstructure:"path"`
 	Uuid               string `json:"uuid" mapstructure:"uuid"`
@@ -299,6 +298,63 @@ type RemoteOperation struct {
 	} `json:"references" mapstructure:"references"`
 }
 
+type RemoteProviderOperationGetRequest struct {
+	Ctxt        context.Context `json:"-"`
+	OperationId string          `json:"-"`
+}
+
+func (e *RemoteProvider) GetOperation(ao *RemoteProviderOperationGetRequest) (*RemoteOperation, *ApiErrorResponse, error) {
+	gro := &greq.RequestOptions{JSON: ao}
+	rs, apierr, err := GetConn(ao.Ctxt).Get(ao.Ctxt, _path.Join(e.Path, "operations", ao.OperationId), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := &RemoteOperation{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+
+	return resp, nil, nil
+}
+
+type RemoteProviderOperationsListRequest struct {
+	Ctxt   context.Context `json:"-"`
+	Params ListParams      `json:"params,omitempty"`
+}
+
+func (e *RemoteProvider) ListOperations(ao *RemoteProviderOperationsListRequest) ([]*RemoteOperation, *ApiErrorResponse, error) {
+	gro := &greq.RequestOptions{
+		JSON:   ao,
+		Params: ao.Params.ToMap()}
+	rs, apierr, err := GetConn(ao.Ctxt).GetList(ao.Ctxt, _path.Join(e.Path, "operations"), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := []*RemoteOperation{}
+	for _, data := range rs.Data {
+		elem := &RemoteOperation{}
+		adata := data.(map[string]interface{})
+		if err = FillStruct(adata, elem); err != nil {
+			return nil, nil, err
+		}
+		//		RegisterRemoteProviderEndpoints(elem)
+		resp = append(resp, elem)
+	}
+	return resp, nil, nil
+}
+
+type RemoteProviderOperationsSetRequest struct {
+	Ctxt        context.Context `json:"-"`
+	OperationId string          `json:"-"`
+	Action      string          `json:"action"` //available options are 'clear' and 'abort'
+}
+
 func (e *RemoteProvider) SetOperation(ao *RemoteProviderOperationsSetRequest) (*RemoteOperation, *ApiErrorResponse, error) {
 
 	gro := &greq.RequestOptions{JSON: ao}
@@ -310,6 +366,32 @@ func (e *RemoteProvider) SetOperation(ao *RemoteProviderOperationsSetRequest) (*
 		return nil, nil, err
 	}
 	resp := &RemoteOperation{}
+	if err = FillStruct(rs.Data, resp); err != nil {
+		return nil, nil, err
+	}
+
+	return resp, nil, nil
+}
+
+type RestoreRemoteSnapshotRequest struct {
+	Ctxt         context.Context `json:"-"`
+	TargetTenant string          `json:"target_tenant" mapstructure:"target_tenant"`
+	Name         string          `json:"name" mapstructure:"name"`
+	Descr        string          `json:"descr,omitempty" mapstructure:"descr"`
+	Force        bool            `json:"force,omitempty" mapstructure:"force"`
+	ReplicaCount int             `json:"replica_count,omitempty" mapstructure:"replica_count"`
+}
+
+func (e *RemoteProvider) RestoreRemoteSnapshot(ao *RestoreRemoteSnapshotRequest, snap *Snapshot) (*AppInstance, *ApiErrorResponse, error) {
+	gro := &greq.RequestOptions{JSON: ao}
+	rs, apierr, err := GetConn(ao.Ctxt).Put(ao.Ctxt, _path.Join(e.Path, "snapshots", snap.TsVersion), gro)
+	if apierr != nil {
+		return nil, apierr, err
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	resp := &AppInstance{}
 	if err = FillStruct(rs.Data, resp); err != nil {
 		return nil, nil, err
 	}

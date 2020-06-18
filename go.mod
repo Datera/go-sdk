@@ -5,7 +5,6 @@ go 1.13
 require (
 	github.com/Datera/go-udc v1.1.1
 	github.com/google/go-cmp v0.4.1
-	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
