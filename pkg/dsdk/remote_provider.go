@@ -3,6 +3,7 @@ package dsdk
 import (
 	"context"
 	_path "path"
+	"reflect"
 
 	greq "github.com/levigross/grequests"
 )
@@ -24,7 +25,7 @@ type RemoteProvider struct {
 	Label             string                   `json:"label,omitempty" mapstructure:"label"`
 	Status            string                   `json:"status,omitempty" mapstructure:"status"`
 	Host              string                   `json:"host,omitempty" mapstructure:"host"`
-	Port              string                   `json:"port,omitempty" mapstructure:"port"`
+	Port              int                      `json:"port,omitempty" mapstructure:"port"`
 	OperationsEp      string
 	SnapshotsEp       *Snapshots
 
@@ -192,7 +193,16 @@ type RemoteProviderDeleteRequest struct {
 }
 
 func (e *RemoteProvider) Delete(ro *RemoteProviderDeleteRequest) (*RemoteProvider, *ApiErrorResponse, error) {
-	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+	if ro == nil {
+		return nil, nil, badStatus[InvalidRequest]
+	}
+	v := reflect.ValueOf(*ro)
+	t := reflect.TypeOf(*ro)
+	gro := &greq.RequestOptions{
+		JSON: ro,
+	}
+	formatQueryParams(gro, v, t)
+	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, gro)
 	if apierr != nil {
 		return nil, apierr, err
 	}

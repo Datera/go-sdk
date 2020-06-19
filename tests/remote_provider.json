@@ -1,0 +1,8 @@
+{
+  "host_bucket": "go.sdk.test",
+  "host": "172.28.41.39",
+  "access_key": "abcdabcd",
+  "secret_key": "abcdabcd",
+  "port": 9000
+}
+

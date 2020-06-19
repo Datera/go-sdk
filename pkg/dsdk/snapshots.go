@@ -3,6 +3,7 @@ package dsdk
 import (
 	"context"
 	_path "path"
+	"reflect"
 
 	greq "github.com/levigross/grequests"
 )
@@ -109,10 +110,21 @@ func (e *Snapshots) Get(ro *SnapshotsGetRequest) (*Snapshot, *ApiErrorResponse, 
 type SnapshotDeleteRequest struct {
 	Ctxt               context.Context `json:"-"`
 	RemoteProviderUuid string          `json:"remote_provider_uuid,omitempty" mapstructure:"remote_provider_uuid"`
+	Force              bool            `json:"force,omitempty" mapstructure:"force"`
 }
 
 func (e *Snapshot) Delete(ro *SnapshotDeleteRequest) (*Snapshot, *ApiErrorResponse, error) {
-	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, nil)
+	if ro == nil {
+		return nil, nil, badStatus[InvalidRequest]
+	}
+	v := reflect.ValueOf(*ro)
+	t := reflect.TypeOf(*ro)
+	gro := &greq.RequestOptions{
+		JSON: ro,
+	}
+	formatQueryParams(gro, v, t)
+
+	rs, apierr, err := GetConn(ro.Ctxt).Delete(ro.Ctxt, e.Path, gro)
 	if apierr != nil {
 		return nil, apierr, err
 	}

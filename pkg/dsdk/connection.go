@@ -66,7 +66,7 @@ type ApiErrorResponse struct {
 	ConnInfo     map[string]string `json:"connInfo,omitempty"`
 	ClientId     string            `json:"client_id,omitempty"`
 	ClientType   string            `json:"client_type,omitempty"`
-	Id           string            `json:"api_req_id,omitempty"`
+	Id           int               `json:"api_req_id,omitempty"`
 	TenancyClass string            `json:"tenancy_class,omitempty"`
 	Errors       []string          `json:"errors,omitempty"`
 }
@@ -294,6 +294,9 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if strings.Contains(string(sdata), "target_user_name") == true {
 		sdata = []byte("********")
 	}
+	if strings.Contains(string(sdata), "secret") == true {
+		sdata = []byte("********")
+	}
 	if sensitive {
 		sdata = []byte("********")
 	}
@@ -331,6 +334,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 				"request_url":     gurl.String(),
 				"request_headers": sheaders,
 				"request_payload": string(sdata),
+				"query_params":    ro.Params,
 			}).Debugf("Datera SDK making request")
 			return nil
 		}
@@ -385,7 +389,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		return c.retry(ctxt, method, url, ro, rs, sensitive)
 	}
 	if eresp != nil {
-		detailLog.Errorf("Recieved API Error %s", Pretty(eresp))
+		detailLog.Errorf("Received API Error %s", Pretty(eresp))
 		return eresp, nil
 	}
 	if err != nil {
