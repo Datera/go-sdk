@@ -66,7 +66,7 @@ type ApiErrorResponse struct {
 	ConnInfo     map[string]string `json:"connInfo,omitempty"`
 	ClientId     string            `json:"client_id,omitempty"`
 	ClientType   string            `json:"client_type,omitempty"`
-	Id           json.Number       `json:"api_req_id,omitempty"`
+	Id           int               `json:"api_req_id,omitempty"`
 	TenancyClass string            `json:"tenancy_class,omitempty"`
 	Errors       []string          `json:"errors,omitempty"`
 }
@@ -290,6 +290,13 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if err != nil {
 		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
+	// Strip all CHAP credentails before printing to logs
+	if strings.Contains(string(sdata), "target_user_name") == true {
+		sdata = []byte("********")
+	}
+	if strings.Contains(string(sdata), "secret") == true {
+		sdata = []byte("********")
+	}
 	if sensitive {
 		sdata = []byte("********")
 	}
@@ -327,6 +334,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 				"request_url":     gurl.String(),
 				"request_headers": sheaders,
 				"request_payload": string(sdata),
+				"query_params":    ro.Params,
 			}).Debugf("Datera SDK making request")
 			return nil
 		}
@@ -381,7 +389,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		return c.retry(ctxt, method, url, ro, rs, sensitive)
 	}
 	if eresp != nil {
-		detailLog.Errorf("Recieved API Error %s", Pretty(eresp))
+		detailLog.Errorf("Received API Error %s", Pretty(eresp))
 		return eresp, nil
 	}
 	if err != nil {
@@ -459,10 +467,16 @@ func (c *ApiConnection) GetList(ctxt context.Context, url string, ro *greq.Reque
 			if offset >= tcnt {
 				break
 			}
-			// there are api endpoints that handle lists with more fields than
-			// ListParams (but still have offset/limit in common)
-			// just update offset directly here to preserve those extra fields
-			ro.Params["offset"] = strconv.FormatInt(int64(offset), 10)
+			if ro.Params == nil {
+				ro.Params = ListParams{
+					Offset: offset,
+				}.ToMap()
+			} else {
+				// there are api endpoints that handle lists with more fields than
+				// ListParams (but still have offset/limit in common)
+				// just update offset directly here to preserve those extra fields
+				ro.Params["offset"] = strconv.FormatInt(int64(offset), 10)
+			}
 			rs.Data = []interface{}{}
 			apiresp, err := c.doWithAuth(ctxt, "GET", url, ro, rs)
 			if apiresp != nil || err != nil {
