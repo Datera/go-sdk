@@ -1,4 +1,4 @@
-module github.com/Datera/go-sdk
+module github.com/tjcelaya/go-sdk
 
 go 1.13
 
