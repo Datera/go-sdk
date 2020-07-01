@@ -3,6 +3,7 @@ package dsdk_test
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"sync"
 	"testing"
@@ -11,9 +12,14 @@ import (
 	"github.com/Datera/go-udc/pkg/udc"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-        dsdk "github.com/Datera/go-sdk/pkg/dsdk"
+	"github.com/sirupsen/logrus"
+	dsdk "github.com/tjcelaya/go-datera/pkg/dsdk"
 	"gopkg.in/h2non/gock.v1"
 )
+
+func init() {
+	logrus.SetOutput(ioutil.Discard)
+}
 
 func TestSDKInsecure(t *testing.T) {
 	sdk, err := dsdk.NewSDK(nil, false)
