@@ -1,0 +1,8 @@
+{
+  "host_bucket": "go.sdk.test",
+  "host": "192.168.13.1",
+  "access_key": "minioaccess",
+  "secret_key": "miniosecret",
+  "port": 9991
+}
+

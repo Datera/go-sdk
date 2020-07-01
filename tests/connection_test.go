@@ -3,12 +3,18 @@ package dsdk_test
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"testing"
 
-	dsdk "github.com/Datera/go-sdk/pkg/dsdk"
 	udc "github.com/Datera/go-udc/pkg/udc"
 	greq "github.com/levigross/grequests"
+	"github.com/sirupsen/logrus"
+	dsdk "github.com/tjcelaya/go-datera/pkg/dsdk"
 )
+
+func init() {
+	logrus.SetOutput(ioutil.Discard)
+}
 
 func TestApiVersions(t *testing.T) {
 	c, err := udc.GetConfig()
