@@ -579,7 +579,7 @@ func TestConcurrentLoginAttempts(t *testing.T) {
 		Reply(200).
 		JSON(&dsdk.ApiLogin{Key: "thekey"})
 	gock.New("http://127.0.0.1:7717").
-		Get("/v1/login").
+		Put("/v1/login").
 		Persist().
 		Reply(500).
 		JSON(&dsdk.ApiErrorResponse{Message: "goofed"})
@@ -606,6 +606,8 @@ func TestConcurrentLoginAttempts(t *testing.T) {
 		aer2, err2 = conn.Login(context.Background())
 		wg.Done()
 	}()
+
+	wg.Wait()
 
 	// if neither login attempt returned an error we can know that the login route was only called once
 	assert.NilError(t, err1)
