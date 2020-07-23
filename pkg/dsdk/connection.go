@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	udc "github.com/Datera/go-udc/pkg/udc"
@@ -50,6 +51,9 @@ type ApiConnection struct {
 	apikey     string
 	baseUrl    *url.URL
 	httpClient *http.Client
+	// loggingIn is used as a flag to check when the mutex is held by the Login function
+	// to avoid reentrant calls
+	loggingIn uint32
 }
 
 type ApiErrorResponse struct {
@@ -264,6 +268,7 @@ func (c *ApiConnection) retry(ctxt context.Context, method, url string, ro *greq
 	backoff := 1
 	var apiresp *ApiErrorResponse
 	for time.Now().Unix()-t1 < RetryTimeout {
+		// any call to `do` from within a retry must use `false` for retry param
 		apiresp, err := c.do(ctxt, method, url, ro, rs, false, sensitive)
 		if apiresp == nil && err == nil {
 			return nil, nil
@@ -368,7 +373,14 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if err == badStatus[PermissionDenied] {
 		// if we have logged in successfully before we may just need to refresh the apikey
 		// and retry the original request
-		if c.hasLoggedIn() {
+		// However, because Login holds the mutex then if we got here as the result of a 401 during
+		// a Login we can't do anything without deadlocking.  In this case we need to just return
+		// the error
+		// Unfortunately this does mean that we may return an error instead of logging in and retrying
+		// when another goroutine needs to relogin while a login is active (which would be safe and not
+		// deadlock)
+		loggingIn := atomic.LoadUint32(&c.loggingIn)
+		if loggingIn == 0 && c.hasLoggedIn() {
 			c.Logout()
 			if apiresp, err2 := c.Login(ctxt); apiresp != nil || err2 != nil {
 				detailLog.Errorf("failed to re-authenticate before retrying request: %s", err2)
@@ -408,6 +420,8 @@ func (c *ApiConnection) doWithAuth(ctxt context.Context, method, url string, ro 
 	if ro == nil {
 		ro = &greq.RequestOptions{}
 	}
+	// don't need to check the loggingIn flag first because doWithAuth is not called from Login
+	// so that won't deadlock
 	if !c.hasLoggedIn() {
 		if apierr, err := c.Login(ctxt); apierr != nil || err != nil {
 			Log().Errorf("Login failure: %s, %s", Pretty(apierr), err)
@@ -521,6 +535,21 @@ func (c *ApiConnection) ApiVersions() []string {
 }
 
 func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	// can't call hasLoggedIn since that needs to RLock but this is equivalent
+	if c.apikey != "" {
+		// any time the connection has an apikey we can skip the login because
+		// the apikey gets cleared after a session expiration before attempting to login
+		// therefore a non-empty apikey can be assumed to be valid
+
+		return nil, nil
+	}
+	// set a flag to show that the login is in progress so that we can avoid attempting to
+	// take the lock in a case that would cause a deadlock
+	atomic.StoreUint32(&c.loggingIn, 1)
+	defer atomic.StoreUint32(&c.loggingIn, 0)
 	login := &ApiLogin{}
 	ro := &greq.RequestOptions{
 		Data: map[string]string{
@@ -532,14 +561,13 @@ func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
 		ro.Data["remote_server"] = c.ldap
 	}
 	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, true, true)
-	c.m.Lock()
+
 	if (apiresp != nil && apiresp.Http == PermissionDenied) || (err != nil && err == badStatus[PermissionDenied]) {
 		c.apikey = ""
 	} else {
 		c.apikey = login.Key
 	}
 
-	c.m.Unlock()
 	return apiresp, err
 }
 
