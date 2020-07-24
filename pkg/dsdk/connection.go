@@ -39,6 +39,12 @@ var (
 	logTraceID   = "trace_id"
 )
 
+const (
+	canRetry    = true
+	isSensitive = true
+	allowLogin  = true
+)
+
 type ApiConnection struct {
 	m          *sync.RWMutex
 	username   string
@@ -259,12 +265,13 @@ func (c *ApiConnection) hasLoggedIn() bool {
 	return c.apikey != ""
 }
 
-func (c *ApiConnection) retry(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, sensitive bool) (*ApiErrorResponse, error) {
+func (c *ApiConnection) retry(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, sensitive, allowLogin bool) (*ApiErrorResponse, error) {
 	t1 := time.Now().Unix()
 	backoff := 1
 	var apiresp *ApiErrorResponse
 	for time.Now().Unix()-t1 < RetryTimeout {
-		apiresp, err := c.do(ctxt, method, url, ro, rs, false, sensitive)
+		// any call to `do` from within a retry must use `false` for retry param
+		apiresp, err := c.do(ctxt, method, url, ro, rs, !canRetry, sensitive, allowLogin)
 		if apiresp == nil && err == nil {
 			return nil, nil
 		}
@@ -282,7 +289,7 @@ func (c *ApiConnection) retry(ctxt context.Context, method, url string, ro *greq
 	return apiresp, ErrRetryTimeout
 }
 
-func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, retry, sensitive bool) (*ApiErrorResponse, error) {
+func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.RequestOptions, rs interface{}, retry, sensitive, allowLogin bool) (*ApiErrorResponse, error) {
 	gurl := *c.baseUrl
 	gurl.Path = path.Join(gurl.Path, url)
 	reqId := uuid.Must(uuid.NewRandom()).String()
@@ -368,7 +375,11 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if err == badStatus[PermissionDenied] {
 		// if we have logged in successfully before we may just need to refresh the apikey
 		// and retry the original request
-		if c.hasLoggedIn() {
+		// However, because Login holds the mutex then if we got here as the result of a 401 during
+		// a Login we can't do anything without deadlocking.  In this case we need to just return
+		// the error
+
+		if allowLogin && c.hasLoggedIn() {
 			c.Logout()
 			if apiresp, err2 := c.Login(ctxt); apiresp != nil || err2 != nil {
 				detailLog.Errorf("failed to re-authenticate before retrying request: %s", err2)
@@ -377,7 +388,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 			c.m.RLock()
 			ro.Headers["Auth-Token"] = c.apikey
 			c.m.RUnlock()
-			return c.do(ctxt, method, url, ro, rs, false, sensitive)
+			return c.do(ctxt, method, url, ro, rs, !canRetry, sensitive, allowLogin)
 		}
 
 		// but if we get here while logged out then then credentials may no longer be valid and we shouldn't
@@ -386,7 +397,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 
 	}
 	if retry && (err == badStatus[Retry503] || err == badStatus[ConnectionError]) {
-		return c.retry(ctxt, method, url, ro, rs, sensitive)
+		return c.retry(ctxt, method, url, ro, rs, sensitive, allowLogin)
 	}
 	if eresp != nil {
 		detailLog.Errorf("Received API Error %s", Pretty(eresp))
@@ -408,6 +419,8 @@ func (c *ApiConnection) doWithAuth(ctxt context.Context, method, url string, ro 
 	if ro == nil {
 		ro = &greq.RequestOptions{}
 	}
+	// don't need to check the loggingIn flag first because doWithAuth is not called from Login
+	// so that won't deadlock
 	if !c.hasLoggedIn() {
 		if apierr, err := c.Login(ctxt); apierr != nil || err != nil {
 			Log().Errorf("Login failure: %s, %s", Pretty(apierr), err)
@@ -417,7 +430,7 @@ func (c *ApiConnection) doWithAuth(ctxt context.Context, method, url string, ro 
 	c.m.RLock()
 	ro.Headers = map[string]string{"tenant": c.tenant, "Auth-Token": c.apikey}
 	c.m.RUnlock()
-	return c.do(ctxt, method, url, ro, rs, true, false)
+	return c.do(ctxt, method, url, ro, rs, canRetry, !isSensitive, allowLogin)
 }
 
 func NewApiConnection(c *udc.UDC, secure bool) *ApiConnection {
@@ -521,6 +534,18 @@ func (c *ApiConnection) ApiVersions() []string {
 }
 
 func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	// can't call hasLoggedIn since that needs to RLock but this is equivalent
+	if c.apikey != "" {
+		// any time the connection has an apikey we can skip the login because
+		// the apikey gets cleared after a session expiration before attempting to login
+		// therefore a non-empty apikey can be assumed to be valid
+
+		return nil, nil
+	}
+
 	login := &ApiLogin{}
 	ro := &greq.RequestOptions{
 		Data: map[string]string{
@@ -531,15 +556,15 @@ func (c *ApiConnection) Login(ctxt context.Context) (*ApiErrorResponse, error) {
 	if c.ldap != "" {
 		ro.Data["remote_server"] = c.ldap
 	}
-	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, true, true)
-	c.m.Lock()
+
+	apiresp, err := c.do(ctxt, "PUT", "login", ro, login, canRetry, isSensitive, !allowLogin)
+
 	if (apiresp != nil && apiresp.Http == PermissionDenied) || (err != nil && err == badStatus[PermissionDenied]) {
 		c.apikey = ""
 	} else {
 		c.apikey = login.Key
 	}
 
-	c.m.Unlock()
 	return apiresp, err
 }
 

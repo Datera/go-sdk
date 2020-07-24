@@ -1,6 +1,7 @@
 package dsdk_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -15,6 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 	dsdk "github.com/tjcelaya/go-datera/pkg/dsdk"
 	"gopkg.in/h2non/gock.v1"
+	"gotest.tools/assert"
 )
 
 func init() {
@@ -285,6 +287,50 @@ func TestRetryScenarios(t *testing.T) {
 			},
 		},
 		{
+			desc: "returns success on a 503 -> 401 -> (503 -> 200 on login) -> 503 -> 200",
+			setup: func() {
+				gock.New("http://127.0.0.1:7717").
+					Put("/v1/login").
+					Reply(200).
+					JSON(&dsdk.ApiLogin{Key: "thekey"})
+
+				// mock 503 followed by 401 then relogin and success
+				gock.New("http://127.0.0.1:7717").
+					Get("/v1/system").
+					Reply(503).
+					// On 503 errors the api may not return all fields of the ApiErrorResponse
+					JSON(&dsdk.ApiErrorResponse{Message: "overloaded"})
+
+				gock.New("http://127.0.0.1:7717").
+					Get("/v1/system").
+					Reply(dsdk.PermissionDenied).
+					JSON(apiErr401)
+
+				gock.New("http://127.0.0.1:7717").
+					Put("/v1/login").
+					Reply(503).
+					JSON(&dsdk.ApiErrorResponse{Message: "overloaded"})
+
+				gock.New("http://127.0.0.1:7717").
+					Put("/v1/login").
+					Reply(200).
+					JSON(&dsdk.ApiLogin{Key: "thekey"})
+
+				gock.New("http://127.0.0.1:7717").
+					Get("/v1/system").
+					Reply(503).
+					JSON(&dsdk.ApiErrorResponse{Message: "overloaded"})
+
+				gock.New("http://127.0.0.1:7717").
+					Get("/v1/system").
+					Reply(200).
+					JSON(testApiResponse)
+			},
+			expected: expected{
+				Data: testSystem,
+			},
+		},
+		{
 			desc: "retries stop after a time limit",
 			setup: func() {
 				gock.New("http://127.0.0.1:7717").
@@ -383,6 +429,31 @@ func TestRetryScenarios(t *testing.T) {
 			},
 			expected: expected{
 				ApiErr: &dsdk.ApiErrorResponse{Message: "invalid", Http: 400},
+			},
+		},
+		{
+			desc: "401 during a relogin does not continue to retry login",
+			setup: func() {
+				// initial login succeeds
+				gock.New("http://127.0.0.1:7717").
+					Put("/v1/login").
+					Reply(200).
+					JSON(&dsdk.ApiLogin{Key: "thekey"})
+
+				// get a 401 to force a re-login
+				gock.New("http://127.0.0.1:7717").
+					Get("/v1/system").
+					Reply(dsdk.PermissionDenied).
+					JSON(apiErr401)
+
+				// re-login gets a 401
+				gock.New("http://127.0.0.1:7717").
+					Put("/v1/login").
+					Reply(dsdk.PermissionDenied).
+					JSON(apiErr401)
+			},
+			expected: expected{
+				ApiErr: apiErr401,
 			},
 		},
 	}
@@ -496,4 +567,52 @@ func TestConcurrentUsage(t *testing.T) {
 	wg.Wait()
 
 	gock.OffAll()
+}
+
+// validates that concurrent login attempts will only actually log in once
+func TestConcurrentLoginAttempts(t *testing.T) {
+	defer gock.OffAll()
+
+	// set up mocks so that only a single login attempt will succeed and the rest will fail
+	gock.New("http://127.0.0.1:7717").
+		Put("/v1/login").
+		Reply(200).
+		JSON(&dsdk.ApiLogin{Key: "thekey"})
+	gock.New("http://127.0.0.1:7717").
+		Put("/v1/login").
+		Persist().
+		Reply(500).
+		JSON(&dsdk.ApiErrorResponse{Message: "goofed"})
+
+	conn := dsdk.NewApiConnection(&udc.UDC{
+		MgmtIp:     "127.0.0.1",
+		Username:   "foo",
+		Password:   "bar",
+		ApiVersion: "1",
+	}, false)
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	var aer1 *dsdk.ApiErrorResponse
+	var err1 error
+	var aer2 *dsdk.ApiErrorResponse
+	var err2 error
+	go func() {
+		aer1, err1 = conn.Login(context.Background())
+		wg.Done()
+	}()
+
+	go func() {
+		aer2, err2 = conn.Login(context.Background())
+		wg.Done()
+	}()
+
+	wg.Wait()
+
+	// if neither login attempt returned an error we can know that the login route was only called once
+	assert.NilError(t, err1)
+	assert.NilError(t, err2)
+	assert.Assert(t, aer1 == nil)
+	assert.Assert(t, aer2 == nil)
+
 }
