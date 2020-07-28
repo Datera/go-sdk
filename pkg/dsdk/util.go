@@ -380,8 +380,16 @@ func formatQueryParams(gro *greq.RequestOptions, v reflect.Value, t reflect.Type
 		if t.Field(i).Name == "Ctxt" {
 			continue
 		}
+
+		json := t.Field(i).Tag.Get("json")
+		hasOmitEmpty := strings.Contains(json, "omitempty")
+
 		key := t.Field(i).Tag.Get("mapstructure")
 		ifc := fmt.Sprintf("%v", v.Field(i).Interface())
+		if ifc == "" && hasOmitEmpty {
+			continue
+		}
+
 		params[key] = ifc
 	}
 	gro.Params = params
