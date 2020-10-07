@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os/exec"
 	"reflect"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -19,21 +20,46 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type ContextKey string
+
 // No vowels so no accidental profanity :P
 const letterBytes = "bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ"
 const (
 	letterIdxBits = 6                    // 6 bits to represent a letter index
 	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+
+	// SDK users can provide a map[string]interface{} with this key to those as additional
+	// key/values in the logs
+	UserLogFieldsCtxKey = ContextKey("user_log_fields")
 )
 
 var (
-	src         = rand.NewSource(time.Now().UnixNano())
-	execCommand = exec.Command
+	src                = rand.NewSource(time.Now().UnixNano())
+	execCommand        = exec.Command
+	resourceNamesRegex = regexp.MustCompile(`^(storage_nodes|nics|hdds|boot_drives|subsystem_states|flash_devices|remote_providers|operations|media_policies|failure_domains|initiators|initiator_groups|members|acl_policy|storage_instances|volumes|performance_policy|app_instances|snapshot_policies|refresh|snapshots|app_instance_user_data|user_data|app_instance_ecosystem_data|ecosystem_data|template_override|system|http_proxy|ntp_servers|dns|servers|search_domains|network|mapping|access_vip|network_paths|mgmt_vip|internal_network|ldap_servers|test_bind|list_users|list_groups|resolve_user|user_scan|groups|ous|witness_policy|smtp_configs|init|config|upgrade|available|access_network_ip_pools|users|roles|app_templates|storage_templates|volume_templates|auth|placement_policies|tenants|root|snmp_policy|events|alerts|system|monitoring|policies|default|send_test_event|metrics|hw|io|latest|time|api|network_diagnostics|run|status|search|login|logout|userinfo)$`)
 )
+
+func canonicalizeRoute(route, apiVersion string) string {
+	parts := strings.Split(route, "/")
+	for i, p := range parts {
+		if !resourceNamesRegex.MatchString(p) && p != "" && p != "v"+apiVersion {
+			parts[i] = ":id"
+		}
+	}
+	return strings.Join(parts, "/")
+}
 
 func Log() *log.Entry {
 	return DecorateRuntimeContext(log.WithFields(log.Fields{}))
+}
+
+func WithUserFields(ctx context.Context, l *log.Entry) *log.Entry {
+	userFields, ok := ctx.Value(UserLogFieldsCtxKey).(map[string]interface{})
+	if !ok {
+		return l
+	}
+	return l.WithFields(log.Fields(userFields))
 }
 
 // Args have the form "name=value"
