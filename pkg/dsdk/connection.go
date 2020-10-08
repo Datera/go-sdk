@@ -231,9 +231,9 @@ func makeBaseUrl(h, apiv string, secure bool) (*url.URL, error) {
 	return url.Parse(fmt.Sprintf("http://%s:7717/v%s", h, apiv))
 }
 
-func translateErrors(resp *greq.Response, err error) (*ApiErrorResponse, error) {
+func translateErrors(ctxt context.Context, resp *greq.Response, err error) (*ApiErrorResponse, error) {
 	if err != nil {
-		Log().Error(err)
+		WithUserFields(ctxt, Log()).Error(err)
 		if strings.Contains(err.Error(), "connect: connection refused") {
 			return nil, badStatus[ConnectionError]
 		}
@@ -244,7 +244,7 @@ func translateErrors(resp *greq.Response, err error) (*ApiErrorResponse, error) 
 		eresp := &ApiErrorResponse{}
 		err := resp.JSON(eresp)
 		if err != nil {
-			Log().Error(fmt.Sprintf("failed to unmarshal ApiErrorResponse %+v: %v", eresp, err))
+			WithUserFields(ctxt, Log()).Error(fmt.Sprintf("failed to unmarshal ApiErrorResponse %+v: %v", eresp, err))
 		}
 
 		// in some cases (like 503s) the response JSON doesn't contain
@@ -295,7 +295,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	reqId := uuid.Must(uuid.NewRandom()).String()
 	sdata, err := json.Marshal(ro.JSON)
 	if err != nil {
-		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
+		WithUserFields(ctxt, Log()).Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
 	// Strip all CHAP credentails before printing to logs
 	if strings.Contains(string(sdata), "target_user_name") == true {
@@ -331,14 +331,15 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 		ro.BeforeRequest = func(h *http.Request) error {
 			sheaders, err := json.Marshal(h.Header)
 			if err != nil {
-				Log().Errorf("Couldn't stringify headers, %s", h.Header)
+				WithUserFields(ctxt, Log()).Errorf("Couldn't stringify headers, %s", h.Header)
 			}
 
-			Log().WithFields(log.Fields{
+			WithUserFields(ctxt, Log()).WithFields(log.Fields{
 				logTraceID:        tid,
 				"request_id":      reqId,
 				"request_method":  method,
 				"request_url":     gurl.String(),
+				"request_route":   canonicalizeRoute(gurl.Path, c.apiVersion),
 				"request_headers": sheaders,
 				"request_payload": string(sdata),
 				"query_params":    ro.Params,
@@ -357,20 +358,21 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if _, ok := ctxt.Value("quiet").(bool); ok {
 		rdata = "<muted>"
 	}
-	detailLog := Log().WithFields(log.Fields{
+	detailLog := WithUserFields(ctxt, Log()).WithFields(log.Fields{
 		logTraceID:           tid,
 		"request_id":         reqId,
 		"response_timedelta": tDelta.Seconds(),
 		"request_method":     method,
 		"request_url":        gurl.String(),
 		"request_payload":    string(sdata),
+		"request_route":      canonicalizeRoute(gurl.Path, c.apiVersion),
 		"response_payload":   rdata,
 		"response_code":      resp.StatusCode,
 	})
 
 	detailLog.Debugf("Datera SDK response received")
 
-	eresp, err := translateErrors(resp, err)
+	eresp, err := translateErrors(ctxt, resp, err)
 
 	if err == badStatus[PermissionDenied] {
 		// if we have logged in successfully before we may just need to refresh the apikey
@@ -423,7 +425,7 @@ func (c *ApiConnection) doWithAuth(ctxt context.Context, method, url string, ro 
 	// so that won't deadlock
 	if !c.hasLoggedIn() {
 		if apierr, err := c.Login(ctxt); apierr != nil || err != nil {
-			Log().Errorf("Login failure: %s, %s", Pretty(apierr), err)
+			WithUserFields(ctxt, Log()).Errorf("Login failure: %s, %s", Pretty(apierr), err)
 			return apierr, err
 		}
 	}

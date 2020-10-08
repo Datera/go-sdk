@@ -48,3 +48,37 @@ func TestUtil_FormatQuery(test *testing.T) {
 		}
 	}
 }
+
+func Test_canonicalizeRoute(t *testing.T) {
+	type args struct {
+		route string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "",
+			args: args{route: "/v2.2/app_instances/123/storage_instances/345"},
+			want: "/v2.2/app_instances/:id/storage_instances/:id",
+		},
+		{
+			name: "",
+			args: args{route: "/v2.2/metrics/hw/cpu"},
+			want: "/v2.2/metrics/hw/:id",
+		},
+		{
+			name: "",
+			args: args{route: "/v2.2/system"},
+			want: "/v2.2/system",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := canonicalizeRoute(tt.args.route, "2.2"); got != tt.want {
+				t.Errorf("canonicalizeRoute() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
