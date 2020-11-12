@@ -290,6 +290,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if err != nil {
 		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
+        Log().Debugf("Session data = %s", sdata)
 	// Strip all CHAP credentails before printing to logs
 	if strings.Contains(string(sdata), "target_user_name") == true {
 		sdata = []byte("********")
@@ -326,7 +327,11 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 			if err != nil {
 				Log().Errorf("Couldn't stringify headers, %s", h.Header)
 			}
-
+                        var q_params string
+                        for key, val := range ro.Params {
+                                q_params += key + ":" + val
+                        }
+                        Log().Debugf("query_params = %s", q_params)
 			Log().WithFields(log.Fields{
 				logTraceID:        tid,
 				"request_id":      reqId,
@@ -334,7 +339,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 				"request_url":     gurl.String(),
 				"request_headers": sheaders,
 				"request_payload": string(sdata),
-				"query_params":    ro.Params,
+				"query_params":    q_params,
 			}).Debugf("Datera SDK making request")
 			return nil
 		}
