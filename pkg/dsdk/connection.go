@@ -334,7 +334,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 				"request_url":     gurl.String(),
 				"request_headers": sheaders,
 				"request_payload": string(sdata),
-				"query_params":    ro.Params,
+				"query_params":    fmt.Sprintf("%s=\"%s\"", ro.Params),
 			}).Debugf("Datera SDK making request")
 			return nil
 		}
