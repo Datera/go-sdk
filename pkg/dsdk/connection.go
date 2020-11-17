@@ -326,7 +326,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 			if err != nil {
 				Log().Errorf("Couldn't stringify headers, %s", h.Header)
 			}
-
+                        q_params := fmt.Sprintf("%s", ro.Params)
 			Log().WithFields(log.Fields{
 				logTraceID:        tid,
 				"request_id":      reqId,
@@ -334,7 +334,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 				"request_url":     gurl.String(),
 				"request_headers": sheaders,
 				"request_payload": string(sdata),
-				"query_params":    fmt.Sprintf("%s", ro.Params),
+				"query_params":    q_params,
 			}).Debugf("Datera SDK making request")
 			return nil
 		}
