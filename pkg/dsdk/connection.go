@@ -330,7 +330,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
                         for key, val := range m {
                                 q_params += key + ":" + val
                         }
-                        Log().Debugf("query_params = %s", q_params
+                        Log().Debugf("query_params = %s", q_params)
 			Log().WithFields(log.Fields{
 				logTraceID:        tid,
 				"request_id":      reqId,
