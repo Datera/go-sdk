@@ -290,6 +290,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 	if err != nil {
 		Log().Errorf("Couldn't stringify data, %s", ro.JSON)
 	}
+        Log().Debugf("Session data = %s", sdata)
 	// Strip all CHAP credentails before printing to logs
 	if strings.Contains(string(sdata), "target_user_name") == true {
 		sdata = []byte("********")

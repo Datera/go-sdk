@@ -77,6 +77,7 @@ func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstance, *Api
 	gro := &greq.RequestOptions{JSON: ro}
 	rs, apierr, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 	Log().Debugf("App Instance create request sent to go-sdk with following data, %#v", ro)
+        Log().Debugf("GRequests object : %#v", gro)
 	if apierr != nil {
 		return nil, apierr, err
 	}
