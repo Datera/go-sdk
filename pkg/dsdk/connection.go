@@ -327,7 +327,7 @@ func (c *ApiConnection) do(ctxt context.Context, method, url string, ro *greq.Re
 				Log().Errorf("Couldn't stringify headers, %s", h.Header)
 			}
                         var q_params string
-                        for key, val := range m {
+                        for key, val := range ro.Params {
                                 q_params += key + ":" + val
                         }
                         Log().Debugf("query_params = %s", q_params)
