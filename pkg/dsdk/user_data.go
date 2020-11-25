@@ -7,8 +7,8 @@ import (
 )
 
 type UserData struct {
-	AppInstanceId  string                  `json:"path,omitempty" mapstructure:"path"`
-	Data           map[string]interface{}  `json:"access,omitempty" mapstructure:"access"`
+	AppInstanceId  string                  `json:"app_instance_id"`
+	Data           map[string]interface{}  `json:"data"`
 }
 
 type UserDatas struct {
@@ -23,8 +23,8 @@ func newUserDatas(path string) *UserDatas {
 
 type UserDataUpdateRequest struct {
 	Ctxt                 context.Context        `json:"-"`
-	AppInstanceId        string                 `json:"access_control_mode,omitempty" mapstructure:"access_control_mode"`
-	Data                 map[string]interface{} `json:"acl_policy,omitempty" mapstructure:"acl_policy"`
+	AppInstanceId        string                 `json:"app_instance_id" mapstructure:"app_instance_id"`
+	Data                 map[string]interface{} `json:"data" mapstructure:"data"`
 }
 
 // Update adds a JSON User Data Record to an App Instance
@@ -55,11 +55,11 @@ type UserDatasListRequest struct {
 
 // List shows all UserData that have been stored
 // it can be filtered via a Glob search in ro.Filter field
-func (e *UserDatas) List(ro *StorageInstancesListRequest) ([]*UserData, *ApiErrorResponse, error) {
+func (e *UserDatas) List(udlr *UserDatasListRequest) ([]*UserData, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{
-		JSON:   ro,
-		Params: ro.Params.ToMap()}
-	rs, apierr, err := GetConn(ro.Ctxt).GetList(ro.Ctxt, "app_instance_user_data", gro)
+		JSON:   udlr,
+		Params: udlr.Params.ToMap()}
+	rs, apierr, err := GetConn(udlr.Ctxt).GetList(udlr.Ctxt, "app_instance_user_data", gro)
 	if apierr != nil {
 		return nil, apierr, err
 	}
@@ -81,7 +81,7 @@ func (e *UserDatas) List(ro *StorageInstancesListRequest) ([]*UserData, *ApiErro
 // UserDataGetRequest gets one AppInstance's uploaded user data
 type UserDataGetRequest struct {
 	Ctxt context.Context     `json:"-"`
-	AppInstanceId string     `json:"-"`
+	AppInstanceId string     `json:"app_instance_id"`
 }
 
 // Get returns an individual JSON UserData object attached to an AppInstance
