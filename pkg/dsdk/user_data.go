@@ -21,14 +21,14 @@ func newUserDatas(path string) *UserDatas {
 	}
 }
 
-type UserDataUpdateRequest struct {
+type UserDataSetRequest struct {
 	Ctxt                 context.Context        `json:"-"`
 	AppInstanceId        string                 `json:"app_instance_id" mapstructure:"app_instance_id"`
 	Data                 map[string]interface{} `json:"data" mapstructure:"data"`
 }
 
-// Update adds a JSON User Data Record to an App Instance
-func (e *UserDatas) Update(ud *UserDataUpdateRequest) (*UserData, *ApiErrorResponse, error) {
+// Set adds a JSON User Data Record to an App Instance
+func (e *UserDatas) Set(ud *UserDataSetRequest) (*UserData, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ud}
 	rs, apierr, err := GetConn(ud.Ctxt).Put(ud.Ctxt, _path.Join("app_instances", ud.AppInstanceId, e.Path), gro)
 	if apierr != nil {
