@@ -40,6 +40,7 @@ type SDK struct {
 	System               *System
 	SystemEvents         *SystemEvents
 	Tenants              *Tenants
+	UserData             *UserDatas
 }
 
 func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
@@ -74,6 +75,7 @@ func NewSDKWithHTTPClient(c *udc.UDC, secure bool, client *http.Client) (*SDK, e
 		System:               newSystem("/"),
 		SystemEvents:         newSystemEvents("/"),
 		Tenants:              newTenants("/"),
+		UserData:             newUserDatas("/"),
 	}, nil
 }
 
