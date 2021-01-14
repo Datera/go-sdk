@@ -23,6 +23,8 @@ type Snapshot struct {
 	AppStructure    interface{}       `json:"app_structure,omitempty" mapstructure:"app_structure"`
 	TsVersion       string            `json:"ts_version,omitempty" mapstructure:"ts_version"`
 	Version         string            `json:"version,omitempty" mapstructure:"version"`
+	Type            string            `json:"type,omitempty" mapstructure:"type"`
+	ClusterId       string            `json:"cluster_id,omitempty" mapstructure:"cluster_id"`
 }
 
 type Snapshots struct {
@@ -106,7 +108,6 @@ func (e *Snapshots) Get(ro *SnapshotsGetRequest) (*Snapshot, *ApiErrorResponse, 
 	}
 	return resp, nil, nil
 }
-
 
 type SnapshotSetRequest struct {
 	Ctxt               context.Context `json:"-"`
