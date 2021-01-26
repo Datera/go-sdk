@@ -75,15 +75,7 @@ func newAppInstances(path string) *AppInstances {
 
 func (e *AppInstances) Create(ro *AppInstancesCreateRequest) (*AppInstance, *ApiErrorResponse, error) {
 	gro := &greq.RequestOptions{JSON: ro}
-	Log().Debugf("App Instance create request sent to go-sdk with following data, %#v", ro)
-        Log().Debugf("Requests storage instances : %#v", ro.StorageInstances)
-        Log().Debugf("Requests volume instance : %#v", ro.StorageInstances[0].Volumes[0])
-        Log().Debugf("Requests volume instance : %#v", ro.StorageInstances[0].Volumes[0].PerformancePolicy)
-        Log().Debugf("GRequests object : %#v", gro)
-        Log().Debugf("GRequests storage instance : %#v", gro.StorageInstances)
-        Log().Debugf("GRequests volume instance : %#v", gro.StorageInstances[0].Volumes[0])
-        Log().Debugf("GRequests volume instance : %#v", gro.StorageInstances[0].Volumes[0].PerformancePolicy)
-
+	Log().Debugf("App Instance create request received by go-sdk with following data, %#v", ro)
         rs, apierr, err := GetConn(ro.Ctxt).Post(ro.Ctxt, e.Path, gro)
 
 	if apierr != nil {

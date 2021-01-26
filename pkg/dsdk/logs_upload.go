@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+        "time"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -65,6 +66,13 @@ func logsUpload(ctxt context.Context, file string) error {
 	if err != nil {
 		return err
 	}
+
+        var dir string
+        dir = "logs_" + string(time.Now().Format(time.RFC3339))
+        err = w.WriteField("folder_name", dir)
+        if err != nil {
+                return err
+        }
 
 	fw, err := w.CreateFormFile("logs.tar.gz", file)
 	if err != nil {
