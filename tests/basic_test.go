@@ -11,12 +11,17 @@ import (
 	"testing"
 	"time"
 
-	dsdk "github.com/Datera/go-sdk/pkg/dsdk"
+	"github.com/sirupsen/logrus"
+	dsdk "github.com/tjcelaya/go-datera/pkg/dsdk"
 )
 
 const (
 	RemoteConfigFile = "remote_provider.json"
 )
+
+func init() {
+	logrus.SetOutput(ioutil.Discard)
+}
 
 type RemoteConfig struct {
 	HostBucket string `json:"host_bucket"`

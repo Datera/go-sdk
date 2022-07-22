@@ -33,12 +33,14 @@ type SDK struct {
 	LogsUpload           *LogsUpload
 	HWMetrics            *HWMetrics
 	IOMetrics            *IOMetrics
+	PlacementPolicies    *PlacementPolicies
 	RemoteProvider       *RemoteProviders
 	StorageNodes         *StorageNodes
 	StoragePools         *StoragePools
 	System               *System
 	SystemEvents         *SystemEvents
 	Tenants              *Tenants
+	UserData             *UserDatas
 }
 
 func NewSDK(c *udc.UDC, secure bool) (*SDK, error) {
@@ -66,12 +68,14 @@ func NewSDKWithHTTPClient(c *udc.UDC, secure bool, client *http.Client) (*SDK, e
 		LogsUpload:           newLogsUpload("/"),
 		HWMetrics:            newHWMetrics("/"),
 		IOMetrics:            newIOMetrics("/"),
+		PlacementPolicies:    newPlacementPolicies("/"),
 		RemoteProvider:       newRemoteProviders("/"),
 		StorageNodes:         newStorageNodes("/"),
 		StoragePools:         newStoragePools("/"),
 		System:               newSystem("/"),
 		SystemEvents:         newSystemEvents("/"),
 		Tenants:              newTenants("/"),
+		UserData:             newUserDatas("/"),
 	}, nil
 }
 
